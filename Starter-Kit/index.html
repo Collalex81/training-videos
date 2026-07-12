@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Training Portal / Portal de Capacitación</title>
+<!--
+  =============================================================================
+  GALLERY / GALERÍA — bilingual (EN default), organized by AREAS.
+  TO ADAPT: edit BRAND, AREAS (below in the script) and videos.json.
+  Add modules by editing videos.json only (no coding needed).
+  =============================================================================
+-->
+<style>
+  :root{--pg:#f4f6fb;--card:#fff;--ink:#0f2544;--sub:#5b6b84;--line:#e6ebf5;--bar:#0b2e59;--accent:#2563EB;--tint:rgba(37,99,235,.10);--radius:14px;--shadow:0 1px 2px rgba(16,37,68,.05),0 10px 26px rgba(16,37,68,.07)}
+  html[data-theme="dark"]{--pg:#0b1220;--card:#151d30;--ink:#eaf0ff;--sub:#9fb0cc;--line:#243149;--bar:#0a1526;--accent:#4d8bff;--tint:rgba(77,139,255,.14);--shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35)}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;transition:background .2s,color .2s}
+  .topbar{position:sticky;top:0;z-index:40;background:var(--bar);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:11px}
+  .logo{width:36px;height:36px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:600;display:block;line-height:1.15}
+  .brand small{font-size:10.5px;opacity:.7;letter-spacing:.06em}
+  .tb-actions{display:flex;align-items:center;gap:8px}
+  .btn-ico{border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;cursor:pointer;padding:0 12px;height:36px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .btn-ico:hover{background:rgba(255,255,255,.1)}
+  .lang{display:flex;gap:3px;background:rgba(255,255,255,.12);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:#fff;cursor:pointer;min-width:38px;height:30px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent)}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+  .hero{text-align:center;padding:40px 20px 6px}
+  .badge{display:inline-block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);background:var(--tint);padding:6px 13px;border-radius:999px;margin-bottom:14px;font-weight:600}
+  .hero h1{font-size:clamp(24px,4.5vw,34px);margin:0 0 10px;font-weight:700}
+  .hero p{color:var(--sub);font-size:clamp(14px,2.4vw,16px);max-width:560px;margin:0 auto}
+  .stats{display:flex;gap:clamp(18px,5vw,34px);justify-content:center;margin-top:22px;flex-wrap:wrap}
+  .stat b{display:block;font-size:24px;font-weight:700}.stat span{font-size:12px;color:var(--sub)}
+  .shead{display:flex;align-items:center;justify-content:space-between;margin:26px 0 4px}.shead h2{font-size:18px;margin:0;font-weight:600}
+  .areas{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:16px;padding:14px 0 36px}
+  .acard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;cursor:pointer;text-align:left;font-family:inherit;color:inherit;padding:0;box-shadow:var(--shadow);transition:transform .16s;display:flex;flex-direction:column}
+  .acard:hover{transform:translateY(-3px)}.acard .top{height:4px}.acard .in{padding:16px 16px 15px;display:flex;flex-direction:column;flex:1}
+  .aico{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+  .acard h3{font-size:16px;font-weight:600;margin:0 0 5px}.acard .d{font-size:13px;color:var(--sub);margin:0 0 14px;flex:1}
+  .acard .foot{display:flex;align-items:center;justify-content:space-between;font-size:12.5px}.acard .cnt{color:var(--sub)}.acard .go{font-weight:600}
+  .crumb{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--sub);margin:20px 0 2px;flex-wrap:wrap}
+  .crumb button{border:0;background:transparent;color:var(--accent);cursor:pointer;font-family:inherit;font-size:13px;padding:6px 8px;border-radius:8px}
+  .ahead{display:flex;align-items:center;gap:14px;margin:6px 0 4px}.ahead .aico{margin:0;width:52px;height:52px}.ahead h2{font-size:clamp(20px,4vw,26px);margin:0 0 3px}.ahead p{margin:0;color:var(--sub);font-size:14px}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0 4px}
+  .search{position:relative;flex:1;min-width:200px;max-width:440px}.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--sub)}
+  #buscar{width:100%;background:var(--card);border:1px solid var(--line);color:var(--ink);padding:11px 14px 11px 40px;border-radius:11px;font-size:15px;outline:none;font-family:inherit}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}.chip{background:var(--card);border:1px solid var(--line);color:var(--sub);padding:9px 15px;border-radius:999px;cursor:pointer;font-size:13.5px;font-family:inherit;min-height:38px}.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr));gap:20px;padding:22px 0 40px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;cursor:pointer;box-shadow:var(--shadow);transition:transform .16s;text-align:left}
+  .card:hover{transform:translateY(-3px)}
+  .thumb{position:relative;aspect-ratio:16/9;background:var(--pg);display:flex;align-items:center;justify-content:center;overflow:hidden}.thumb img{width:100%;height:100%;object-fit:cover}
+  .play{position:absolute;width:52px;height:52px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff}
+  .tag{position:absolute;top:10px;left:10px;color:#fff;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:999px;font-weight:600}
+  .dur{position:absolute;bottom:10px;right:10px;background:rgba(6,14,28,.78);color:#fff;font-size:12px;padding:3px 8px;border-radius:6px}
+  .cbody{padding:14px 16px 17px}.cbody h3{margin:0 0 7px;font-size:15.5px;font-weight:600}.cbody p{margin:0;color:var(--sub);font-size:13.5px}
+  .vacio{grid-column:1/-1;text-align:center;color:var(--sub);padding:50px 16px;background:var(--card);border:1px dashed var(--line);border-radius:var(--radius)}
+  .modal{position:fixed;inset:0;background:rgba(6,10,20,.78);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:18px;z-index:60}
+  .modal.on{display:flex}.visor{width:min(940px,100%);max-height:92vh;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .media{aspect-ratio:16/9;background:#000}.media video,.media iframe{width:100%;height:100%;border:0;display:block}
+  .vinfo{padding:16px 20px 20px}.vinfo h2{margin:0 0 7px;font-size:19px}.vinfo p{margin:0;color:var(--sub)}
+  .cerrar{position:fixed;top:16px;right:18px;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:22px;cursor:pointer;z-index:61}
+  footer{text-align:center;color:var(--sub);font-size:12.5px;padding:26px 20px 40px;border-top:1px solid var(--line)}footer a{color:var(--accent)}
+  @media(max-width:560px){.topbar{padding:10px 14px}.wrap{padding:0 14px}.brand small{display:none}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><span class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span><div><b id="brand"></b><small id="brandsub"></small></div></div>
+  <div class="tb-actions"><button class="btn-ico" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button><div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div></div>
+</div>
+<main id="app"></main>
+<div class="modal" id="modal" role="dialog" aria-modal="true"><button class="cerrar" id="cerrar" aria-label="Close">&times;</button><div class="visor"><div class="media" id="media"></div><div class="vinfo"><h2 id="mTit"></h2><p id="mDesc"></p></div></div></div>
+<footer id="footer"></footer>
+<script>
+/* ============ 1) BRAND — edit ============ */
+var BRAND = { name:["Training Portal","Portal de Capacitación"], sub:["CORPORATE TRAINING","CAPACITACIÓN"] };
+
+/* ============ 2) AREAS — edit (key must match "area" in videos.json) ============ */
+var ICN={a:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1 3 3 6 3s6-2 6-3v-5"/></svg>',
+  b:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  c:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+  d:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>'};
+var AREAS=[
+  {key:"onboarding", color:"#7C3AED", ico:ICN.d, nombre:["Onboarding","Inducción"],  desc:["Welcome and initial training.","Bienvenida y capacitación inicial."]},
+  {key:"operations", color:"#2563EB", ico:ICN.a, nombre:["Operations","Operaciones"], desc:["Day-to-day procedures.","Procedimientos del día a día."]},
+  {key:"safety",     color:"#15803D", ico:ICN.b, nombre:["Safety","Seguridad"],       desc:["EHS and risk prevention.","EHS y prevención de riesgos."]},
+  {key:"technical",  color:"#EA580C", ico:ICN.c, nombre:["Technical","Técnico"],       desc:["Equipment and procedures.","Equipos y procedimientos."]}
+];
+var AMAP={}; AREAS.forEach(function(a){AMAP[a.key]=a;});
+
+/* ============ UI text ============ */
+var UI={en:{badge:"Training portal",titulo:"Training by area",intro:"Pick an area to see the training modules. Content in English and Spanish.",areas:"Areas",inicio:"Home",buscar:"Search a module...",todos:"All",modulos:"modules",modulo:"module",ver:"View modules",tema:"Dark",stArea:"Areas",stVid:"Modules",stIdi:"Languages",vacio:"No modules in this area yet.",error:"Could not load videos.json. Use a local server.",footer:'Built with code + design'},
+        es:{badge:"Portal de capacitación",titulo:"Capacitación por área",intro:"Elige un área para ver los módulos. Contenido en inglés y español.",areas:"Áreas",inicio:"Inicio",buscar:"Buscar un módulo...",todos:"Todos",modulos:"módulos",modulo:"módulo",ver:"Ver módulos",tema:"Oscuro",stArea:"Áreas",stVid:"Módulos",stIdi:"Idiomas",vacio:"Aún no hay módulos en esta área.",error:"No se pudo cargar videos.json. Usa un servidor local.",footer:'Hecho con código + diseño'}};
+
+var VIDEOS=[], LANG="en", area=null, cat="__all__";
+try{ var l=localStorage.getItem("lang"); if(l)LANG=l; }catch(e){}
+function X(en,es){ return LANG==="es"?es:en; }
+function t(c){ return c&&typeof c==="object"?(c[LANG]||c.en||c.es||""):(c||""); }
+function $(id){ return document.getElementById(id); }
+function hex(c,a){ var n=parseInt(c.slice(1),16); return "rgba("+((n>>16)&255)+","+((n>>8)&255)+","+(n&255)+","+a+")"; }
+function cnt(k){ return VIDEOS.filter(function(v){return v.area===k;}).length; }
+
+async function cargar(){ try{ var r=await fetch("videos.json",{cache:"no-store"}); VIDEOS=await r.json(); }catch(e){ chrome(); $("app").innerHTML='<div class="wrap"><div class="vacio" style="margin:40px 0">'+UI[LANG].error+'</div></div>'; return; } fromHash(); render(); }
+function chrome(){ document.documentElement.lang=LANG; $("brand").textContent=X(BRAND.name[0],BRAND.name[1]); $("brandsub").textContent=X(BRAND.sub[0],BRAND.sub[1]);
+  document.querySelectorAll("#lang button").forEach(function(b){b.classList.toggle("on",b.dataset.l===LANG);});
+  var dark=document.documentElement.getAttribute("data-theme")==="dark"; $("temaIco").innerHTML=dark?'☀':'🌙'; $("temaTxt").textContent=dark?X("Light","Claro"):UI[LANG].tema; $("footer").innerHTML=UI[LANG].footer; document.title=X(BRAND.name[0],BRAND.name[1]); }
+function render(){ chrome(); if(!area||!AMAP[area]) home(); else vista(); }
+function home(){ var u=UI[LANG];
+  var cards=AREAS.map(function(a){var n=cnt(a.key),e=n===1?u.modulo:u.modulos;
+    return '<button class="acard" data-area="'+a.key+'"><span class="top" style="background:'+a.color+'"></span><span class="in"><span class="aico" style="background:'+hex(a.color,.12)+';color:'+a.color+'">'+a.ico+'</span><h3>'+t(a.nombre)+'</h3><span class="d">'+t(a.desc)+'</span><span class="foot"><span class="cnt">▸ '+n+' '+e+'</span><span class="go" style="color:'+a.color+'">'+u.ver+' →</span></span></span></button>';}).join("");
+  $("app").innerHTML='<section class="hero"><span class="badge">'+u.badge+'</span><h1>'+u.titulo+'</h1><p>'+u.intro+'</p><div class="stats"><div class="stat"><b>'+AREAS.length+'</b><span>'+u.stArea+'</span></div><div class="stat"><b>'+VIDEOS.length+'</b><span>'+u.stVid+'</span></div><div class="stat"><b>2</b><span>'+u.stIdi+'</span></div></div></section><div class="wrap"><div class="shead"><h2>'+u.areas+'</h2></div><div class="areas">'+cards+'</div></div>';
+  document.querySelectorAll(".acard").forEach(function(b){b.onclick=function(){irA(b.dataset.area);};}); }
+function vista(){ var u=UI[LANG],a=AMAP[area];
+  var cats=[]; VIDEOS.filter(function(v){return v.area===a.key;}).forEach(function(v){var x=t(v.categoria);if(x&&cats.indexOf(x)<0)cats.push(x);});
+  var chips=[{k:"__all__",l:u.todos}].concat(cats.map(function(x){return{k:x,l:x};}));
+  $("app").innerHTML='<div class="wrap"><div class="crumb"><button id="bI">‹ '+u.inicio+'</button><span>/</span><span>'+t(a.nombre)+'</span></div><div class="ahead"><span class="aico" style="background:'+hex(a.color,.12)+';color:'+a.color+'">'+a.ico+'</span><div><h2>'+t(a.nombre)+'</h2><p>'+t(a.desc)+'</p></div></div><div class="controls"><div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="buscar" type="search" placeholder="'+u.buscar+'"></div><div class="chips" id="chips">'+chips.map(function(x){var on=x.k===cat;return '<button class="chip'+(on?' on':'')+'" data-c="'+esc(x.k)+'">'+x.l+'</button>';}).join("")+'</div></div><div class="grid" id="grid"></div></div>';
+  $("bI").onclick=function(){irInicio();}; $("buscar").addEventListener("input",grid); document.querySelectorAll("#chips .chip").forEach(function(b){b.onclick=function(){cat=b.dataset.c;vista();};}); grid(); }
+function grid(){ var u=UI[LANG],a=AMAP[area],q=($("buscar")?$("buscar").value:"").toLowerCase();
+  var lista=VIDEOS.filter(function(v){if(v.area!==a.key)return false;if(cat!=="__all__"&&t(v.categoria)!==cat)return false;if(q&&(t(v.titulo)+t(v.descripcion)).toLowerCase().indexOf(q)<0)return false;return true;});
+  var g=$("grid"); if(!lista.length){g.innerHTML='<div class="vacio">'+u.vacio+'</div>';return;}
+  g.innerHTML=lista.map(function(v){var i=VIDEOS.indexOf(v);return '<button class="card" data-i="'+i+'"><div class="thumb">'+(v.poster?'<img src="'+v.poster+'" alt="" onerror="this.style.display=\'none\'">':'')+(v.categoria?'<span class="tag" style="background:'+a.color+'">'+t(v.categoria)+'</span>':'')+'<span class="play">▶</span>'+(v.duracion?'<span class="dur">'+v.duracion+'</span>':'')+'</div><div class="cbody"><h3>'+t(v.titulo)+'</h3><p>'+t(v.descripcion)+'</p></div></button>';}).join("");
+  document.querySelectorAll("#grid .card").forEach(function(c){c.onclick=function(){abrir(VIDEOS[c.dataset.i]);};}); }
+function irA(k){area=k;cat="__all__";location.hash="area/"+k;window.scrollTo(0,0);render();}
+function irInicio(){area=null;cat="__all__";location.hash="";window.scrollTo(0,0);render();}
+function fromHash(){var m=(location.hash||"").match(/area\/(\w+)/);area=m&&AMAP[m[1]]?m[1]:null;}
+window.addEventListener("hashchange",function(){fromHash();render();});
+function abrir(v){ $("mTit").textContent=t(v.titulo); $("mDesc").textContent=t(v.descripcion); var m=$("media");
+  if(v.tipo==="animacion"||/\.html?$/.test(v.video)) m.innerHTML='<iframe src="'+v.video+'?lang='+LANG+'" allowfullscreen></iframe>'; else m.innerHTML='<video src="'+v.video+'" controls autoplay '+(v.poster?'poster="'+v.poster+'"':'')+'></video>';
+  $("modal").classList.add("on"); }
+function cerrar(){ $("modal").classList.remove("on"); $("media").innerHTML=""; }
+$("cerrar").onclick=cerrar; $("modal").onclick=function(e){if(e.target.id==="modal")cerrar();}; document.addEventListener("keydown",function(e){if(e.key==="Escape")cerrar();});
+document.querySelectorAll("#lang button").forEach(function(b){b.onclick=function(){LANG=b.dataset.l;try{localStorage.setItem("lang",LANG);}catch(e){}render();};});
+$("tema").onclick=function(){var d=document.documentElement.getAttribute("data-theme")==="dark";document.documentElement.setAttribute("data-theme",d?"light":"dark");try{localStorage.setItem("tema",d?"light":"dark");}catch(e){}chrome();};
+function esc(s){return String(s).replace(/"/g,"&quot;");}
+cargar();
+</script>
+</body>
+</html>

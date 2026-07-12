@@ -1,0 +1,18 @@
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Archivos temporales de edición de video
+*.tmp
+*.part
+
+# Dependencias (si más adelante agregas herramientas de node)
+node_modules/
+
+# Respaldos locales (no se publican)
+Versiones/
+
+# Otros
+Desktop.ini
+*~
+~$*

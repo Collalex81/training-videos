@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tower Safety / Seguridad en Torres</title>
+<!--
+  =============================================================================
+  SAFETY TRAINING — Working safely on telecom towers (OSHA + Crown Castle)
+  Bilingual EN/ES (EN default) · Responsive · sticky header · canvas animations
+  DISCLAIMER: training overview only. Not a substitute for certified NATE/OSHA
+  training or the tower owner's (e.g. Crown Castle) EHS procedures.
+  REAL PHOTOS: drop images in assets/ with the names in IMG (paths ../assets/).
+  =============================================================================
+-->
+<style>
+  :root{
+    --pg:#f4f6fb; --card:#ffffff; --ink:#12261a; --sub:#5b7064; --line:#e4efe8;
+    --bar:#0d3b23; --accent:#15803D; --tint:rgba(21,128,61,.10);
+    --ok:#15803D; --okt:rgba(21,128,61,.10); --bad:#dc2626; --badt:rgba(220,38,38,.10);
+    --amber:#b45309; --ambt:rgba(180,83,9,.10); --radius:14px;
+    --shadow:0 1px 2px rgba(16,37,68,.05),0 10px 26px rgba(16,45,30,.08);
+  }
+  html[data-theme="dark"]{
+    --pg:#0a140e; --card:#132018; --ink:#e9f5ee; --sub:#9fbfae; --line:#213229;
+    --bar:#07160d; --accent:#4ade80; --tint:rgba(74,222,128,.14);
+    --ok:#4ade80; --okt:rgba(74,222,128,.14); --bad:#f87171; --badt:rgba(248,113,113,.14);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  .shell{max-width:940px;margin:0 auto;padding:14px 16px 34px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0 8px;box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
+  .head .meta{margin-bottom:0}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:600;display:block;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+  .prog{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:6px 0 4px}
+  .prog>i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);gap:8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;min-height:340px}
+  .step-ico{width:44px;height:44px;border-radius:12px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+  h1{font-size:clamp(20px,3.3vw,26px);margin:0 0 8px;font-weight:700;line-height:1.2}
+  h2{font-size:15.5px;margin:18px 0 8px;font-weight:600}
+  p{margin:0 0 12px}
+  .lead{color:var(--sub);font-size:15px}
+  ul,ol{margin:6px 0 12px;padding-left:20px}
+  li{margin:5px 0}
+  .pill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:var(--tint);padding:5px 11px;border-radius:999px;margin-bottom:10px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:8px 0}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:12px;margin:8px 0}
+  .box{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:13px}
+  .box h3{margin:0 0 6px;font-size:14.5px;font-weight:600;display:flex;align-items:center;gap:7px}
+  .box p{margin:0;font-size:13px;color:var(--sub)}
+  .box .ic{color:var(--accent)}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;min-height:42px;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .btn.on{outline:2px solid var(--accent);outline-offset:1px}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;flex:1}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line);border:0;cursor:pointer;padding:0}
+  .dot.on{background:var(--accent);transform:scale(1.3)}
+  .note{font-size:13px;color:var(--sub);border-left:3px solid var(--accent);background:var(--tint);padding:9px 12px;margin:12px 0;border-radius:0 8px 8px 0}
+  .warn{border-left-color:var(--amber);color:var(--amber);background:var(--ambt)}
+  .danger{border-left-color:var(--bad);color:var(--bad);background:var(--badt)}
+  .good{border-left-color:var(--ok);color:var(--ink);background:var(--okt)}
+  .good b{color:var(--ok)}
+  .illus{position:relative;aspect-ratio:16/9;background:#0a1f14;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .illus svg{width:100%;height:100%}
+  .illus canvas{width:100%;height:100%;display:block}
+  .illus img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#0a1f14}
+  .mcap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);margin:6px 2px 2px}
+  .thumb{aspect-ratio:4/3}
+  .tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin:6px 0}
+  .tbl th,.tbl td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--line)}
+  .tbl th{color:var(--sub);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+  .tbl td b{color:var(--accent)}
+  .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+  .row{display:flex;align-items:center;gap:12px;margin:12px 0;flex-wrap:wrap}
+  input[type=range]{flex:1;accent-color:var(--accent);min-width:140px}
+  .val{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;min-width:70px;text-align:right}
+  .readout{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+  .stat{background:var(--pg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;flex:1;min-width:110px}
+  .stat b{display:block;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+  .stat span{font-size:11.5px;color:var(--sub)}
+  .verdict{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;font-weight:700;font-size:15px}
+  .verdict.ok{background:var(--okt);color:var(--ok)}
+  .verdict.bad{background:var(--badt);color:var(--bad)}
+  .chk{display:flex;gap:11px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:8px 0;cursor:pointer}
+  .chk .bx{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;margin-top:1px}
+  .chk.done .bx{background:var(--ok);border-color:var(--ok)}
+  .chk.done .txt b{text-decoration:line-through;opacity:.7}
+  .chk .txt b{font-size:13.5px}.chk .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .phase{border:1px solid var(--line);border-radius:12px;margin:10px 0;overflow:hidden}
+  .phase>h3{margin:0;font-size:14px;font-weight:700;background:var(--pg);padding:11px 13px;display:flex;gap:8px;align-items:center}
+  .phase>h3 .n{width:22px;height:22px;border-radius:6px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex:none}
+  .phase .chk{border:0;border-top:1px solid var(--line);border-radius:0;margin:0;background:transparent}
+  .abcd{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px;margin:8px 0}
+  .ab{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+  .ab .l{width:34px;height:34px;border-radius:9px;background:var(--accent);color:#fff;font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px}
+  .ab b{font-size:13.5px}.ab p{font-size:12px;color:var(--sub);margin:4px 0 0}
+  .q{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:12px}
+  .q h3{margin:0 0 10px;font-size:14px}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:11px 14px;border-radius:10px;margin:7px 0;cursor:pointer;font-size:14px;font-family:inherit}
+  .opt.correct{border-color:var(--ok);background:var(--okt);color:var(--ok);font-weight:600}
+  .opt.wrong{border-color:var(--bad);background:var(--badt);color:var(--bad)}
+  .opt:disabled{cursor:default}
+  .score{font-size:16px;font-weight:700;text-align:center;padding:10px}
+  @media(max-width:520px){ .card{padding:15px} .shell{padding:12px 12px 28px} .brand small{display:none} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+  <div class="top">
+    <div class="brand">
+      <span class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></span>
+      <div><b id="brand"></b><small id="brandsub"></small></div>
+    </div>
+    <div class="tools">
+      <a class="tbtn" id="home" href="../index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span id="homeTxt"></span></a>
+      <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+      <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+    </div>
+  </div>
+  <div class="prog"><i id="progbar"></i></div>
+  <div class="meta"><span id="mStep"></span><span id="mDur"></span></div>
+  </div>
+
+  <div class="card" id="card"></div>
+
+  <div class="nav">
+    <button class="btn ghost" id="prev"></button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="next"></button>
+  </div>
+</div>
+
+<script>
+var IMG = {
+  harness:"../assets/safety-harness.jpg", srl:"../assets/lanyard-srl.jpg", anchor:"../assets/anchor-point.jpg",
+  rescue:"../assets/rescue-kit.jpg", rfmon:"../assets/rf-monitor.jpg", ppe:"../assets/ppe-climber.jpg",
+  hardhat:"../assets/hardhat.jpg", glasses:"../assets/safety-glasses.jpg", hivis:"../assets/hivis-vest.jpg",
+  gloves:"../assets/work-gloves.jpg", boots:"../assets/safety-boots.jpg"
+};
+var params = new URLSearchParams(location.search);
+var LANG = params.get("lang") ? (params.get("lang").toLowerCase().startsWith("es") ? "es" : "en") : "en";
+function X(en,es){ return LANG==="es"?es:en; }
+function $(id){ return document.getElementById(id); }
+
+var I = {
+  target:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>',
+  alert:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  doc:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>',
+  cert:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.5 13.5 7 22l5-3 5 3-1.5-8.5"/></svg>',
+  helmet:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15a9 9 0 0 1 18 0"/><path d="M2 15h20v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"/><path d="M12 6v3"/></svg>',
+  link:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>',
+  anchor:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>',
+  ruler:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h18v8H3z"/><path d="M7 8v3M11 8v4M15 8v3M19 8v4"/></svg>',
+  search:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+  rescue:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+  rf:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49M7.76 16.24a6 6 0 0 1 0-8.49M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"/></svg>',
+  tool:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+  cloud:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 16.5a4.5 4.5 0 1 0-1-8.9A6 6 0 1 0 6 18"/><path d="M13 12l-3 5h4l-3 5"/></svg>',
+  hoist:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3h14l-2 4H6zM12 7v7"/><rect x="9" y="14" width="6" height="5" rx="1"/></svg>',
+  list:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><path d="M3 6l1 1 2-2M3 12l1 1 2-2M3 18l1 1 2-2"/></svg>',
+  phone:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
+  quiz:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  flag:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
+  img:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>',
+  vest:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3l4 3 4-3 4 4-3 3v10H7V10L4 7z"/></svg>',
+  eye:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>',
+  glove:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11V5a2 2 0 0 1 4 0v5M10 10V4a2 2 0 0 1 4 0v6M14 10V6a2 2 0 0 1 4 0v8a7 7 0 0 1-7 7H9a6 6 0 0 1-6-6v-3a2 2 0 0 1 4 0"/></svg>',
+  boot:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v9l-3 2v5h15v-3a4 4 0 0 0-4-4h-2l-2-2V2z"/></svg>',
+  sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+};
+var G = {
+  harness:'<svg viewBox="0 0 160 100"><path d="M64 20a6 6 0 1 1 12 0 6 6 0 0 1-12 0z" fill="none" stroke="#8aa4c8" stroke-width="2"/><path d="M60 30 L80 62 L100 30 M60 30 L60 74 M100 30 L100 74 M60 50 H100 M70 74 H90" fill="none" stroke="#8aa4c8" stroke-width="3" stroke-linecap="round"/><circle cx="80" cy="46" r="4" fill="#4ade80"/><text x="80" y="92" fill="#7fb89a" font-size="9" text-anchor="middle">Full body harness</text></svg>',
+  srl:'<svg viewBox="0 0 160 100"><rect x="60" y="20" width="40" height="26" rx="5" fill="#22332a" stroke="#3a5a48" stroke-width="2"/><path d="M80 46 q-4 20 4 34" fill="none" stroke="#8aa4c8" stroke-width="3"/><rect x="74" y="78" width="12" height="8" rx="2" fill="#8aa4c8"/><text x="80" y="96" fill="#7fb89a" font-size="9" text-anchor="middle">SRL / lanyard</text></svg>',
+  anchor:'<svg viewBox="0 0 160 100"><line x1="40" y1="30" x2="120" y2="30" stroke="#546a58" stroke-width="6"/><circle cx="80" cy="30" r="7" fill="none" stroke="#4ade80" stroke-width="3"/><path d="M80 37 v30" stroke="#8aa4c8" stroke-width="3"/><text x="80" y="88" fill="#7fb89a" font-size="9" text-anchor="middle">Anchor 5,000 lbf</text></svg>',
+  rescue:'<svg viewBox="0 0 160 100"><rect x="54" y="34" width="52" height="34" rx="5" fill="#22332a" stroke="#3a5a48" stroke-width="2"/><path d="M80 42 v18 M71 51 h18" stroke="#f87171" stroke-width="4" stroke-linecap="round"/><text x="80" y="86" fill="#7fb89a" font-size="9" text-anchor="middle">Rescue kit</text></svg>',
+  rfmon:'<svg viewBox="0 0 160 100"><rect x="64" y="26" width="32" height="48" rx="5" fill="#22332a" stroke="#3a5a48" stroke-width="2"/><rect x="70" y="32" width="20" height="14" rx="2" fill="#0a1f14"/><circle cx="80" cy="60" r="5" fill="#f59e0b"/><text x="80" y="92" fill="#7fb89a" font-size="9" text-anchor="middle">RF monitor</text></svg>'
+};
+
+/* ===== Canvas engine ===== */
+var _gen=0;
+function stopAnim(){ _gen++; }
+function fitCanvas(cv){ var r=cv.getBoundingClientRect(); var dpr=window.devicePixelRatio||1; cv.width=Math.max(1,Math.round(r.width*dpr)); cv.height=Math.max(1,Math.round(r.height*dpr)); var ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx:ctx,w:r.width,h:r.height}; }
+function screen(type, capEn, capEs, photoKey){
+  var ph = photoKey && IMG[photoKey] ? '<img src="'+IMG[photoKey]+'" alt="" onerror="this.remove()">' : '';
+  var cap = X(capEn,capEs) + (photoKey&&IMG[photoKey]?' · '+IMG[photoKey].replace("../",""):'');
+  return '<div class="illus"><canvas class="cv" data-cv="'+type+'"></canvas>'+ph+'</div><div class="mcap">'+I.img+' '+cap+'</div>';
+}
+function imgSlot(key, svg, capEn, capEs, cls){
+  var src=IMG[key]; var img = src ? '<img src="'+src+'" alt="" onerror="this.remove()">' : '';
+  return '<div class="illus '+(cls||'')+'">'+svg+img+'</div><div class="mcap">'+I.img+' '+X(capEn,capEs)+(src?' · '+src.replace("../",""):'')+'</div>';
+}
+/* Worker figure helper */
+function drawWorker(ctx,x,y,s,col){ col=col||"#eaf5ee"; ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=2.4;
+  ctx.beginPath(); ctx.arc(x,y-9*s,4*s,0,7); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x,y-5*s); ctx.lineTo(x,y+6*s); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x,y-2*s); ctx.lineTo(x-6*s,y+2*s); ctx.moveTo(x,y-2*s); ctx.lineTo(x+6*s,y+2*s); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x,y+6*s); ctx.lineTo(x-5*s,y+15*s); ctx.moveTo(x,y+6*s); ctx.lineTo(x+5*s,y+15*s); ctx.stroke();
+}
+/* Fall arrest animation (tower + worker + SRL) */
+function animFall(cv){
+  var g=fitCanvas(cv), ctx=g.ctx, w=g.w, h=g.h, gen=_gen, start=performance.now();
+  var tx=w*0.30, ax=tx, ay=h*0.20;
+  function frame(now){
+    if(gen!==_gen) return;
+    var t=((now-start)/1000)%3.4;
+    sbg(ctx,w,h);
+    /* tower legs */
+    ctx.strokeStyle="#31513e"; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(tx-18,h*0.95); ctx.lineTo(tx,h*0.08); ctx.lineTo(tx+18,h*0.95); ctx.stroke();
+    ctx.lineWidth=1.5; for(var yy=0.18;yy<0.95;yy+=0.14){ var y1=h*yy; var xw=18*(1-(0.08)/(yy)); ctx.beginPath(); ctx.moveTo(tx-18*(1-(yy-0.08)/0.9),y1); ctx.lineTo(tx+18*(1-(yy-0.08)/0.9),y1); ctx.stroke(); }
+    /* anchor */
+    ctx.fillStyle="#4ade80"; ctx.beginPath(); ctx.arc(ax,ay,4,0,7); ctx.fill();
+    /* worker position: rest, fall, arrested */
+    var wy, phase;
+    if(t<1.2){ wy=h*0.42; phase=X("climbing (100% tied off)","subiendo (100% amarrado)"); }
+    else if(t<1.7){ var p=(t-1.2)/0.5; wy=h*0.42+(h*0.66-h*0.42)*p; phase=X("FALL","CAÍDA"); }
+    else { wy=h*0.66+Math.sin((t-1.7)*8)*2*(1-(t-1.7)); phase=X("ARRESTED by SRL","DETENIDO por SRL"); }
+    var wx=tx+34;
+    /* lifeline */
+    ctx.strokeStyle=t>=1.2&&t<1.7?"#f87171":"#9fbfae"; ctx.lineWidth=2.2; ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(wx,wy-6); ctx.stroke();
+    drawWorker(ctx,wx,wy,1.4,t>=1.2&&t<1.7?"#f87171":"#eaf5ee");
+    ctx.fillStyle=t>=1.2&&t<1.7?"#f87171":"#4ade80"; ctx.font="12px system-ui"; ctx.textAlign="left"; ctx.fillText(phase, w*0.5, h*0.5);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+/* Fall clearance calculator */
+function drawClear(cv,st){
+  var g=fitCanvas(cv), ctx=g.ctx, w=g.w, h=g.h;
+  sbg(ctx,w,h);
+  var ff = st.conn==="srl"?2:6, dd=st.conn==="srl"?1:3.5, sf=3;
+  var rfc = ff+dd+st.worker+sf;
+  var pass = st.avail>=rfc;
+  var maxft = Math.max(rfc, st.avail)+2;
+  var top=h*0.12, bot=h*0.9, ppf=(bot-top)/maxft;
+  var xA=w*0.28;
+  /* ground */
+  ctx.strokeStyle="#31513e"; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(w*0.05,bot); ctx.lineTo(w*0.95,bot); ctx.stroke();
+  ctx.fillStyle="#7fb89a"; ctx.font="10px system-ui"; ctx.textAlign="left"; ctx.fillText(X("ground / next level","suelo / nivel inferior"), w*0.05, bot+14);
+  /* working level line */
+  ctx.strokeStyle="#9fbfae"; ctx.setLineDash([4,3]); ctx.beginPath(); ctx.moveTo(w*0.05,top); ctx.lineTo(w*0.95,top); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillText(X("working level / anchor","nivel de trabajo / anclaje"), w*0.05, top-4);
+  /* required clearance bar (red) */
+  var yR=top+rfc*ppf;
+  ctx.fillStyle="rgba(248,113,113,.22)"; ctx.fillRect(xA+30, top, 26, rfc*ppf);
+  ctx.strokeStyle="#f87171"; ctx.beginPath(); ctx.moveTo(xA+30,yR); ctx.lineTo(xA+95,yR); ctx.stroke();
+  ctx.fillStyle="#f87171"; ctx.textAlign="left"; ctx.fillText(X("needed ","necesita ")+rfc.toFixed(1)+" ft", xA+60, top+rfc*ppf/2);
+  /* available line (green/red) */
+  var yAv=top+st.avail*ppf;
+  ctx.strokeStyle=pass?"#4ade80":"#f87171"; ctx.lineWidth=2.5; ctx.setLineDash([6,3]); ctx.beginPath(); ctx.moveTo(w*0.62,top); ctx.lineTo(w*0.62,yAv); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle=pass?"#4ade80":"#f87171"; ctx.fillText(X("available ","disponible ")+st.avail+" ft", w*0.64, yAv-4);
+  /* worker at anchor */
+  drawWorker(ctx,xA,top+10,1.2,"#eaf5ee");
+  ctx.fillStyle="#4ade80"; ctx.beginPath(); ctx.arc(xA,top,3,0,7); ctx.fill();
+  requestAnimationFrame && (window._clearState=st);
+}
+/* RF exposure zones */
+function drawRf(cv,dist){
+  var g=fitCanvas(cv), ctx=g.ctx, w=g.w, h=g.h;
+  sbg(ctx,w,h);
+  var ax=w*0.12, ay=h*0.5, R=w*0.8;
+  var zones=[["#dc2626",0.30,"KEEP OUT"],["#f59e0b",0.58,"CAUTION"],["#22c55e",1.0,"SAFE"]];
+  for(var i=zones.length-1;i>=0;i--){ ctx.fillStyle=zones[i][0]; ctx.globalAlpha=0.18; ctx.beginPath(); ctx.moveTo(ax,ay); ctx.arc(ax,ay,R*zones[i][1],-0.7,0.7); ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
+    ctx.fillStyle=zones[i][0]; ctx.font="10px system-ui"; ctx.textAlign="center"; ctx.fillText(zones[i][2], ax+R*zones[i][1]*(i===0?0.6:0.82), ay-R*0.12); }
+  /* antenna */
+  ctx.fillStyle="#8aa4c8"; ctx.fillRect(ax-4,ay-22,8,44);
+  /* worker at distance */
+  var wx=ax+R*dist; drawWorker(ctx,wx,ay+6,1.2, dist<0.30?"#f87171":dist<0.58?"#fbbf24":"#4ade80");
+  var expo = Math.round(100/Math.max(0.08,dist*dist)); if(expo>999)expo=999;
+  ctx.fillStyle="#e9f5ee"; ctx.font="12px system-ui"; ctx.textAlign="left"; ctx.fillText(X("exposure ","exposición ")+expo+"% MPE", w*0.4, h*0.9);
+  window._rfDist=dist;
+}
+/* ---- shared helpers ---- */
+function sbg(ctx,w,h){ var gd=ctx.createLinearGradient(0,0,0,h); gd.addColorStop(0,"#0c2417"); gd.addColorStop(1,"#071710"); ctx.fillStyle=gd; ctx.fillRect(0,0,w,h); ctx.strokeStyle="rgba(120,180,150,.07)"; ctx.lineWidth=1; for(var x=0;x<w;x+=28){ctx.beginPath();ctx.moveTo(x+.5,0);ctx.lineTo(x+.5,h);ctx.stroke();} for(var y=0;y<h;y+=28){ctx.beginPath();ctx.moveTo(0,y+.5);ctx.lineTo(w,y+.5);ctx.stroke();} }
+function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+/* worker wearing a hi-vis vest; intensity 0..1 = retroreflective flare */
+function drawVestWorker(ctx,x,y,s,intensity,night){
+  ctx.lineCap="round";
+  ctx.strokeStyle=night?"#2a2f38":"#3a3f36"; ctx.lineWidth=s*0.6;
+  ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x-s*0.7,y+s*2.2); ctx.moveTo(x,y); ctx.lineTo(x+s*0.7,y+s*2.2); ctx.stroke();
+  var fluo=night?"#8fbf16":"#c8f21a"; var tw=s*1.8,th=s*2.6,tx=x-tw/2,ty=y-s*3.0;
+  ctx.strokeStyle=fluo; ctx.lineWidth=s*0.55; ctx.beginPath(); ctx.moveTo(tx+s*0.2,ty+s*0.5); ctx.lineTo(tx-s*0.7,ty+s*1.8); ctx.moveTo(tx+tw-s*0.2,ty+s*0.5); ctx.lineTo(tx+tw+s*0.7,ty+s*1.8); ctx.stroke();
+  ctx.fillStyle=night?"#c9b89a":"#d8c3a5"; ctx.beginPath(); ctx.arc(x,y-s*3.7,s*0.8,0,7); ctx.fill();
+  ctx.fillStyle="#f5c518"; ctx.beginPath(); ctx.arc(x,y-s*4.0,s*0.92,Math.PI,0); ctx.fill(); ctx.fillRect(x-s*1.0,y-s*4.05,s*2.0,s*0.2);
+  ctx.fillStyle=fluo; roundRect(ctx,tx,ty,tw,th,s*0.25); ctx.fill();
+  var ga=0.30+0.70*intensity;
+  ctx.save(); ctx.strokeStyle="rgba(238,246,255,"+ga+")"; ctx.shadowColor="rgba(220,240,255,"+ga+")"; ctx.shadowBlur=night?(3+intensity*24):3; ctx.lineWidth=s*0.3;
+  ctx.beginPath(); ctx.moveTo(tx+s*0.15,ty+th*0.34); ctx.lineTo(tx+tw-s*0.15,ty+th*0.34); ctx.moveTo(tx+s*0.15,ty+th*0.68); ctx.lineTo(tx+tw-s*0.15,ty+th*0.68); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x-tw*0.26,ty+s*0.15); ctx.lineTo(x-tw*0.26,ty+th-s*0.15); ctx.moveTo(x+tw*0.26,ty+s*0.15); ctx.lineTo(x+tw*0.26,ty+th-s*0.15); ctx.stroke();
+  ctx.restore();
+}
+/* ---- Hi-vis / headlight retroreflection ---- */
+var _hvNight=true;
+function animHiVis(cv){
+  var g=fitCanvas(cv),ctx=g.ctx,w=g.w,h=g.h,gen=_gen,start=performance.now();
+  function frame(now){ if(gen!==_gen)return; var t=(now-start)/1000;
+    var gd=ctx.createLinearGradient(0,0,0,h);
+    if(_hvNight){ gd.addColorStop(0,"#05070d"); gd.addColorStop(1,"#0b0f16"); } else { gd.addColorStop(0,"#8fb8d6"); gd.addColorStop(1,"#b9c6b2"); }
+    ctx.fillStyle=gd; ctx.fillRect(0,0,w,h);
+    var horizon=h*0.40;
+    ctx.fillStyle=_hvNight?"#14171c":"#4a4f55"; ctx.beginPath(); ctx.moveTo(w*0.34,horizon); ctx.lineTo(w*-0.05,h); ctx.lineTo(w*1.05,h); ctx.lineTo(w*0.5,horizon); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle="rgba(240,220,120,.6)"; ctx.lineWidth=2; ctx.setLineDash([10,12]); ctx.beginPath(); ctx.moveTo(w*0.42,horizon); ctx.lineTo(w*0.55,h); ctx.stroke(); ctx.setLineDash([]);
+    var wx=w*0.26, wy=h*0.86, s=h*0.052;
+    var beam=_hvNight?(0.5+0.5*Math.sin(t*1.6)):0.25;
+    var carX=w*0.74, carY=h*0.52, cs=h*0.0075;
+    if(_hvNight){ ctx.save(); ctx.globalCompositeOperation="lighter";
+      [-1,1].forEach(function(sgn){ var hx=carX+sgn*22*cs, hy=carY+8*cs;
+        var grd=ctx.createRadialGradient(hx,hy,2,wx,wy-s,260); grd.addColorStop(0,"rgba(255,250,220,"+(0.35*beam+0.15)+")"); grd.addColorStop(1,"rgba(255,250,220,0)");
+        ctx.fillStyle=grd; ctx.beginPath(); ctx.moveTo(hx,hy); ctx.lineTo(wx-70,wy+30); ctx.lineTo(wx+70,wy+30); ctx.closePath(); ctx.fill(); });
+      ctx.restore(); }
+    drawVestWorker(ctx,wx,wy,s,beam,_hvNight);
+    /* car (front view, approaching) */
+    ctx.fillStyle=_hvNight?"#1b1f27":"#33507a"; roundRect(ctx,carX-34*cs,carY-14*cs,68*cs,30*cs,7*cs); ctx.fill(); roundRect(ctx,carX-24*cs,carY-26*cs,48*cs,16*cs,6*cs); ctx.fill();
+    ctx.fillStyle=_hvNight?"#0c0f14":"#9fc2e0"; roundRect(ctx,carX-19*cs,carY-23*cs,38*cs,11*cs,3*cs); ctx.fill();
+    ctx.fillStyle="#fffde0"; ctx.shadowColor="#fffde0"; ctx.shadowBlur=_hvNight?14:0; ctx.beginPath(); ctx.arc(carX-22*cs,carY+9*cs,4*cs,0,7); ctx.arc(carX+22*cs,carY+9*cs,4*cs,0,7); ctx.fill(); ctx.shadowBlur=0;
+    ctx.fillStyle=_hvNight?"#e8efff":"#16241a"; ctx.font="bold 12px system-ui"; ctx.textAlign="left";
+    ctx.fillText(_hvNight?X("NIGHT — retroreflective bands bounce headlights back","NOCHE — las bandas retro-reflectivas devuelven la luz"):X("DAY — the fluorescent color stands out","DÍA — el color fluorescente resalta"),10,20);
+    requestAnimationFrame(frame); }
+  requestAnimationFrame(frame);
+}
+/* ---- Work zone (MUTCD Part 6, plan view) ---- */
+function drawCone(ctx,x,y,s){ s=s||1; ctx.fillStyle="#f4720c"; ctx.beginPath(); ctx.moveTo(x,y-9*s); ctx.lineTo(x-6*s,y+4*s); ctx.lineTo(x+6*s,y+4*s); ctx.closePath(); ctx.fill(); ctx.fillStyle="#fff"; ctx.fillRect(x-4*s,y-3*s,8*s,2.4*s); ctx.fillStyle="#3a3a3a"; ctx.fillRect(x-7*s,y+4*s,14*s,2*s); }
+function animZone(cv){
+  var g=fitCanvas(cv),ctx=g.ctx,w=g.w,h=g.h,gen=_gen,start=performance.now();
+  function frame(now){ if(gen!==_gen)return; var t=(now-start)/1000;
+    ctx.fillStyle="#20242a"; ctx.fillRect(0,0,w,h);
+    var top=h*0.16, mid=h*0.5, bot=h*0.84;
+    ctx.strokeStyle="rgba(255,255,255,.5)"; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,top); ctx.lineTo(w,top); ctx.moveTo(0,bot); ctx.lineTo(w,bot); ctx.stroke();
+    ctx.strokeStyle="rgba(240,220,120,.6)"; ctx.setLineDash([16,13]); ctx.beginPath(); ctx.moveTo(0,mid); ctx.lineTo(w,mid); ctx.stroke(); ctx.setLineDash([]);
+    var coneStart=w*0.32, coneEnd=w*0.60;
+    /* work space box (bottom lane, right) */
+    ctx.fillStyle="rgba(245,158,11,.10)"; ctx.fillRect(coneEnd,mid+3,w*0.34,bot-mid-3);
+    ctx.strokeStyle="rgba(245,158,11,.85)"; ctx.setLineDash([5,4]); ctx.strokeRect(coneEnd,mid+3,w*0.34,bot-mid-3); ctx.setLineDash([]);
+    /* taper cones */
+    var nc=7; for(var i=0;i<nc;i++){ var f=i/(nc-1); var cxp=coneStart+(coneEnd-coneStart)*f; var cyp=bot-8-((bot-8)-(mid+8))*f; drawCone(ctx,cxp,cyp,h/150); }
+    /* worker in work space */
+    drawVestWorker(ctx,coneEnd+w*0.14,bot-h*0.06,h*0.028,0.6,false);
+    /* flagger at advance area with STOP paddle */
+    drawVestWorker(ctx,w*0.13,mid+h*0.16,h*0.028,0.6,false);
+    ctx.fillStyle="#dc2626"; ctx.beginPath(); ctx.arc(w*0.17,mid+h*0.06,h*0.04,0,7); ctx.fill(); ctx.strokeStyle="#fff"; ctx.lineWidth=1.5; ctx.stroke(); ctx.fillStyle="#fff"; ctx.font="bold "+(h*0.028)+"px system-ui"; ctx.textAlign="center"; ctx.fillText("STOP",w*0.17,mid+h*0.072);
+    /* advance warning diamond sign */
+    var sx=w*0.06, sy=top-0.0; sy=h*0.30; var ss=h*0.075; ctx.save(); ctx.translate(sx,sy); ctx.rotate(Math.PI/4); ctx.fillStyle="#f59e0b"; ctx.fillRect(-ss/2,-ss/2,ss,ss); ctx.strokeStyle="#111"; ctx.lineWidth=2; ctx.strokeRect(-ss/2,-ss/2,ss,ss); ctx.restore(); ctx.fillStyle="#111"; ctx.font="bold "+(h*0.03)+"px system-ui"; ctx.textAlign="center"; ctx.fillText("!",sx,sy+h*0.012);
+    /* car merging from bottom lane to top lane */
+    var carX=((t*95)%(w+140))-70, carY;
+    if(carX<coneStart)carY=mid+h*0.18; else if(carX<coneEnd){ var ff=(carX-coneStart)/(coneEnd-coneStart); carY=(mid+h*0.18)-((mid+h*0.18)-(top+h*0.16))*ff; } else carY=top+h*0.16;
+    ctx.save(); ctx.fillStyle="#e2e8f0"; roundRect(ctx,carX-16,carY-9,32,18,4); ctx.fill(); ctx.fillStyle="#88a", ctx.fillStyle="#7f95b5"; roundRect(ctx,carX-9,carY-6,12,12,2); ctx.fill(); ctx.fillStyle="#fffde0"; ctx.beginPath(); ctx.arc(carX+14,carY-5,2.2,0,7); ctx.arc(carX+14,carY+5,2.2,0,7); ctx.fill(); ctx.restore();
+    /* area labels */
+    ctx.fillStyle="#cfe0d8"; ctx.font=(h*0.05)+"px system-ui"; ctx.textAlign="center";
+    ctx.fillText(X("Advance warning","Aviso previo"),w*0.14,h*0.95);
+    ctx.fillText(X("Taper","Transición"),(coneStart+coneEnd)/2,h*0.95);
+    ctx.fillText(X("Buffer","Amortiguación"),coneEnd+w*0.02,h*0.95);
+    ctx.fillText(X("Work space","Zona de trabajo"),coneEnd+w*0.18,h*0.95);
+    requestAnimationFrame(frame); }
+  requestAnimationFrame(frame);
+}
+function initCanvases(){
+  document.querySelectorAll("#card canvas.cv").forEach(function(cv){
+    var ty=cv.dataset.cv;
+    if(ty==="fall") animFall(cv);
+    else if(ty==="hivis") animHiVis(cv);
+    else if(ty==="zone") animZone(cv);
+  });
+}
+
+/* ===== Steps ===== */
+var STEPS = [
+  { ico:I.target, t:["Objective & scope","Objetivo y alcance"], b:s_obj },
+  { ico:I.alert,  t:["The hazards","Los riesgos"], b:s_haz },
+  { ico:I.doc,    t:["Before you climb","Antes de subir"], b:s_before },
+  { ico:I.cert,   t:["Required certifications","Certificaciones requeridas"], b:s_cert },
+  { ico:I.helmet, t:["PPE — head to toe","EPP — de pies a cabeza"], b:s_ppe },
+  { ico:I.vest,   t:["Hi-vis apparel (traffic)","Alta visibilidad (tráfico)"], b:s_hivis, i:i_hivis },
+  { ico:I.alert,  t:["Work zone traffic control","Control de tráfico en zona"], b:s_zone },
+  { ico:I.link,   t:["Fall protection: ABCD","Protección: ABCD"], b:s_abcd },
+  { ico:I.link,   t:["100% tie-off","100% amarrado"], b:s_tieoff },
+  { ico:I.helmet, t:["Harness — fit & inspect","Arnés — ajuste e inspección"], b:s_harness },
+  { ico:I.link,   t:["Lanyards, SRLs, connectors","Lanyards, SRL, conectores"], b:s_conn },
+  { ico:I.anchor, t:["Anchorage points","Puntos de anclaje"], b:s_anchor },
+  { ico:I.ruler,  t:["Fall clearance calculator","Calculadora de distancia de caída"], b:s_clear, i:i_clear },
+  { ico:I.search, t:["PPE inspection & retire","Inspección y retiro de EPP"], b:s_inspect },
+  { ico:I.rescue, t:["Rescue plan","Plan de rescate"], b:s_rescue },
+  { ico:I.rf,     t:["RF safety awareness","Seguridad RF"], b:s_rf, i:i_rf },
+  { ico:I.tool,   t:["Dropped objects & tool tie-off","Objetos que caen y amarre de herramientas"], b:s_drop },
+  { ico:I.cloud,  t:["Weather","Clima"], b:s_weather },
+  { ico:I.hoist,  t:["Rigging & hoisting","Rigging e izaje"], b:s_rig },
+  { ico:I.list,   t:["Pre-climb checklist & best practices","Checklist previo y mejores prácticas"], b:s_check, i:i_check },
+  { ico:I.phone,  t:["Emergency response","Respuesta a emergencias"], b:s_emerg },
+  { ico:I.quiz,   t:["Quiz","Evaluación"], b:s_quiz, i:i_quiz },
+  { ico:I.flag,   t:["Wrap-up","Cierre"], b:s_end }
+];
+var cur=0;
+function tit(en,es){ return '<div class="step-ico">'+STEPS[cur].ico+'</div><h1>'+X(en,es)+'</h1>'; }
+
+/* 0 */
+function s_obj(){
+  return tit("Working safely on a tower — objective","Trabajo seguro en torre — objetivo")+
+    '<span class="pill">'+X("Safety · OSHA + Crown Castle","Seguridad · OSHA + Crown Castle")+'</span>'+
+    '<p class="lead">'+X("Tower work is high-risk: falls are the #1 cause of death in the industry. This module covers the OSHA rules, the tower owner (Crown Castle) requirements and best practices to climb and work safely.","El trabajo en torres es de alto riesgo: las caídas son la causa #1 de muerte en la industria. Este módulo cubre las reglas de OSHA, los requisitos del dueño de la torre (Crown Castle) y las mejores prácticas para subir y trabajar con seguridad.")+'</p>'+
+    '<div class="grid3">'+
+      '<div class="box"><h3>'+X("The rule","La regla")+'</h3><p>'+X("100% tie-off, at all times.","100% amarrado, siempre.")+'</p></div>'+
+      '<div class="box"><h3>'+X("Never climb without","Nunca subas sin")+'</h3><p>'+X("certification, a rescue plan and a JHA.","certificación, plan de rescate y JHA.")+'</p></div>'+
+      '<div class="box"><h3>'+X("Standards","Normas")+'</h3><p>OSHA · ANSI Z359/A10.48 · NATE</p></div>'+
+    '</div>'+
+    '<p class="note danger"><b>'+X("Disclaimer","Aviso")+':</b> '+X("this is a training overview, NOT a substitute for certified NATE/OSHA training or Crown Castle EHS procedures. Always follow your employer and the site owner.","es un resumen de capacitación, NO reemplaza el entrenamiento certificado NATE/OSHA ni los procedimientos EHS de Crown Castle. Sigue siempre a tu empleador y al dueño del sitio.")+'</p>';
+}
+/* 1 */
+function s_haz(){
+  var H=[["alert","Falls","Caídas","#1 killer — 100% tie-off always.","Causa #1 — 100% amarrado siempre."],
+    ["rf","RF exposure","Exposición RF","Antennas radiate; know the zones.","Las antenas radian; conoce las zonas."],
+    ["tool","Dropped objects","Objetos que caen","Tools/parts falling on people below.","Herramientas/piezas cayendo sobre otros."],
+    ["hoist","Structural / overload","Estructural / sobrecarga","Don't over-load; check the analysis.","No sobrecargues; revisa el análisis."],
+    ["cloud","Weather","Clima","Lightning, wind, heat, ice.","Rayos, viento, calor, hielo."],
+    ["alert","Electrical","Eléctrico","Power lines, lighting circuits.","Líneas eléctricas, circuitos de balizas."]];
+  return tit("The hazards","Los riesgos")+
+    '<p class="lead">'+X("Know what can hurt you before you climb.","Conoce lo que puede lastimarte antes de subir.")+'</p>'+
+    '<div class="grid2">'+H.map(function(h){return '<div class="box"><h3><span class="ic">'+I[h[0]]+'</span>'+X(h[1],h[2])+'</h3><p>'+X(h[3],h[4])+'</p></div>';}).join("")+'</div>';
+}
+/* 2 */
+function s_before(){
+  return tit("Before you climb","Antes de subir")+
+    '<p class="lead">'+X("No climb starts without paperwork and a plan. Crown Castle and OSHA require it.","Ninguna subida empieza sin documentación y un plan. Crown Castle y OSHA lo exigen.")+'</p>'+
+    '<ul><li><b>'+X("Site access / NTP","Acceso al sitio / NTP")+'</b> — '+X("approved access request, notice to proceed, and any carrier power-down coordination.","solicitud de acceso aprobada, permiso para proceder y coordinación de apagado con operadores.")+'</li>'+
+    '<li><b>JHA / JSA</b> — '+X("Job Hazard Analysis for THIS site and task, reviewed by the crew.","Análisis de Riesgos del Trabajo para ESTE sitio y tarea, revisado por la cuadrilla.")+'</li>'+
+    '<li><b>EAP</b> — '+X("Emergency Action Plan: site address, nearest hospital, comms.","Plan de Acción de Emergencia: dirección del sitio, hospital más cercano, comunicaciones.")+'</li>'+
+    '<li><b>'+X("Rescue plan","Plan de rescate")+'</b> — '+X("a competent rescuer and rescue gear on site BEFORE anyone climbs.","un rescatista competente y equipo de rescate en el sitio ANTES de subir.")+'</li>'+
+    '<li><b>'+X("Structure & weather check","Estructura y clima")+'</b> — '+X("structural OK to climb; weather within limits.","estructura apta; clima dentro de límites.")+'</li></ul>'+
+    '<p class="note warn">'+X("Minimum 2-person crew — never climb alone.","Cuadrilla mínima de 2 personas — nunca subas solo.")+'</p>';
+}
+/* 3 */
+function s_cert(){
+  return tit("Required certifications","Certificaciones requeridas")+
+    '<p class="lead">'+X("Every climber must hold current, recognized certifications (NATE CTS / OSHA / ANSI). Tower owners like Crown Castle verify them before access.","Todo escalador debe tener certificaciones vigentes y reconocidas (NATE CTS / OSHA / ANSI). Dueños como Crown Castle las verifican antes del acceso.")+'</p>'+
+    '<div class="tbl-wrap"><table class="tbl"><tr><th>'+X("Certification","Certificación")+'</th><th>'+X("What it is","Qué es")+'</th></tr>'+
+      '<tr><td><b>'+X("Authorized Climber","Escalador Autorizado")+'</b></td><td>'+X("fall protection + climbing. Entry level.","protección contra caídas + escalada. Nivel de entrada.")+'</td></tr>'+
+      '<tr><td><b>'+X("Competent Climber","Escalador Competente")+'</b></td><td>'+X("after ~90 days experience; can identify/correct hazards.","tras ~90 días de experiencia; identifica/corrige riesgos.")+'</td></tr>'+
+      '<tr><td><b>'+X("Competent Rescuer","Rescatista Competente")+'</b></td><td>'+X("at least 1 on site can perform a tower rescue.","al menos 1 en el sitio puede hacer un rescate en torre.")+'</td></tr>'+
+      '<tr><td><b>First Aid / CPR / AED</b></td><td>'+X("current certification.","certificación vigente.")+'</td></tr>'+
+      '<tr><td><b>RF Awareness</b></td><td>'+X("understand RF hazards and MPE limits.","entender riesgos RF y límites MPE.")+'</td></tr>'+
+    '</table></div>'+
+    '<p class="note">'+X("Certifications typically renew every 2 years. Carry your ID card on site.","Las certificaciones suelen renovarse cada 2 años. Lleva tu credencial en el sitio.")+'</p>';
+}
+/* 4 PPE */
+function ppeCard(key,icon,nameEn,nameEs,descEn,descEs){
+  var src=IMG[key];
+  var fb='<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--accent);opacity:.45">'+icon.replace('width="24" height="24"','width="46" height="46"')+'</div>';
+  var img=src?'<img src="'+src+'" alt="" onerror="this.remove()">':'';
+  return '<div class="box" style="padding:0;overflow:hidden">'+
+    '<div class="illus thumb" style="position:relative;border:0;border-radius:0;border-bottom:1px solid var(--line)">'+fb+img+'</div>'+
+    '<div style="padding:9px 11px"><h3 style="margin:0 0 3px;font-size:13.5px">'+X(nameEn,nameEs)+'</h3><p style="margin:0;font-size:12px;color:var(--sub)">'+X(descEn,descEs)+'</p></div>'+
+  '</div>';
+}
+function s_ppe(){
+  return tit("PPE — head to toe","EPP — de pies a cabeza")+
+    '<p class="lead">'+X("Wear every item, every climb. Inspect before use; replace anything damaged. Full list with photos:","Usa cada elemento, en cada subida. Inspecciona antes de usar; reemplaza lo dañado. Lista completa con fotos:")+'</p>'+
+    '<div class="grid3">'+
+      ppeCard("hardhat",I.helmet,"Climbing helmet","Casco de escalada","ANSI Z89.1 Type I/II with chin strap — not a loose hard hat.","ANSI Z89.1 Tipo I/II con barbiquejo — no un casco suelto.")+
+      ppeCard("glasses",I.eye,"Safety glasses","Gafas de seguridad","ANSI Z87.1 impact-rated; sealed or tinted outdoors.","ANSI Z87.1 contra impacto; selladas u oscuras al exterior.")+
+      ppeCard("hivis",I.vest,"Hi-vis apparel","Ropa de alta visibilidad","ANSI/ISEA 107 Class 2/3 near traffic — see next slide.","ANSI/ISEA 107 Clase 2/3 cerca de tráfico — ver siguiente.")+
+      ppeCard("harness",I.link,"Full body harness","Arnés de cuerpo completo","Fall arrest — the core PPE for climbing.","Detención de caídas — el EPP central para subir.")+
+      ppeCard("gloves",I.glove,"Work gloves","Guantes de trabajo","Grip plus cut protection for cables and steel.","Agarre y protección de corte para cables y acero.")+
+      ppeCard("boots",I.boot,"Safety boots","Botas de seguridad","Slip-resistant, ankle support, defined heel.","Antideslizantes, soporte de tobillo, tacón definido.")+
+      ppeCard("rfmon",I.rf,"RF personal monitor","Monitor RF personal","Alarms as you approach MPE limits.","Alarma al acercarte a los límites MPE.")+
+      ppeCard("srl",I.anchor,"Lanyard / SRL","Lanyard / SRL","Connectors for 100% tie-off while climbing.","Conectores para 100% amarrado al subir.")+
+    '</div>'+
+    '<p class="note warn">'+X("A hard hat without a chin strap will fall off. Use a climbing-rated helmet, and hi-vis whenever traffic or moving equipment is near.","Un casco sin barbiquejo se cae. Usa un casco tipo escalada, y alta visibilidad cuando haya tráfico o equipo en movimiento.")+'</p>';
+}
+/* 5b hi-vis */
+function s_hivis(){
+  return tit("High-visibility apparel (traffic areas)","Ropa de alta visibilidad (zonas de tráfico)")+
+    '<p class="lead">'+X("Working near roads or moving equipment, you MUST wear a hi-vis vest/jacket. Fluorescent color makes you visible by day; retroreflective bands bounce headlights straight back to drivers at night.","Al trabajar cerca de vías o equipo en movimiento DEBES usar chaleco/jacket de alta visibilidad. El color fluorescente te hace visible de día; las bandas retro-reflectivas devuelven la luz de los faros al conductor de noche.")+'</p>'+
+    imgSlot("hivis", '<svg viewBox="0 0 160 100"><rect x="54" y="22" width="52" height="62" rx="7" fill="#c8f21a"/><path d="M54 22 L80 40 L106 22" fill="none" stroke="#5a7a10" stroke-width="2"/><rect x="54" y="44" width="52" height="7" fill="#eaf2ff"/><rect x="54" y="63" width="52" height="7" fill="#eaf2ff"/><rect x="65" y="22" width="6" height="62" fill="#eaf2ff"/><rect x="89" y="22" width="6" height="62" fill="#eaf2ff"/><text x="80" y="96" fill="#7fb89a" font-size="8.5" text-anchor="middle">Hi-vis vest (Class 3)</text></svg>', "ANSI/ISEA 107 Class 3 hi-vis jacket.","Jacket de alta visibilidad ANSI/ISEA 107 Clase 3.","thumb")+
+    screen("hivis","Toggle day/night — the reflective bands flare when headlights hit them.","Cambia día/noche — las bandas reflectivas brillan cuando los faros las alcanzan.")+
+    '<div class="row" style="justify-content:center;gap:8px"><button class="btn ghost on" id="bNight">'+X("Night","Noche")+'</button><button class="btn ghost" id="bDay">'+X("Day","Día")+'</button></div>'+
+    '<div class="grid2">'+
+      '<div class="box"><h3>'+X("Class 2","Clase 2")+'</h3><p>'+X("Minimum for roadway workers where traffic is under ~50 mph or attention is divided.","Mínimo para trabajadores viales con tráfico bajo ~50 mph o atención dividida.")+'</p></div>'+
+      '<div class="box"><h3>'+X("Class 3","Clase 3")+'</h3><p>'+X("High speed, night work or poor weather — more material and sleeves, maximum visibility.","Alta velocidad, trabajo nocturno o mal clima — más material y mangas, máxima visibilidad.")+'</p></div>'+
+    '</div>'+
+    '<ul><li>'+X("Meet ANSI/ISEA 107-2020, Type R (roadway). Flaggers must wear Class 2 or 3.","Cumple ANSI/ISEA 107-2020, Tipo R (vía). Los flaggers usan Clase 2 o 3.")+'</li>'+
+    '<li>'+X("Keep it clean and un-faded — dirt and UV wear kill reflectivity. Retire worn garments.","Mantenla limpia y sin decolorar — la suciedad y el UV matan la reflectividad. Retira las gastadas.")+'</li>'+
+    '<li>'+X("Close it fully; do not cover the reflective bands with tools or another jacket.","Ciérrala bien; no tapes las bandas reflectivas con herramientas u otro abrigo.")+'</li></ul>'+
+    '<p class="note danger">'+X("Most struck-by deaths in work zones involve low visibility. At night only Class 3 with clean retroreflective tape gives enough distance to be seen and avoided.","La mayoría de las muertes por atropello en zonas de trabajo implican baja visibilidad. De noche, solo la Clase 3 con cinta retro-reflectiva limpia da distancia suficiente para ser visto y evitado.")+'</p>';
+}
+function i_hivis(){ _hvNight=true; if($("bNight"))$("bNight").onclick=function(){ _hvNight=true; this.classList.add("on"); $("bDay").classList.remove("on"); }; if($("bDay"))$("bDay").onclick=function(){ _hvNight=false; this.classList.add("on"); $("bNight").classList.remove("on"); }; }
+/* 5c work zone */
+function s_zone(){
+  return tit("Work zone traffic control","Control de tráfico en zona de trabajo")+
+    '<p class="lead">'+X("When the job touches a road or right-of-way, set up a temporary traffic control (TTC) zone per the MUTCD (Part 6). It guides traffic safely around the crew.","Cuando el trabajo toca una vía o derecho de paso, monta una zona de control temporal (TTC) según el MUTCD (Parte 6). Guía el tráfico con seguridad alrededor de la cuadrilla.")+'</p>'+
+    screen("zone","Advance warning → taper → buffer → work space, with a flagger controlling traffic.","Aviso previo → transición → amortiguación → zona de trabajo, con un flagger controlando el tráfico.")+
+    '<div class="tbl-wrap"><table class="tbl"><tr><th>'+X("Area","Área")+'</th><th>'+X("Purpose","Propósito")+'</th></tr>'+
+    '<tr><td><b>'+X("Advance warning","Aviso previo")+'</b></td><td>'+X("signs tell drivers what is ahead.","señales avisan lo que viene.")+'</td></tr>'+
+    '<tr><td><b>'+X("Transition (taper)","Transición (taper)")+'</b></td><td>'+X("cones move traffic out of the closed lane.","los conos desvían el tráfico del carril cerrado.")+'</td></tr>'+
+    '<tr><td><b>'+X("Buffer space","Amortiguación")+'</b></td><td>'+X("empty safety gap — no workers, no equipment.","espacio vacío de seguridad — sin trabajadores ni equipo.")+'</td></tr>'+
+    '<tr><td><b>'+X("Work space","Zona de trabajo")+'</b></td><td>'+X("where the crew works, closed to traffic.","donde trabaja la cuadrilla, cerrada al tráfico.")+'</td></tr>'+
+    '<tr><td><b>'+X("Termination","Terminación")+'</b></td><td>'+X("traffic returns to normal.","el tráfico vuelve a la normalidad.")+'</td></tr></table></div>'+
+    '<ul><li>'+X("Everyone in the zone wears ANSI/ISEA 107 Class 2/3 hi-vis.","Todos en la zona usan alta visibilidad Clase 2/3.")+'</li>'+
+    '<li>'+X("Flaggers: trained, STOP/SLOW paddle (≥18 in), positioned with an escape path.","Flaggers: entrenados, paleta STOP/SLOW (≥18 in), ubicados con ruta de escape.")+'</li>'+
+    '<li>'+X("Cones, signs and lights per the plan; longer taper for higher speed.","Conos, señales y luces según el plan; taper más largo a mayor velocidad.")+'</li></ul>'+
+    '<p class="note warn">'+X("Never turn your back to live traffic; keep the buffer clear and always have an escape route.","Nunca des la espalda al tráfico vivo; mantén la amortiguación libre y ten siempre ruta de escape.")+'</p>';
+}
+/* 5 ABCD */
+function s_abcd(){
+  return tit("Fall protection: the ABCD","Protección contra caídas: el ABCD")+
+    '<p class="lead">'+X("A Personal Fall Arrest System (PFAS) has four parts. Miss one and it fails.","Un Sistema Personal de Detención de Caídas (PFAS) tiene cuatro partes. Falta una y falla.")+'</p>'+
+    '<div class="abcd">'+
+      '<div class="ab"><div class="l">A</div><b>'+X("Anchorage","Anclaje")+'</b><p>'+X("5,000 lbf per person or engineered.","5,000 lbf por persona o de ingeniería.")+'</p></div>'+
+      '<div class="ab"><div class="l">B</div><b>'+X("Body harness","Arnés")+'</b><p>'+X("full body, correct fit.","de cuerpo completo, bien ajustado.")+'</p></div>'+
+      '<div class="ab"><div class="l">C</div><b>'+X("Connectors","Conectores")+'</b><p>'+X("lanyard/SRL, carabiners.","lanyard/SRL, mosquetones.")+'</p></div>'+
+      '<div class="ab"><div class="l">D</div><b>'+X("Deceleration / Descent","Desaceleración / Descenso")+'</b><p>'+X("shock pack + rescue descent.","amortiguador + descenso de rescate.")+'</p></div>'+
+    '</div>'+
+    '<p class="note good"><b>'+X("Add E:","Suma E:")+'</b> '+X("Education — trained, certified and fit to climb.","Educación — entrenado, certificado y apto para subir.")+'</p>';
+}
+/* 6 tie-off */
+function s_tieoff(){
+  return tit("100% tie-off","100% amarrado")+
+    '<p class="lead">'+X("You must be attached to the structure at all times — including during transitions. Use a twin (Y) lanyard or an SRL so one connection is always closed while you move the other.","Debes estar amarrado a la estructura en todo momento — incluso en transiciones. Usa un lanyard doble (Y) o un SRL para que una conexión esté siempre cerrada mientras mueves la otra.")+'</p>'+
+    screen("fall","Climbing tied off; on a slip the SRL arrests the fall in a short distance.","Subiendo amarrado; ante un resbalón el SRL detiene la caída en poca distancia.")+
+    '<p class="note danger">'+X("The moment you unclip both connections you have zero fall protection. Never do it.","En el momento que sueltas ambas conexiones tienes cero protección. Nunca lo hagas.")+'</p>';
+}
+/* 7 harness */
+function s_harness(){
+  return tit("Harness — fit & inspect","Arnés — ajuste e inspección")+
+    imgSlot("harness", G.harness, "Full body harness with dorsal D-ring.","Arnés de cuerpo completo con anilla dorsal.","thumb")+
+    '<h2>'+X("Fit","Ajuste")+'</h2><ul><li>'+X("Dorsal D-ring between the shoulder blades.","Anilla dorsal entre los omóplatos.")+'</li><li>'+X("Chest strap at mid-chest; leg straps snug (a flat hand fits).","Correa de pecho al centro; piernas ajustadas (cabe una mano plana).")+'</li><li>'+X("No twisted webbing; buckles fully engaged.","Sin cintas torcidas; hebillas totalmente puestas.")+'</li></ul>'+
+    '<h2>'+X("Pre-use inspection","Inspección previa")+'</h2><ul><li>'+X("Webbing: no cuts, frays, burns, chemical damage.","Cintas: sin cortes, deshilachados, quemaduras, daño químico.")+'</li><li>'+X("Stitching, D-rings, buckles intact; labels legible.","Costuras, anillas, hebillas intactas; etiquetas legibles.")+'</li></ul>'+
+    '<p class="note danger">'+X("If it deployed in a fall or shows any damage — remove from service and destroy it.","Si actuó en una caída o muestra daño — retíralo de servicio y destrúyelo.")+'</p>';
+}
+/* 8 connectors */
+function s_conn(){
+  return tit("Lanyards, SRLs & connectors","Lanyards, SRL y conectores")+
+    imgSlot("srl", G.srl, "Self-retracting lifeline (SRL) and shock-absorbing lanyard.","Línea de vida autorretráctil (SRL) y lanyard amortiguador.","thumb")+
+    '<div class="grid2">'+
+      '<div class="box"><h3>'+X("Twin (Y) lanyard","Lanyard doble (Y)")+'</h3><p>'+X("Two legs for 100% tie-off during transitions. Shock-absorbing.","Dos ramas para 100% amarrado en transiciones. Amortiguador.")+'</p></div>'+
+      '<div class="box"><h3>SRL</h3><p>'+X("Locks fast; much shorter fall than a 6-ft lanyard. Prefer overhead anchoring.","Bloquea rápido; caída mucho menor que un lanyard de 6 ft. Ancla arriba si puedes.")+'</p></div>'+
+      '<div class="box"><h3>'+X("Cable / rope grab","Freno de cable/cuerda")+'</h3><p>'+X("Rides the safety-climb system on fixed ladders.","Corre por el sistema de escalada de escaleras fijas.")+'</p></div>'+
+      '<div class="box"><h3>'+X("Carabiners / hooks","Mosquetones / ganchos")+'</h3><p>'+X("Self-closing, self-locking; never side-load.","Autocierre, autobloqueo; nunca carga lateral.")+'</p></div>'+
+    '</div>'+
+    '<p class="note warn">'+X("Match connectors to avoid roll-out; keep gates loaded correctly.","Empareja conectores para evitar apertura; carga las compuertas correctamente.")+'</p>';
+}
+/* 9 anchor */
+function s_anchor(){
+  return tit("Anchorage points","Puntos de anclaje")+
+    imgSlot("anchor", G.anchor, "Anchor on a main structural member.","Anclaje en un miembro estructural principal.","thumb")+
+    '<ul><li>'+X("Rated 5,000 lbf per attached worker, OR engineered with a 2:1 safety factor.","Resistencia de 5,000 lbf por trabajador, O de ingeniería con factor 2:1.")+'</li>'+
+    '<li>'+X("Attach to main structural members — never to ladders, rungs, small hardware or waveguide.","Ancla a miembros estructurales principales — nunca a escaleras, peldaños, herrajes pequeños ni guía de onda.")+'</li>'+
+    '<li>'+X("Prefer anchors at or above the D-ring to reduce free fall.","Prefiere anclajes a la altura o por encima de la anilla dorsal para reducir la caída libre.")+'</li>'+
+    '<li>'+X("Consider swing (pendulum) falls — stay roughly below the anchor.","Considera caídas en péndulo — mantente casi debajo del anclaje.")+'</li></ul>'+
+    '<p class="note">'+X("When in doubt about a point's strength, treat it as NOT rated and find another.","Ante duda sobre la resistencia de un punto, trátalo como NO apto y busca otro.")+'</p>';
+}
+/* 10 clearance */
+function s_clear(){
+  return tit("Fall clearance calculator","Calculadora de distancia de caída")+
+    '<p class="lead">'+X("You need enough clear space below you so a fall is arrested BEFORE you hit the next level. Compare the required clearance to what is available.","Necesitas espacio libre suficiente abajo para que la caída se detenga ANTES de golpear el nivel inferior. Compara la distancia requerida con la disponible.")+'</p>'+
+    screen("clear","","")+
+    '<div class="row"><span style="min-width:120px;font-size:13px;color:var(--sub)">'+X("Connector","Conector")+'</span><button class="btn ghost on" id="bSrl">SRL</button><button class="btn ghost" id="bLan">'+X("6-ft lanyard","Lanyard 6 ft")+'</button></div>'+
+    '<div class="row"><span style="min-width:120px;font-size:13px;color:var(--sub)">'+X("Worker height","Altura trabajador")+'</span><input type="range" id="wk" min="4.5" max="6.5" step="0.1" value="5"><span class="val" id="wkv"></span></div>'+
+    '<div class="row"><span style="min-width:120px;font-size:13px;color:var(--sub)">'+X("Available clearance","Espacio disponible")+'</span><input type="range" id="av" min="6" max="30" step="1" value="16"><span class="val" id="avv"></span></div>'+
+    '<div class="readout"><div class="stat"><b id="rfc"></b><span>'+X("required clearance","distancia requerida")+'</span></div><div class="stat"><b id="verd"></b><span>'+X("Verdict","Veredicto")+'</span></div></div>'+
+    '<p class="note good"><b>'+X("Rule:","Regla:")+'</b> '+X("required = free fall + deceleration + your height + a safety margin. An SRL needs far less clearance than a 6-ft lanyard.","requerida = caída libre + desaceleración + tu altura + margen. Un SRL necesita mucho menos espacio que un lanyard de 6 ft.")+'</p>';
+}
+function i_clear(){
+  var st={conn:"srl",worker:5,avail:16};
+  var cv=document.querySelector('#card .illus canvas');
+  function upd(){ st.worker=+$("wk").value; st.avail=+$("av").value;
+    var ff=st.conn==="srl"?2:6, dd=st.conn==="srl"?1:3.5, rfc=ff+dd+st.worker+3, pass=st.avail>=rfc;
+    $("wkv").textContent=st.worker.toFixed(1)+" ft"; $("avv").textContent=st.avail+" ft"; $("rfc").textContent=rfc.toFixed(1)+" ft";
+    $("verd").innerHTML=pass?'<span class="verdict ok">✓ '+X("SAFE","SEGURO")+'</span>':'<span class="verdict bad">✕ '+X("NOT ENOUGH","INSUFICIENTE")+'</span>';
+    if(cv) drawClear(cv,st); }
+  $("bSrl").onclick=function(){ st.conn="srl"; this.classList.add("on"); $("bLan").classList.remove("on"); upd(); };
+  $("bLan").onclick=function(){ st.conn="lanyard"; this.classList.add("on"); $("bSrl").classList.remove("on"); upd(); };
+  $("wk").oninput=upd; $("av").oninput=upd; if(cv){upd();} else upd();
+}
+/* 11 inspect */
+function s_inspect(){
+  return tit("PPE inspection & retire","Inspección y retiro de EPP")+
+    '<p class="lead">'+X("Inspect every piece before each use, and document formal inspections. Anything doubtful comes out of service.","Inspecciona cada pieza antes de cada uso y documenta inspecciones formales. Todo lo dudoso sale de servicio.")+'</p>'+
+    '<ul><li>'+X("Harness/lanyard webbing: cuts, fraying, burns, UV fading, chemical stains.","Cintas de arnés/lanyard: cortes, deshilachado, quemaduras, decoloración UV, manchas químicas.")+'</li>'+
+    '<li>'+X("Hardware: cracks, corrosion, deformation, sharp edges; gates snap shut.","Herrajes: grietas, corrosión, deformación, filos; compuertas cierran solas.")+'</li>'+
+    '<li>'+X("SRL: lifeline pulls and retracts smoothly; locks when jerked; load indicator not tripped.","SRL: la línea sale y retrae suave; bloquea al jalón; indicador de carga sin activar.")+'</li>'+
+    '<li>'+X("Labels and dates legible; within the manufacturer service life.","Etiquetas y fechas legibles; dentro de la vida útil del fabricante.")+'</li></ul>'+
+    '<p class="note danger"><b>'+X("After ANY fall:","Tras CUALQUIER caída:")+'</b> '+X("remove the harness, lanyard/SRL and connectors from service. No exceptions.","retira arnés, lanyard/SRL y conectores de servicio. Sin excepciones.")+'</p>';
+}
+/* 12 rescue */
+function s_rescue(){
+  return tit("Rescue plan","Plan de rescate")+
+    '<p class="lead">'+X("OSHA requires a rescue capability ON SITE before work starts. A suspended, injured worker cannot wait for 911 — suspension trauma can become dangerous within minutes.","OSHA exige capacidad de rescate EN EL SITIO antes de empezar. Un trabajador suspendido y lesionado no puede esperar al 911 — el trauma por suspensión puede volverse peligroso en minutos.")+'</p>'+
+    imgSlot("rescue", G.rescue, "Tower rescue kit (controlled descent).","Kit de rescate en torre (descenso controlado).","thumb")+
+    '<ul><li>'+X("A competent rescuer and rescue kit on site before anyone climbs.","Un rescatista competente y kit de rescate en el sitio antes de subir.")+'</li>'+
+    '<li>'+X("Plan a prompt rescue — do not rely solely on emergency services.","Planea un rescate rápido — no dependas solo de los servicios de emergencia.")+'</li>'+
+    '<li>'+X("Suspension trauma straps let a suspended worker relieve leg pressure.","Correas anti-trauma permiten al suspendido aliviar la presión en piernas.")+'</li>'+
+    '<li>'+X("Practice the rescue for the specific tower type.","Practica el rescate para el tipo de torre específico.")+'</li></ul>'+
+    '<p class="note danger">'+X("No rescue plan = no climb. Full stop.","Sin plan de rescate = no se sube. Punto.")+'</p>';
+}
+/* 13 RF */
+function s_rf(){
+  return tit("RF safety awareness","Seguridad RF")+
+    '<p class="lead">'+X("Antennas transmit RF energy. Above the Maximum Permissible Exposure (MPE) it can heat body tissue. Exposure rises fast as you get close. Move the worker:","Las antenas transmiten energía RF. Por encima de la Exposición Máxima Permitida (MPE) puede calentar el tejido. La exposición sube rápido al acercarse. Mueve al trabajador:")+'</p>'+
+    screen("rf","","")+
+    '<div class="row"><span style="min-width:120px;font-size:13px;color:var(--sub)">'+X("Distance from antenna","Distancia a la antena")+'</span><input type="range" id="rd" min="5" max="100" value="70"><span class="val" id="rdv"></span></div>'+
+    '<ul><li>'+X("Sign in with the carriers; request power-down / LOTO where needed.","Regístrate con los operadores; solicita apagado / LOTO donde haga falta.")+'</li>'+
+    '<li>'+X("Wear a personal RF monitor that alarms near the limit.","Usa un monitor RF personal que alarme cerca del límite.")+'</li>'+
+    '<li>'+X("Obey posted signs; keep distance and minimize time in front of antennas.","Obedece la señalización; guarda distancia y minimiza el tiempo frente a antenas.")+'</li></ul>';
+}
+function i_rf(){ var rd=$("rd"), cv=document.querySelector('#card .illus canvas');
+  function upd(){ var d=+rd.value; $("rdv").textContent=d+"%"; if(cv) drawRf(cv, d/100); }
+  rd.oninput=upd; if(cv){upd();} else upd();
+}
+/* 14 dropped */
+function s_drop(){
+  return tit("Dropped objects & tool tie-off","Objetos que caen y amarre de herramientas")+
+    '<p class="lead">'+X("A small tool from height can kill someone below. Everything that goes up must be secured.","Una herramienta pequeña desde altura puede matar a alguien abajo. Todo lo que sube debe ir asegurado.")+'</p>'+
+    '<ul><li>'+X("100% tool tie-off — tethers and tool bags rated for the load (ANSI/ISEA 121).","100% amarre de herramientas — cintas y bolsas con capacidad (ANSI/ISEA 121).")+'</li>'+
+    '<li>'+X("Establish a drop zone / exclusion zone; no one underneath the work.","Establece zona de caída / exclusión; nadie debajo del trabajo.")+'</li>'+
+    '<li>'+X("Hard hats (chin strap) for everyone on site; barricades and signage.","Cascos (con barbiquejo) para todos; barricadas y señalización.")+'</li>'+
+    '<li>'+X("Raise/lower tools with a hand line or hoist, never toss or free-drop.","Sube/baja herramientas con cuerda o izaje, nunca las lances ni las sueltes.")+'</li></ul>'+
+    '<p class="note warn">'+X("Empty your pockets of loose items before climbing.","Vacía tus bolsillos de objetos sueltos antes de subir.")+'</p>';
+}
+/* 15 weather */
+function s_weather(){
+  return tit("Weather","Clima")+
+    '<div class="grid2">'+
+      '<div class="box"><h3>'+X("Lightning","Rayos")+'</h3><p>'+X("30/30 rule: get down if thunder is within 30 s of lightning; wait 30 min after the last strike.","Regla 30/30: baja si el trueno llega en 30 s del rayo; espera 30 min tras el último.")+'</p></div>'+
+      '<div class="box"><h3>'+X("Wind","Viento")+'</h3><p>'+X("Stop climbing at your employer wind limit (often ~30–40 mph). Wind rises with height.","Deja de subir al límite de tu empresa (a menudo ~30–40 mph). El viento sube con la altura.")+'</p></div>'+
+      '<div class="box"><h3>'+X("Heat / cold","Calor / frío")+'</h3><p>'+X("Hydrate; watch heat illness. Cold reduces grip and dexterity.","Hidrátate; cuida el golpe de calor. El frío reduce agarre y destreza.")+'</p></div>'+
+      '<div class="box"><h3>'+X("Ice / visibility","Hielo / visibilidad")+'</h3><p>'+X("No climbing on iced steel or in poor visibility.","No subas en acero con hielo ni con mala visibilidad.")+'</p></div>'+
+    '</div>'+
+    '<p class="note warn">'+X("When in doubt, come down. No job is worth a life.","Ante duda, baja. Ningún trabajo vale una vida.")+'</p>';
+}
+/* 16 rigging */
+function s_rig(){
+  return tit("Rigging & hoisting","Rigging e izaje")+
+    '<p class="lead">'+X("Lifting materials on a tower is engineered work, governed by ANSI/ASSP A10.48 and TIA-322. Use rated gear and a plan.","Izar materiales en torre es trabajo de ingeniería, regido por ANSI/ASSP A10.48 y TIA-322. Usa equipo con capacidad y un plan.")+'</p>'+
+    '<ul><li>'+X("Rated rigging (slings, blocks, gin pole, capstan) inspected before use.","Rigging con capacidad (eslingas, poleas, gin pole, cabrestante) inspeccionado.")+'</li>'+
+    '<li>'+X("Never exceed the rigging plan / load chart; know the structure limits.","Nunca excedas el plan de izaje / tabla de cargas; conoce los límites de la estructura.")+'</li>'+
+    '<li>'+X("Tag lines to control the load; keep out of the fall/drop zone.","Vientos (tag lines) para controlar la carga; fuera de la zona de caída.")+'</li>'+
+    '<li>'+X("A qualified rigger/engineer signs off complex lifts.","Un rigger/ingeniero calificado aprueba izajes complejos.")+'</li></ul>'+
+    '<p class="note">'+X("Structural analysis first: a tower can be overloaded by rigging or new appurtenances.","Análisis estructural primero: una torre puede sobrecargarse por el izaje o nuevos apéndices.")+'</p>';
+}
+/* 17 checklist */
+var CHK=[
+  {en:"Certifications current; ID cards on site.",es:"Certificaciones vigentes; credenciales en el sitio."},
+  {en:"JHA, EAP and rescue plan reviewed by the crew.",es:"JHA, EAP y plan de rescate revisados por la cuadrilla."},
+  {en:"Competent rescuer + rescue kit on site.",es:"Rescatista competente + kit de rescate en el sitio."},
+  {en:"Weather within limits; structure OK to climb.",es:"Clima dentro de límites; estructura apta."},
+  {en:"RF: signed in, power-down/LOTO coordinated, monitor on.",es:"RF: registrado, apagado/LOTO coordinado, monitor encendido."},
+  {en:"PPE complete and inspected (harness, connectors, helmet…).",es:"EPP completo e inspeccionado (arnés, conectores, casco…)."},
+  {en:"Tools tethered; drop zone set below.",es:"Herramientas amarradas; zona de caída abajo."},
+  {en:"2-person crew minimum; comms working.",es:"Cuadrilla mínima de 2; comunicaciones funcionando."}
+];
+function s_check(){
+  var items=CHK.map(function(c,i){return '<div class="chk" data-i="'+i+'"><span class="bx">✓</span><span class="txt"><b>'+X(c.en,c.es)+'</b></span></div>';}).join("");
+  return tit("Pre-climb checklist & best practices","Checklist previo y mejores prácticas")+
+    '<p class="lead">'+X("Run this every time. Tap each item.","Hazlo siempre. Toca cada punto.")+'</p>'+items+'<p class="note" id="chkMsg"></p>';
+}
+function i_check(){ var total=CHK.length; function upd(){ var d=document.querySelectorAll(".chk.done").length; $("chkMsg").textContent=d<total?(X("Checked: ","Verificados: ")+d+"/"+total):X("All clear — safe to climb.","Todo listo — seguro para subir."); } document.querySelectorAll(".chk").forEach(function(c){ c.onclick=function(){ c.classList.toggle("done"); upd(); }; }); upd(); }
+/* 18 emergency */
+function s_emerg(){
+  return tit("Emergency response","Respuesta a emergencias")+
+    '<p class="lead">'+X("If something goes wrong, seconds count. Everyone must know the plan before the climb.","Si algo sale mal, los segundos cuentan. Todos deben conocer el plan antes de subir.")+'</p>'+
+    '<ul><li>'+X("Know the exact site address and gate/lat-long for responders.","Conoce la dirección exacta y coordenadas del sitio para los rescatistas.")+'</li>'+
+    '<li>'+X("Nearest hospital and route identified before climbing.","Hospital más cercano y ruta identificados antes de subir.")+'</li>'+
+    '<li>'+X("First aid kit + AED on site; charged radios/phones.","Botiquín + DEA en el sitio; radios/teléfonos cargados.")+'</li>'+
+    '<li>'+X("Ground person initiates rescue and calls 911 in parallel.","La persona en tierra inicia el rescate y llama al 911 en paralelo.")+'</li>'+
+    '<li>'+X("Account for everyone; establish a muster point.","Verifica a todos; establece un punto de reunión.")+'</li></ul>'+
+    '<p class="note good"><b>'+X("Best practice:","Mejor práctica:")+'</b> '+X("brief the EAP out loud during the pre-job meeting, every day.","repasa el EAP en voz alta en la reunión previa, cada día.")+'</p>';
+}
+/* 19 quiz */
+var QUIZ=[
+  {en:"What is the #1 cause of death in tower work?",es:"¿Causa #1 de muerte en trabajo en torres?",o_en:["Heat","Falls","RF","Noise"],o_es:["Calor","Caídas","RF","Ruido"],a:1},
+  {en:"Anchor points must support at least…",es:"Los anclajes deben resistir al menos…",o_en:["500 lbf","5,000 lbf per worker","50 lbf","No requirement"],o_es:["500 lbf","5,000 lbf por trabajador","50 lbf","Sin requisito"],a:1},
+  {en:"Before anyone climbs, the site must have…",es:"Antes de que alguien suba, el sitio debe tener…",o_en:["Only a phone","A rescue plan + competent rescuer","Nothing","Just a harness"],o_es:["Solo un teléfono","Plan de rescate + rescatista competente","Nada","Solo un arnés"],a:1},
+  {en:"After a harness arrests a fall, you should…",es:"Tras detener una caída, el arnés debe…",o_en:["Keep using it","Remove it from service","Wash it","Lend it"],o_es:["Seguir usándolo","Retirarlo de servicio","Lavarlo","Prestarlo"],a:1},
+  {en:"The lightning rule is…",es:"La regla de rayos es…",o_en:["10/10","30/30","5/5","60/60"],o_es:["10/10","30/30","5/5","60/60"],a:1},
+  {en:"Which needs LESS fall clearance?",es:"¿Qué necesita MENOS distancia de caída?",o_en:["6-ft lanyard","SRL","No difference","A rope"],o_es:["Lanyard de 6 ft","SRL","Sin diferencia","Una cuerda"],a:1},
+  {en:"RF exposure as you approach an antenna…",es:"La exposición RF al acercarte a una antena…",o_en:["Drops","Rises quickly","Stays flat","Disappears"],o_es:["Baja","Sube rápido","Se mantiene","Desaparece"],a:1}
+];
+function s_quiz(){
+  var qs=QUIZ.map(function(q,i){var opts=(LANG==="es"?q.o_es:q.o_en).map(function(o,j){return '<button class="opt" data-q="'+i+'" data-o="'+j+'">'+o+'</button>';}).join("");return '<div class="q"><h3>'+(i+1)+'. '+X(q.en,q.es)+'</h3>'+opts+'</div>';}).join("");
+  return tit("Quiz","Evaluación")+'<p class="lead">'+X("7 safety questions.","7 preguntas de seguridad.")+'</p>'+qs+'<div class="score" id="score"></div>';
+}
+function i_quiz(){ var answered={}, correct=0; document.querySelectorAll(".opt").forEach(function(b){ b.onclick=function(){ var qi=+b.dataset.q; if(answered[qi])return; answered[qi]=1; var a=QUIZ[qi].a; document.querySelectorAll('.opt[data-q="'+qi+'"]').forEach(function(x){ x.disabled=true; if(+x.dataset.o===a)x.classList.add("correct"); }); if(+b.dataset.o===a)correct++; else b.classList.add("wrong"); if(Object.keys(answered).length===QUIZ.length){ $("score").textContent=X("Score: ","Puntaje: ")+correct+"/"+QUIZ.length+(correct>=6?X(" · Passed"," · Aprobado"):X(" · Review"," · Repasa")); } }; }); }
+/* 20 end */
+function s_end(){
+  return tit("Wrap-up","Cierre")+
+    '<ul><li>'+X("100% tie-off at all times — falls are the #1 killer.","100% amarrado siempre — las caídas son la causa #1.")+'</li>'+
+    '<li>'+X("Certifications, JHA, EAP and a rescue plan BEFORE climbing.","Certificaciones, JHA, EAP y plan de rescate ANTES de subir.")+'</li>'+
+    '<li>'+X("Complete PPE, inspected; anchors 5,000 lbf; check fall clearance.","EPP completo e inspeccionado; anclajes 5,000 lbf; verifica distancia de caída.")+'</li>'+
+    '<li>'+X("RF: sign in, power-down/LOTO, monitor, distance.","RF: regístrate, apagado/LOTO, monitor, distancia.")+'</li>'+
+    '<li>'+X("Tie off tools, mind the weather, plan the rescue.","Amarra herramientas, cuida el clima, planea el rescate.")+'</li></ul>'+
+    '<p class="note danger"><b>'+X("Remember","Recuerda")+':</b> '+X("this is an overview — complete certified NATE/OSHA training and follow Crown Castle EHS procedures.","es un resumen — completa el entrenamiento certificado NATE/OSHA y sigue los procedimientos EHS de Crown Castle.")+'</p>'+
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px"><span class="verdict ok">✓ '+X("Training completed","Entrenamiento completado")+'</span><a class="btn ghost" href="../index.html" target="_top">'+X("Back to portal","Volver al portal")+'</a></div>';
+}
+
+/* ===== Engine ===== */
+function pintarChrome(){
+  document.documentElement.lang=LANG;
+  $("brand").textContent=X("Tower Safety","Seguridad en Torres");
+  $("brandsub").textContent=X("Safety · OSHA + Crown Castle","Seguridad · OSHA + Crown Castle");
+  $("homeTxt").textContent=X("Home","Inicio");
+  document.querySelectorAll("#lang button").forEach(function(b){ b.classList.toggle("on", b.dataset.l===LANG); });
+  var dark=document.documentElement.getAttribute("data-theme")==="dark";
+  $("temaIco").innerHTML=dark?I.sun:I.moon; $("temaTxt").textContent=dark?X("Light","Claro"):X("Dark","Oscuro");
+  $("prev").innerHTML="‹ "+X("Back","Anterior");
+  $("next").innerHTML=(cur>=STEPS.length-1?X("Restart","Reiniciar"):X("Next","Siguiente")+" ›");
+}
+function render(){
+  stopAnim();
+  pintarChrome();
+  var s=STEPS[cur];
+  $("card").innerHTML=s.b();
+  if(s.i) s.i();
+  initCanvases();
+  $("progbar").style.width=((cur+1)/STEPS.length*100)+"%";
+  $("mStep").textContent=X("Step ","Paso ")+(cur+1)+" / "+STEPS.length+" · "+X(s.t[0],s.t[1]);
+  $("mDur").textContent="≈ 9 min";
+  $("prev").disabled=(cur===0);
+  $("dots").innerHTML=STEPS.map(function(_,i){return '<button class="dot'+(i===cur?' on':'')+'" data-i="'+i+'" aria-label="'+(i+1)+'"></button>';}).join("");
+  document.querySelectorAll(".dot").forEach(function(d){ d.onclick=function(){ cur=+d.dataset.i; render(); }; });
+  window.scrollTo(0,0);
+}
+$("prev").onclick=function(){ if(cur>0){cur--;render();} };
+$("next").onclick=function(){ cur=(cur>=STEPS.length-1)?0:cur+1; render(); };
+document.querySelectorAll("#lang button").forEach(function(b){ b.onclick=function(){ LANG=b.dataset.l; render(); }; });
+$("tema").onclick=function(){ var d=document.documentElement.getAttribute("data-theme")==="dark"; document.documentElement.setAttribute("data-theme", d?"light":"dark"); pintarChrome(); };
+render();
+</script>
+</body>
+</html>

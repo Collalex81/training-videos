@@ -1,0 +1,116 @@
+[
+  {
+    "area": "induccion",
+    "titulo": {
+      "es": "Bienvenida y cómo usar este entrenamiento",
+      "en": "Welcome and how to use this training"
+    },
+    "descripcion": {
+      "es": "Video de introducción. Explica qué encontrarás en esta serie y cómo navegar los módulos.",
+      "en": "Intro video. Explains what you'll find in this series and how to navigate the modules."
+    },
+    "categoria": {
+      "es": "Introducción",
+      "en": "Introduction"
+    },
+    "duracion": "1:20",
+    "video": "videos/ejemplo.mp4",
+    "poster": "assets/poster-intro.svg",
+    "tipo": "video"
+  },
+  {
+    "area": "induccion",
+    "titulo": {
+      "es": "Animación de ejemplo (hecha con código)",
+      "en": "Sample animation (made with code)"
+    },
+    "descripcion": {
+      "es": "Ejemplo de una animación creada con HTML/CSS/JS. Ábrela, grábala o expórtala como clip de entrenamiento.",
+      "en": "Example of an animation built with HTML/CSS/JS. Open it, record it, or export it as a training clip."
+    },
+    "categoria": {
+      "es": "Plantillas",
+      "en": "Templates"
+    },
+    "duracion": "0:15",
+    "video": "animations/ejemplo-intro.html",
+    "poster": "assets/poster-anim.svg",
+    "tipo": "animacion"
+  },
+  {
+    "area": "telecom",
+    "titulo": {
+      "es": "Prueba de PIM en torres (equipo Kaelus)",
+      "en": "PIM testing on towers (Kaelus gear)"
+    },
+    "descripcion": {
+      "es": "Entrenamiento técnico interactivo: qué es el PIM, niveles y criterio (dBc/dBm), equipos Kaelus por banda, herramientas, fallas comunes, procedimiento detallado y fotos del reporte.",
+      "en": "Interactive technical training: what PIM is, levels and criteria (dBc/dBm), Kaelus units by band, tools, common faults, detailed procedure and report photos."
+    },
+    "categoria": {
+      "es": "Procedimientos",
+      "en": "Procedures"
+    },
+    "duracion": "8:00",
+    "video": "animations/pim-kaelus.html",
+    "poster": "assets/poster-pim.svg",
+    "tipo": "animacion"
+  },
+  {
+    "area": "telecom",
+    "titulo": {
+      "es": "Barrido de coaxial (VSWR, Return Loss, DTF) — Anritsu",
+      "en": "Coax sweep (VSWR, Return Loss, DTF) — Anritsu"
+    },
+    "descripcion": {
+      "es": "Entrenamiento técnico con animaciones tipo analizador: VSWR, Return Loss, pérdida del cable y DTF con el Anritsu Site Master; calibración OSL, criterios y procedimiento detallado.",
+      "en": "Technical training with analyzer-style animations: VSWR, Return Loss, cable loss and DTF with the Anritsu Site Master; OSL calibration, criteria and detailed procedure."
+    },
+    "categoria": {
+      "es": "Procedimientos",
+      "en": "Procedures"
+    },
+    "duracion": "8:00",
+    "video": "animations/coax-sweep-anritsu.html",
+    "poster": "assets/poster-coax.svg",
+    "tipo": "animacion"
+  },
+  {
+    "area": "seguridad",
+    "titulo": {
+      "es": "Seguridad en torres — trabajo en altura (OSHA / Crown Castle)",
+      "en": "Tower safety — working at height (OSHA / Crown Castle)"
+    },
+    "descripcion": {
+      "es": "Entrenamiento de seguridad: riesgos, protección contra caídas (ABCD, 100% amarrado), EPP completo, arnés/anclajes, calculadora de distancia de caída, rescate, seguridad RF, objetos que caen, clima y checklist previo.",
+      "en": "Safety training: hazards, fall protection (ABCD, 100% tie-off), full PPE, harness/anchors, fall clearance calculator, rescue, RF safety, dropped objects, weather and pre-climb checklist."
+    },
+    "categoria": {
+      "es": "Seguridad",
+      "en": "Safety"
+    },
+    "duracion": "9:00",
+    "video": "animations/tower-safety.html",
+    "poster": "assets/poster-tower-safety.svg",
+    "tipo": "animacion"
+  },
+  {
+    "area": "electricidad",
+    "titulo": {
+      "es": "Multímetro y electricidad (DC, AC, ohms, watts, breakers, -48V)",
+      "en": "Multimeter & electrical (DC, AC, ohms, watts, breakers, -48V)"
+    },
+    "descripcion": {
+      "es": "Cómo usar el multímetro: voltaje DC/AC, continuidad, ohms, frecuencia, amperios (serie y pinza), Ley de Ohm y cálculo de watts (interactivos), más pruebas de fallas comunes en tablero de breakers y en rectificador 120-220 VAC a -48 VDC.",
+      "en": "How to use the multimeter: DC/AC voltage, continuity, ohms, frequency, current (series and clamp), Ohm's law and watt calculation (interactive), plus testing common faults in a breaker panel and a 120-220 VAC to -48 VDC rectifier."
+    },
+    "categoria": {
+      "es": "Fundamentos",
+      "en": "Fundamentals"
+    },
+    "duracion": "9:00",
+    "video": "animations/multimeter-electrical.html",
+    "poster": "assets/poster-electrical.svg",
+    "tipo": "animacion"
+  }
+]

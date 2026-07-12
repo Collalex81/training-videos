@@ -1,0 +1,7 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Large media (host on YouTube/Vimeo if >100 MB)
+# videos/*.mp4

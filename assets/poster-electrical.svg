@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" font-family="system-ui,Segoe UI,Roboto,sans-serif">
+  <defs><linearGradient id="bge" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5a3a09"/><stop offset="1" stop-color="#14100a"/></linearGradient></defs>
+  <rect width="320" height="180" fill="url(#bge)"/>
+  <g stroke="#7a5a24" stroke-width="0.6" opacity="0.5"><line x1="0" y1="70" x2="320" y2="70"/><line x1="0" y1="110" x2="320" y2="110"/><line x1="0" y1="150" x2="320" y2="150"/><line x1="80" y1="40" x2="80" y2="165"/><line x1="160" y1="40" x2="160" y2="165"/><line x1="240" y1="40" x2="240" y2="165"/></g>
+  <line x1="16" y1="104" x2="304" y2="104" stroke="#4d8bff" stroke-width="2.4" opacity="0.9"/>
+  <path d="M16,116 Q46,70 76,116 T136,116 T196,116 T256,116 T316,116" fill="none" stroke="#f59e0b" stroke-width="2.6" stroke-linecap="round"/>
+  <rect x="0" y="0" width="320" height="4" fill="#b45309"/>
+  <g transform="translate(22,24)"><path d="M6 0 L0 9 h5 l-2 7 8 -10 h-5 l3 -6z" fill="#fbbf24"/></g>
+  <text x="40" y="42" fill="#ffffff" font-size="24" font-weight="700">Multimeter &amp; Electrical</text>
+  <text x="22" y="60" fill="#e7c48a" font-size="9.5" letter-spacing="1.1">DC · AC · Ω · Hz · A · WATTS · -48V</text>
+</svg>

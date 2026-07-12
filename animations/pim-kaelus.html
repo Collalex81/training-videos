@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIM Testing · Kaelus / Prueba de PIM · Kaelus</title>
+<!--
+  =============================================================================
+  TECHNICAL TRAINING — PIM testing on telecom towers (Kaelus)
+  Bilingual EN/ES (EN default) · Responsive · sticky header · canvas animations
+  -----------------------------------------------------------------------------
+  REAL PHOTOS: drop images in assets/ with the names in IMG (paths ../assets/).
+  =============================================================================
+-->
+<style>
+  :root{
+    --pg:#f4f6fb; --card:#ffffff; --ink:#0f2544; --sub:#5b6b84; --line:#e6ebf5;
+    --bar:#0b2e59; --accent:#2563EB; --tint:rgba(37,99,235,.10);
+    --ok:#15803D; --okt:rgba(21,128,61,.10); --bad:#dc2626; --badt:rgba(220,38,38,.10);
+    --amber:#b45309; --ambt:rgba(180,83,9,.10); --radius:14px;
+    --shadow:0 1px 2px rgba(16,37,68,.05),0 10px 26px rgba(16,37,68,.07);
+  }
+  html[data-theme="dark"]{
+    --pg:#0b1220; --card:#151d30; --ink:#eaf0ff; --sub:#9fb0cc; --line:#243149;
+    --bar:#0a1526; --accent:#4d8bff; --tint:rgba(77,139,255,.14);
+    --ok:#4ade80; --okt:rgba(74,222,128,.14); --bad:#f87171; --badt:rgba(248,113,113,.14);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;
+    -webkit-font-smoothing:antialiased}
+  svg{display:block}
+  .shell{max-width:940px;margin:0 auto;padding:14px 16px 34px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0 8px;box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
+  .head .meta{margin-bottom:0}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:600;display:block;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+  .prog{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:6px 0 4px}
+  .prog>i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);gap:8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;min-height:340px}
+  .step-ico{width:44px;height:44px;border-radius:12px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+  h1{font-size:clamp(20px,3.3vw,26px);margin:0 0 8px;font-weight:700;line-height:1.2}
+  h2{font-size:15.5px;margin:18px 0 8px;font-weight:600}
+  p{margin:0 0 12px}
+  .lead{color:var(--sub);font-size:15px}
+  ul,ol{margin:6px 0 12px;padding-left:20px}
+  li{margin:5px 0}
+  .pill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:var(--tint);padding:5px 11px;border-radius:999px;margin-bottom:10px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:8px 0}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:12px;margin:8px 0}
+  .box{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:13px}
+  .box h3{margin:0 0 6px;font-size:14.5px;font-weight:600}
+  .box p{margin:0;font-size:13px;color:var(--sub)}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;min-height:42px;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .btn:disabled{opacity:.4;cursor:default}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;flex:1}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line);border:0;cursor:pointer;padding:0}
+  .dot.on{background:var(--accent);transform:scale(1.3)}
+  .note{font-size:13px;color:var(--sub);border-left:3px solid var(--accent);background:var(--tint);padding:9px 12px;margin:12px 0;border-radius:0 8px 8px 0}
+  .warn{border-left-color:var(--amber);color:var(--amber);background:var(--ambt)}
+  .good{border-left-color:var(--ok);color:var(--ink);background:var(--okt)}
+  .good b{color:var(--ok)}
+  .illus{position:relative;aspect-ratio:16/9;background:#0a1424;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .illus svg{width:100%;height:100%}
+  .illus canvas{width:100%;height:100%;display:block}
+  .illus img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#0a1424}
+  .mcap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);margin:6px 2px 2px}
+  .thumb{aspect-ratio:4/3}
+  .tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin:6px 0}
+  .tbl th,.tbl td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--line)}
+  .tbl th{color:var(--sub);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+  .tbl td b{color:var(--accent)}
+  .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+  .scale{position:relative;height:26px;border-radius:8px;margin:14px 0 30px;background:linear-gradient(90deg,var(--ok) 0%,var(--ok) 44%,var(--amber) 54%,var(--bad) 66%,var(--bad) 100%)}
+  .scale .mk{position:absolute;top:-6px;width:2px;height:38px;background:var(--ink)}
+  .scale .mk span{position:absolute;top:40px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--sub);white-space:nowrap}
+  .pointer{position:absolute;top:-14px;transform:translateX(-50%);font-size:14px;color:var(--ink)}
+  .row{display:flex;align-items:center;gap:12px;margin:12px 0}
+  input[type=range]{flex:1;accent-color:var(--accent)}
+  .val{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;min-width:120px;text-align:right}
+  .readout{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+  .stat{background:var(--pg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;flex:1;min-width:110px}
+  .stat b{display:block;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+  .stat span{font-size:11.5px;color:var(--sub)}
+  .verdict{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;font-weight:700;font-size:15px}
+  .verdict.ok{background:var(--okt);color:var(--ok)}
+  .verdict.bad{background:var(--badt);color:var(--bad)}
+  .chk{display:flex;gap:11px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:8px 0;cursor:pointer}
+  .chk .bx{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;margin-top:1px}
+  .chk.done .bx{background:var(--ok);border-color:var(--ok)}
+  .chk.done .txt b{text-decoration:line-through;opacity:.7}
+  .chk .txt b{font-size:13.5px}.chk .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .phase{border:1px solid var(--line);border-radius:12px;margin:10px 0;overflow:hidden}
+  .phase>h3{margin:0;font-size:14px;font-weight:700;background:var(--pg);padding:11px 13px;display:flex;gap:8px;align-items:center}
+  .phase>h3 .n{width:22px;height:22px;border-radius:6px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex:none}
+  .phase .chk{border:0;border-top:1px solid var(--line);border-radius:0;margin:0;background:transparent}
+  .scene{position:relative;background:var(--pg);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .hs{position:absolute;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;border:0;cursor:pointer;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.25);animation:pulse 2s infinite;transform:translate(-50%,-50%)}
+  .hs.seen{background:var(--ok);animation:none}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(37,99,235,.5)}70%{box-shadow:0 0 0 12px rgba(37,99,235,0)}100%{box-shadow:0 0 0 0 rgba(37,99,235,0)}}
+  .reveal{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px;min-height:64px;font-size:13.5px}
+  .faults{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin:8px 0}
+  .fault{background:var(--pg);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;text-align:left;padding:0;font-family:inherit;color:inherit}
+  .fault .illus{border:0;border-radius:0;border-bottom:1px solid var(--line)}
+  .fault .ft{padding:10px 11px}.fault .ft b{font-size:13px}.fault .ft span{display:block;font-size:11.5px;color:var(--sub);margin-top:2px}
+  .photo{display:flex;gap:12px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:13px;margin:9px 0}
+  .photo .cam{width:44px;height:44px;border-radius:10px;background:var(--tint);color:var(--accent);flex:none;display:flex;align-items:center;justify-content:center}
+  .photo.done .cam{background:var(--okt);color:var(--ok)}
+  .photo .pt{flex:1;min-width:0}.photo .pt b{font-size:14px}.photo .pt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .photo .req{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--bad);background:var(--badt);padding:3px 8px;border-radius:999px;display:inline-block;margin-top:6px}
+  .photo.done .req{color:var(--ok);background:var(--okt)}
+  .snap{border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:9px;padding:8px 12px;font-size:12.5px;cursor:pointer;font-family:inherit;white-space:nowrap;min-height:40px}
+  .photo.done .snap{background:var(--ok);border-color:var(--ok);color:#fff}
+  .q{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:12px}
+  .q h3{margin:0 0 10px;font-size:14px}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:11px 14px;border-radius:10px;margin:7px 0;cursor:pointer;font-size:14px;font-family:inherit}
+  .opt.correct{border-color:var(--ok);background:var(--okt);color:var(--ok);font-weight:600}
+  .opt.wrong{border-color:var(--bad);background:var(--badt);color:var(--bad)}
+  .opt:disabled{cursor:default}
+  .score{font-size:16px;font-weight:700;text-align:center;padding:10px}
+  @media(max-width:520px){ .card{padding:15px} .shell{padding:12px 12px 28px} .brand small{display:none} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+  <div class="top">
+    <div class="brand">
+      <span class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg></span>
+      <div><b id="brand"></b><small id="brandsub"></small></div>
+    </div>
+    <div class="tools">
+      <a class="tbtn" id="home" href="../index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span id="homeTxt"></span></a>
+      <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+      <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+    </div>
+  </div>
+  <div class="prog"><i id="progbar"></i></div>
+  <div class="meta"><span id="mStep"></span><span id="mDur"></span></div>
+  </div>
+
+  <div class="card" id="card"></div>
+
+  <div class="nav">
+    <button class="btn ghost" id="prev"></button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="next"></button>
+  </div>
+</div>
+
+<script>
+var IMG = {
+  ipa:"../assets/kaelus-ipa.jpg", iqa:"../assets/kaelus-iqa.jpg",
+  load:"../assets/low-pim-load.jpg", torque:"../assets/torque-wrench.jpg", jumper:"../assets/low-pim-jumper.jpg",
+  f_loose:"../assets/fault-loose-connector.jpg", f_corr:"../assets/fault-corrosion.jpg",
+  f_coax:"../assets/fault-damaged-coax.jpg", f_ext:"../assets/fault-external-pim.jpg", f_ant:"../assets/fault-damaged-antenna.jpg"
+};
+var params = new URLSearchParams(location.search);
+var LANG = params.get("lang") ? (params.get("lang").toLowerCase().startsWith("es") ? "es" : "en") : "en";
+function X(en,es){ return LANG==="es"?es:en; }
+function $(id){ return document.getElementById(id); }
+
+var I = {
+  target:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>',
+  wave:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c2 0 2-7 4-7s2 14 4 14 2-14 4-14 2 7 4 7"/></svg>',
+  mix:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h6l4 10h6M4 17h6l4-10h6"/></svg>',
+  chart:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 3 4-6"/></svg>',
+  alert:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  gauge:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M12 4a8 8 0 0 0-8 8h2M20 12h-2M12 12l3-3"/></svg>',
+  search:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+  device:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="12" y1="18" x2="12" y2="18"/></svg>',
+  tools:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+  bug:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  cal:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4"/><circle cx="12" cy="12" r="3"/></svg>',
+  list:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><path d="M3 6l1 1 2-2M3 12l1 1 2-2M3 18l1 1 2-2"/></svg>',
+  hand:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2a8 8 0 0 1-7-4l-2.5-4a2 2 0 0 1 3.5-2L8 15"/></svg>',
+  ruler:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h18v8H3z"/><path d="M7 8v3M11 8v4M15 8v3M19 8v4"/></svg>',
+  camera:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
+  quiz:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  flag:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
+  img:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>',
+  sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+};
+
+/* Static device illustrations (photo-slot fallbacks) */
+var G = {
+  analyzer:'<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid meet"><rect x="30" y="14" width="100" height="74" rx="8" fill="#18233c" stroke="#3a4a72" stroke-width="2"/><rect x="40" y="22" width="80" height="42" rx="4" fill="#0a1730" stroke="#2b3c63"/><polyline points="44,54 56,50 64,44 74,48 84,32 96,42 104,36 116,44" fill="none" stroke="#54e0c7" stroke-width="2"/><rect x="52" y="70" width="56" height="10" rx="3" fill="#22304f"/><circle cx="128" cy="90" r="6" fill="#2563EB"/><text x="80" y="98" fill="#7fa8e8" font-size="8" text-anchor="middle">Kaelus iPA</text></svg>',
+  load:'<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid meet"><rect x="34" y="40" width="70" height="22" rx="11" fill="#22304f" stroke="#3a4a72" stroke-width="2"/><rect x="98" y="44" width="18" height="14" rx="2" fill="#8aa4c8"/><rect x="112" y="46" width="12" height="10" rx="2" fill="#c7d3e8"/><text x="70" y="80" fill="#7fa8e8" font-size="9" text-anchor="middle">Low-PIM load</text></svg>',
+  torque:'<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid meet"><rect x="20" y="52" width="70" height="10" rx="5" fill="#8aa4c8"/><path d="M90 46 h20 l-3 20 h-14 z" fill="#c7d3e8" stroke="#3a4a72"/><rect x="104" y="40" width="26" height="30" rx="3" fill="#22304f" stroke="#3a4a72" stroke-width="2"/><circle cx="117" cy="55" r="7" fill="#4d8bff"/><text x="80" y="86" fill="#7fa8e8" font-size="9" text-anchor="middle">Torque wrench</text></svg>',
+  jumper:'<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid meet"><path d="M28 40 q52 40 104 0" fill="none" stroke="#2b3c63" stroke-width="8" stroke-linecap="round"/><rect x="20" y="34" width="16" height="14" rx="2" fill="#8aa4c8"/><rect x="124" y="34" width="16" height="14" rx="2" fill="#8aa4c8"/><text x="80" y="86" fill="#7fa8e8" font-size="9" text-anchor="middle">Low-PIM jumper</text></svg>',
+  loose:'<svg viewBox="0 0 160 100"><rect x="24" y="44" width="46" height="16" rx="3" fill="#546a90"/><rect x="92" y="44" width="46" height="16" rx="3" fill="#546a90"/><rect x="66" y="42" width="10" height="20" fill="#8aa4c8"/><rect x="86" y="42" width="10" height="20" fill="#8aa4c8"/><path d="M76 36 l0 -8 M86 36 l0 -8" stroke="#f87171" stroke-width="2"/><text x="81" y="84" fill="#f87171" font-size="9" text-anchor="middle">Loose joint</text></svg>',
+  corr:'<svg viewBox="0 0 160 100"><rect x="34" y="42" width="70" height="18" rx="3" fill="#7a6a3a"/><rect x="100" y="40" width="20" height="22" rx="2" fill="#8a7a44"/><circle cx="52" cy="41" r="3" fill="#4d8bff"/><circle cx="70" cy="39" r="2.5" fill="#4d8bff"/><circle cx="86" cy="42" r="3" fill="#4d8bff"/><text x="72" y="82" fill="#b45309" font-size="9" text-anchor="middle">Wet / corroded</text></svg>',
+  coax:'<svg viewBox="0 0 160 100"><path d="M20 52 h44 l14 -12 l14 18 h44" fill="none" stroke="#2b3c63" stroke-width="10" stroke-linecap="round"/><path d="M74 40 l6 -10 M80 34 l6 6" stroke="#f87171" stroke-width="2.5" fill="none"/><text x="80" y="86" fill="#f87171" font-size="9" text-anchor="middle">Damaged coax</text></svg>',
+  external:'<svg viewBox="0 0 160 100"><rect x="30" y="24" width="16" height="52" rx="3" fill="#2563EB"/><path d="M46 34 q30 4 46 16" stroke="#54e0c7" stroke-width="2" fill="none"/><rect x="104" y="40" width="10" height="40" fill="#8a7a44"/><path d="M104 48 q-16 -6 -30 -2" stroke="#f87171" stroke-width="2" fill="none" stroke-dasharray="3 3"/><text x="90" y="92" fill="#f87171" font-size="9" text-anchor="middle">External PIM</text></svg>',
+  antenna:'<svg viewBox="0 0 160 100"><rect x="60" y="16" width="40" height="64" rx="6" fill="#22304f" stroke="#3a4a72" stroke-width="2"/><line x1="70" y1="26" x2="90" y2="26" stroke="#4d8bff"/><path d="M64 50 l14 10 l-8 8 l16 6" stroke="#f87171" stroke-width="2.5" fill="none"/><text x="80" y="94" fill="#f87171" font-size="9" text-anchor="middle">Damaged antenna</text></svg>'
+};
+
+/* ===== Canvas animation engine ===== */
+var _gen=0, _spike=0;
+function stopAnim(){ _gen++; }
+function fitCanvas(cv){ var r=cv.getBoundingClientRect(); var dpr=window.devicePixelRatio||1; cv.width=Math.max(1,Math.round(r.width*dpr)); cv.height=Math.max(1,Math.round(r.height*dpr)); var ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx:ctx,w:r.width,h:r.height}; }
+function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function screen(type, capEn, capEs, photoKey){
+  var ph = photoKey && IMG[photoKey] ? '<img src="'+IMG[photoKey]+'" alt="" onerror="this.remove()">' : '';
+  var cap = X(capEn,capEs) + (photoKey&&IMG[photoKey]?' · '+IMG[photoKey].replace("../",""):'');
+  return '<div class="illus"><canvas class="cv" data-cv="'+type+'"></canvas>'+ph+'</div><div class="mcap">'+I.img+' '+cap+'</div>';
+}
+function imgSlot(key, svg, capEn, capEs, cls){
+  var src=IMG[key]; var img = src ? '<img src="'+src+'" alt="" onerror="this.remove()">' : '';
+  return '<div class="illus '+(cls||'')+'">'+svg+img+'</div><div class="mcap">'+I.img+' '+X(capEn,capEs)+(src?' · '+src.replace("../",""):'')+'</div>';
+}
+function screenBg(ctx,w,h){
+  ctx.fillStyle="#08111f"; ctx.fillRect(0,0,w,h);
+  var padL=40,padR=14,padT=18,padB=26, pw=w-padL-padR, ph=h-padT-padB, i;
+  ctx.strokeStyle="rgba(90,120,175,.16)"; ctx.lineWidth=1;
+  for(i=0;i<=8;i++){ var x=padL+pw*i/8+.5; ctx.beginPath(); ctx.moveTo(x,padT); ctx.lineTo(x,padT+ph); ctx.stroke(); }
+  for(i=0;i<=5;i++){ var y=padT+ph*i/5+.5; ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(padL+pw,y); ctx.stroke(); }
+  ctx.strokeStyle="rgba(120,150,200,.35)"; ctx.strokeRect(padL+.5,padT+.5,pw,ph);
+  return {padL:padL,padT:padT,pw:pw,ph:ph};
+}
+/* Spectrum: Tx tones + IM products, with Rx band shaded */
+function specLines(mode){
+  if(mode==="orders") return {rx:[0.36,0.98],lines:[
+    {x:0.14,h:1.0,c:"#4d8bff",l:"f1"},{x:0.24,h:1.0,c:"#4d8bff",l:"f2"},
+    {x:0.44,h:0.60,c:"#f87171",l:"IM3"},{x:0.60,h:0.42,c:"#fbbf24",l:"IM5"},
+    {x:0.75,h:0.30,c:"#fbbf24",l:"IM7"},{x:0.88,h:0.20,c:"#fbbf24",l:"IM9"}]};
+  return {rx:[0.58,0.98],lines:[
+    {x:0.18,h:1.0,c:"#4d8bff",l:"f1"},{x:0.30,h:1.0,c:"#4d8bff",l:"f2"},
+    {x:0.70,h:0.55,c:"#f87171",l:"IM3"},{x:0.82,h:0.33,c:"#fbbf24",l:"IM5"}]};
+}
+function animSpectrum(cv,mode){
+  var g=fitCanvas(cv), ctx=g.ctx, w=g.w, h=g.h, gen=_gen, start=performance.now(), S=specLines(mode);
+  function frame(now){
+    if(gen!==_gen) return;
+    var t=(now-start)/1000, grow=Math.min(1,t/1.4), P=screenBg(ctx,w,h), i, base=P.padT+P.ph;
+    /* Rx band shade */
+    var rx0=P.padL+P.pw*S.rx[0], rx1=P.padL+P.pw*S.rx[1];
+    ctx.fillStyle="rgba(220,38,38,.12)"; ctx.fillRect(rx0,P.padT,rx1-rx0,P.ph);
+    ctx.strokeStyle="rgba(248,113,113,.5)"; ctx.setLineDash([4,3]); ctx.strokeRect(rx0+.5,P.padT+.5,rx1-rx0,P.ph); ctx.setLineDash([]);
+    ctx.fillStyle="#f87171"; ctx.font="10px system-ui"; ctx.textAlign="center"; ctx.fillText("Rx band",(rx0+rx1)/2,P.padT+12);
+    /* lines */
+    for(i=0;i<S.lines.length;i++){ var L=S.lines[i]; var isTx=L.c==="#4d8bff"; var hh=(isTx?1:grow)*L.h*P.ph*0.86; var x=P.padL+P.pw*L.x; var y=base-hh;
+      ctx.strokeStyle=L.c; ctx.lineWidth=3; ctx.shadowColor=L.c; ctx.shadowBlur=8; ctx.beginPath(); ctx.moveTo(x,base); ctx.lineTo(x,y); ctx.stroke(); ctx.shadowBlur=0;
+      ctx.fillStyle=L.c; ctx.font="10px system-ui"; ctx.textAlign="center"; ctx.fillText(L.l,x,y-6); }
+    ctx.fillStyle="#9fb0cc"; ctx.textAlign="left"; ctx.fillText(X("amplitude","amplitud")+" ▲   "+X("frequency","frecuencia")+" ▶", P.padL, base+18);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+/* PIM generation: two tones -> junction -> IM3 out */
+function pulse(ctx,x,y,col){ var r=15, grd=ctx.createRadialGradient(x,y,0,x,y,r); grd.addColorStop(0,col); grd.addColorStop(1,"rgba(0,0,0,0)"); ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill(); ctx.fillStyle=col; ctx.beginPath(); ctx.arc(x,y,3,0,7); ctx.fill(); }
+function animPimGen(cv){
+  var g=fitCanvas(cv), ctx=g.ctx, w=g.w, h=g.h, gen=_gen, start=performance.now();
+  var y=h*0.55, x0=w*0.12, xj=w*0.62, xa=w*0.9;
+  function frame(now){
+    if(gen!==_gen) return;
+    var t=((now-start)/1000)%2.6;
+    ctx.fillStyle="#08111f"; ctx.fillRect(0,0,w,h);
+    ctx.strokeStyle="#2b3c63"; ctx.lineWidth=10; ctx.lineCap="round"; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(xj,y); ctx.stroke();
+    ctx.strokeStyle="#2b3c63"; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(xj,y); ctx.lineTo(xa,y); ctx.stroke();
+    /* junction (bad connector) */
+    ctx.fillStyle="#b45309"; roundRect(ctx,xj-5,y-14,12,28,2); ctx.fill();
+    /* antenna */
+    ctx.strokeStyle="#546a90"; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(xa,y); ctx.lineTo(xa,y-30); ctx.moveTo(xa-8,y-24); ctx.lineTo(xa+8,y-24); ctx.stroke();
+    ctx.fillStyle="#7fa8e8"; ctx.font="11px system-ui"; ctx.textAlign="center"; ctx.fillText(X("non-linear junction","unión no lineal"),xj,y+30);
+    if(t<1.3){ var p=t/1.3, px=x0+(xj-x0)*p; pulse(ctx,px,y-4,"#4d8bff"); pulse(ctx,px-14,y+4,"#54e0c7"); ctx.fillStyle="#9fb0cc"; ctx.fillText("f1 + f2 →",(x0+xj)/2,y-30); }
+    else { var p2=(t-1.3)/1.3; var pf=xj+(xa-xj)*p2; pulse(ctx,pf,y,"#f87171"); var pb=xj-(xj-x0)*p2; pulse(ctx,pb,y,"#f87171"); ctx.fillStyle="#f87171"; ctx.fillText("IM3 (PIM)",xj,y-30); }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+/* Noise floor rising in Rx band (interactive) */
+function drawNoise(cv,level){
+  var g=fitCanvas(cv), ctx=g.ctx, w=g.w, h=g.h, P=screenBg(ctx,w,h), base=P.padT+P.ph;
+  /* wanted uplink signal */
+  var sx=P.padL+P.pw*0.30; ctx.strokeStyle="#54e0c7"; ctx.lineWidth=3; ctx.shadowColor="#54e0c7"; ctx.shadowBlur=8; ctx.beginPath(); ctx.moveTo(sx,base); ctx.lineTo(sx,base-P.ph*0.7); ctx.stroke(); ctx.shadowBlur=0;
+  ctx.fillStyle="#54e0c7"; ctx.font="10px system-ui"; ctx.textAlign="center"; ctx.fillText(X("user signal","señal usuario"),sx,base-P.ph*0.7-6);
+  /* noise floor */
+  var nf=base-P.ph*(0.12+level*0.62);
+  ctx.fillStyle="rgba(248,113,113,.18)"; ctx.fillRect(P.padL,nf,P.pw,base-nf);
+  ctx.strokeStyle="#f87171"; ctx.lineWidth=2; ctx.beginPath();
+  for(var x=0;x<=P.pw;x+=6){ var jitter=(Math.random()-0.5)*6*(0.4+level); ctx.lineTo(P.padL+x, nf+jitter); } ctx.stroke();
+  ctx.fillStyle="#f87171"; ctx.textAlign="left"; ctx.fillText(X("noise floor (PIM)","piso de ruido (PIM)"),P.padL+6,nf-6);
+  ctx.fillStyle="#9fb0cc"; ctx.textAlign="left"; ctx.fillText("Rx band", P.padL, base+18);
+}
+/* PIM slope: IM3(dBm) vs Tx power(dBm) (interactive) */
+function drawSlope(cv,P){
+  var g=fitCanvas(cv), ctx=g.ctx, w=g.w, h=g.h, R=screenBg(ctx,w,h), i;
+  ctx.font="10px system-ui"; ctx.fillStyle="#7fa8e8"; ctx.textAlign="center"; ctx.textBaseline="top";
+  ["30","37","43","46"].forEach(function(v,ix){ ctx.fillText(v, R.padL+R.pw*ix/3, R.padT+R.ph+6); });
+  ctx.textAlign="left"; ctx.fillStyle="#9fb0cc"; ctx.textBaseline="alphabetic"; ctx.fillText("IM3 (dBm)  vs  Tx power (dBm)", R.padL, 13);
+  function y(im){ return R.padT+R.ph*(1-((im+130)/50)); } /* im from -130..-80 */
+  function im(p){ return -113+2.5*(p-43)+43; } /* absolute IM3 dBm approx: dBm=dBc+43; dBc=-113+2.5(p-43) */
+  ctx.beginPath(); for(var p=30;p<=46;p+=0.5){ var x=R.padL+R.pw*(p-30)/16; var yy=y(im(p)); if(p===30)ctx.moveTo(x,yy); else ctx.lineTo(x,yy);} ctx.strokeStyle="#54e0c7"; ctx.lineWidth=2.5; ctx.shadowColor="#54e0c7"; ctx.shadowBlur=8; ctx.stroke(); ctx.shadowBlur=0;
+  var mx=R.padL+R.pw*(P-30)/16, my=y(im(P));
+  ctx.strokeStyle="rgba(255,255,255,.4)"; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(mx,R.padT); ctx.lineTo(mx,R.padT+R.ph); ctx.stroke();
+  ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(mx,my,4,0,7); ctx.fill();
+  ctx.fillStyle="#eaf0ff"; ctx.textAlign="center"; ctx.fillText(Math.round(im(P))+" dBm", mx, my-10);
+  ctx.fillStyle="#fbbf24"; ctx.textAlign="right"; ctx.fillText("~2.5 dB / dB", R.padL+R.pw-4, R.padT+16);
+}
+/* Distance-to-PIM trace */
+function gau(x,mu,s,a){ return a*Math.exp(-((x-mu)*(x-mu))/(2*s*s)); }
+function animDpim(cv){
+  var g=fitCanvas(cv), ctx=g.ctx, w=g.w, h=g.h, gen=_gen, start=performance.now();
+  function val(fx){ return 4+gau(fx,0.18,0.03,5)+gau(fx,0.52,0.02,24)+gau(fx,0.80,0.03,4)+0.5*Math.sin(fx*44); }
+  function frame(now){
+    if(gen!==_gen) return;
+    var t=(now-start)/1000, prog=Math.min(1,t/2.0), P=screenBg(ctx,w,h), i;
+    ctx.font="10px system-ui"; ctx.fillStyle="#7fa8e8"; ctx.textAlign="center"; ctx.textBaseline="top";
+    ["0","20","40","60 m"].forEach(function(v,ix){ ctx.fillText(v, P.padL+P.pw*ix/3, P.padT+P.ph+6); });
+    ctx.textAlign="left"; ctx.fillStyle="#9fb0cc"; ctx.textBaseline="alphabetic"; ctx.fillText(X("Distance-to-PIM (dBc) vs distance","Distancia al PIM (dBc) vs distancia"), P.padL, 13);
+    var N=170; ctx.beginPath();
+    for(i=0;i<=N*prog;i++){ var fx=i/N; var v=val(fx); var x=P.padL+P.pw*fx; var y=P.padT+P.ph*(1-v/30); if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);} ctx.strokeStyle="#4d8bff"; ctx.lineWidth=2; ctx.shadowColor="#4d8bff"; ctx.shadowBlur=8; ctx.stroke(); ctx.shadowBlur=0;
+    if(prog>=1){ var fmu=0.52, mx=P.padL+P.pw*fmu, mv=val(fmu), my=P.padT+P.ph*(1-mv/30); ctx.fillStyle="#f87171"; ctx.beginPath(); ctx.arc(mx,my,4,0,7); ctx.fill(); ctx.textAlign="center"; ctx.fillText(X("PIM source  31 m","fuente PIM  31 m"), mx, my-8); }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+/* Live PIM meter strip chart (dynamic test) */
+function animMeter(cv){
+  var g=fitCanvas(cv), ctx=g.ctx, w=g.w, h=g.h, gen=_gen, buf=[], start=performance.now();
+  function frame(now){
+    if(gen!==_gen) return;
+    var P=screenBg(ctx,w,h), base=-118;
+    _spike*=0.90;
+    var v=base + _spike*40 + (Math.random()-0.5)*1.5;
+    buf.push(v); if(buf.length>140) buf.shift();
+    ctx.font="10px system-ui"; ctx.fillStyle="#7fa8e8"; ctx.textAlign="right"; ctx.textBaseline="middle";
+    [-80,-100,-120].forEach(function(d){ var y=P.padT+P.ph*(1-((d+130)/60)); ctx.fillText(d, P.padL-6, y); });
+    /* pass line at -110 dBm */
+    var yl=P.padT+P.ph*(1-((-110+130)/60)); ctx.strokeStyle="rgba(245,158,11,.9)"; ctx.setLineDash([6,4]); ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(P.padL,yl); ctx.lineTo(P.padL+P.pw,yl); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath();
+    for(var i=0;i<buf.length;i++){ var x=P.padL+P.pw*i/139; var y=P.padT+P.ph*(1-((buf[i]+130)/60)); if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
+    var hot=_spike>0.15; ctx.strokeStyle=hot?"#f87171":"#54e0c7"; ctx.lineWidth=2; ctx.shadowColor=ctx.strokeStyle; ctx.shadowBlur=8; ctx.stroke(); ctx.shadowBlur=0;
+    ctx.fillStyle="#9fb0cc"; ctx.textAlign="left"; ctx.textBaseline="alphabetic"; ctx.fillText(X("live IM3 (dBm)","IM3 en vivo (dBm)"), P.padL, 13);
+    ctx.fillStyle=hot?"#f87171":"#4ade80"; ctx.textAlign="right"; ctx.fillText(hot?X("PIM spike!","¡pico de PIM!"):X("stable","estable"), P.padL+P.pw-4, 13);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+function initCanvases(){
+  document.querySelectorAll("#card canvas.cv").forEach(function(cv){
+    var ty=cv.dataset.cv;
+    if(ty==="spec") animSpectrum(cv,"pim");
+    else if(ty==="orders") animSpectrum(cv,"orders");
+    else if(ty==="pimgen") animPimGen(cv);
+    else if(ty==="dpim") animDpim(cv);
+    else if(ty==="meter") animMeter(cv);
+  });
+}
+
+/* ===== Steps ===== */
+var STEPS = [
+  { ico:I.target, t:["Objective & safety","Objetivo y seguridad"], b:s_obj },
+  { ico:I.wave,   t:["What is PIM","Qué es el PIM"], b:s_pim },
+  { ico:I.mix,    t:["How PIM is generated","Cómo se genera el PIM"], b:s_gen },
+  { ico:I.chart,  t:["IM products & orders","Productos IM y órdenes"], b:s_orders },
+  { ico:I.alert,  t:["Why it matters","Por qué importa"], b:s_impact, i:i_impact },
+  { ico:I.gauge,  t:["PIM levels & criteria","Niveles de PIM y criterio"], b:s_levels, i:i_levels },
+  { ico:I.chart,  t:["Test power & PIM slope","Potencia y pendiente de PIM"], b:s_slope, i:i_slope },
+  { ico:I.wave,   t:["Test frequencies","Frecuencias de prueba"], b:s_freq },
+  { ico:I.search, t:["Sources of PIM","Fuentes de PIM"], b:s_sources, i:i_sources },
+  { ico:I.alert,  t:["Internal vs external PIM","PIM interno vs externo"], b:s_intext },
+  { ico:I.device, t:["Kaelus units & bands","Equipos Kaelus y bandas"], b:s_gear },
+  { ico:I.tools,  t:["Tools","Herramientas"], b:s_tools },
+  { ico:I.cal,    t:["Verify the instrument","Verificar el instrumento"], b:s_verify },
+  { ico:I.bug,    t:["Faults that cause PIM","Fallas que causan PIM"], b:s_faults, i:i_faults },
+  { ico:I.list,   t:["Detailed procedure","Procedimiento detallado"], b:s_proc, i:i_proc },
+  { ico:I.hand,   t:["Dynamic test","Prueba dinámica"], b:s_dyn, i:i_dyn },
+  { ico:I.ruler,  t:["Distance-to-PIM (RTF)","Distancia al PIM (RTF)"], b:s_dpim },
+  { ico:I.camera, t:["Report photos","Fotos del reporte"], b:s_photos, i:i_photos },
+  { ico:I.quiz,   t:["Quiz","Evaluación"], b:s_quiz, i:i_quiz },
+  { ico:I.flag,   t:["Wrap-up","Cierre"], b:s_end }
+];
+var cur=0;
+function tit(en,es){ return '<div class="step-ico">'+STEPS[cur].ico+'</div><h1>'+X(en,es)+'</h1>'; }
+
+/* 0 */
+function s_obj(){
+  return tit("PIM testing on tower — objective","Prueba de PIM en torre — objetivo")+
+    '<span class="pill">'+X("Telecom · Technical","Telecom · Técnico")+'</span>'+
+    '<p class="lead">'+X("This module covers PIM (Passive Intermodulation) testing on a tower line/antenna with Kaelus analyzers, per IEC 62037 (two 20 W / +43 dBm tones, IM3 measurement).","Este módulo cubre la prueba de PIM (Intermodulación Pasiva) en línea/antena con analizadores Kaelus, según IEC 62037 (dos tonos de 20 W / +43 dBm, medición de IM3).")+'</p>'+
+    '<div class="grid3">'+
+      '<div class="box"><h3>'+X("Goal","Meta")+'</h3><p>'+X("Certify: IM3 ≤ −153 dBc, stable static and dynamic.","Certificar: IM3 ≤ −153 dBc, estable estático y dinámico.")+'</p></div>'+
+      '<div class="box"><h3>'+X("Standard","Norma")+'</h3><p>IEC 62037 · 2×20 W · IM3</p></div>'+
+      '<div class="box"><h3>'+X("Deliverable","Entregable")+'</h3><p>'+X("Report values + 3 photos.","Reporte con valores + 3 fotos.")+'</p></div>'+
+    '</div>'+
+    '<p class="note warn"><b>'+X("Safety","Seguridad")+':</b> '+X("radiated RF. No one in front of the antenna. Follow LOTO and the work permit. Never PIM-test antennas indoors.","RF radiada. Nadie frente a la antena. Cumple LOTO y el permiso. Nunca pruebes antenas en interiores.")+'</p>';
+}
+/* 1 */
+function s_pim(){
+  return tit("What is PIM","Qué es el PIM")+
+    '<p class="lead">'+X("When two high-power Tx carriers (f1, f2) pass through a non-linear junction, mixing creates new signals: intermodulation products. The 3rd order, IM3 = 2·f1 − f2, usually lands in the Rx band.","Cuando dos portadoras Tx de alta potencia (f1, f2) atraviesan una unión no lineal, el mezclado crea señales nuevas: productos de intermodulación. El de 3.er orden, IM3 = 2·f1 − f2, suele caer en la banda Rx.")+'</p>'+
+    screen("spec","Tx tones f1, f2 generate IM3 / IM5 that fall into the Rx band.","Los tonos f1, f2 generan IM3 / IM5 que caen en la banda Rx.")+
+    '<p class="note">'+X("Higher orders (IM5, IM7…) drop ~5–10 dB each. Control IM3 and you control the rest.","Los órdenes superiores (IM5, IM7…) caen ~5–10 dB cada uno. Controla IM3 y controlas el resto.")+'</p>';
+}
+/* 2 */
+function s_gen(){
+  return tit("How PIM is generated","Cómo se genera el PIM")+
+    '<p class="lead">'+X("A defective metal-to-metal contact behaves like a mixer. The two strong Tx tones hit it and new mixing products (PIM) are created — they travel BOTH back to the analyzer and out to the antenna.","Un contacto metal-metal defectuoso se comporta como un mezclador. Los dos tonos Tx fuertes lo golpean y se crean productos de mezcla (PIM) — viajan de VUELTA al analizador y hacia la antena.")+'</p>'+
+    screen("pimgen","Two Tx tones hit a non-linear junction; IM3 is generated and travels both ways.","Dos tonos Tx golpean una unión no lineal; se genera IM3 y viaja en ambos sentidos.")+
+    '<p class="note good"><b>'+X("Key:","Clave:")+'</b> '+X("clean metal with high contact pressure is linear (no PIM). Loose/dirty contacts are non-linear (PIM).","el metal limpio con alta presión de contacto es lineal (sin PIM). Contactos flojos/sucios son no lineales (PIM).")+'</p>';
+}
+/* 3 */
+function s_orders(){
+  return tit("IM products & orders","Productos IM y órdenes")+
+    '<p class="lead">'+X("Mixing produces a whole family: IM3, IM5, IM7… IM3 is measured because it is the strongest and usually falls in the Rx band. Each higher order is ~5–10 dB lower.","El mezclado produce toda una familia: IM3, IM5, IM7… Se mide IM3 porque es el más fuerte y suele caer en la banda Rx. Cada orden superior es ~5–10 dB menor.")+'</p>'+
+    screen("orders","IM3 is the tallest product; IM5, IM7, IM9 drop off with order.","IM3 es el producto más alto; IM5, IM7, IM9 caen con el orden.")+
+    '<div class="tbl-wrap"><table class="tbl"><tr><th>'+X("Product","Producto")+'</th><th>'+X("Formula (example)","Fórmula (ejemplo)")+'</th><th>'+X("Level","Nivel")+'</th></tr>'+
+      '<tr><td><b>IM3</b></td><td>2·f1 − f2</td><td>'+X("highest — measured","el más alto — se mide")+'</td></tr>'+
+      '<tr><td>IM5</td><td>3·f1 − 2·f2</td><td>~5–10 dB '+X("lower","menor")+'</td></tr>'+
+      '<tr><td>IM7</td><td>4·f1 − 3·f2</td><td>~10–20 dB '+X("lower","menor")+'</td></tr>'+
+    '</table></div>';
+}
+/* 4 */
+function s_impact(){
+  return tit("Why it matters","Por qué importa")+
+    '<p class="lead">'+X("When PIM lands in the Rx band it raises the noise floor. The site can no longer \"hear\" users well — worst at the cell edge. Move the control:","Cuando el PIM cae en la banda Rx sube el piso de ruido. El sitio ya no \"escucha\" bien a los usuarios — peor en el borde de la celda. Mueve el control:")+'</p>'+
+    screen("noise","","")+
+    '<div class="row"><span style="min-width:96px;font-size:13px;color:var(--sub)">'+X("PIM level","Nivel de PIM")+'</span><input type="range" id="nz" min="0" max="100" value="20"><span class="val" id="nzv"></span></div>'+
+    '<p class="note" id="nzMsg"></p>'+
+    '<ul><li>'+X("Dropped calls and reduced coverage.","Llamadas caídas y menor cobertura.")+'</li><li>'+X("Lower data rates (LTE/5G very sensitive).","Menor velocidad de datos (LTE/5G muy sensibles).")+'</li><li>'+X("Loss of site capacity.","Pérdida de capacidad del sitio.")+'</li></ul>';
+}
+function i_impact(){ var nz=$("nz"), cv=document.querySelector('#card .illus canvas');
+  function upd(){ var v=+nz.value; $("nzv").textContent=(v<33?X("Low","Bajo"):v<66?X("Medium","Medio"):X("High","Alto"));
+    $("nzMsg").textContent = v<33?X("Healthy site: PIM under control.","Sitio sano: PIM bajo control."):v<66?X("Warning: noise degrades service.","Cuidado: el ruido degrada el servicio."):X("Critical: heavy capacity loss.","Crítico: fuerte pérdida de capacidad.");
+    if(cv) drawNoise(cv, v/100); }
+  nz.oninput=upd; if(cv){ drawNoise(cv, 0.2);} upd();
+}
+/* 5 */
+function s_levels(){
+  return tit("PIM levels & criteria","Niveles de PIM y criterio")+
+    '<p class="lead">'+X("The Kaelus shows PIM in dBc. In the EMS health check, the BBU reports the level in dBm (approx. dBc + 43). More negative = better; typical pass limit −153 dBc.","El Kaelus muestra el PIM en dBc. En el health check del EMS, el BBU reporta el nivel en dBm (aprox. dBc + 43). Más negativo = mejor; límite típico −153 dBc.")+'</p>'+
+    '<div class="scale"><div class="mk" style="left:48%"><span>−153 dBc</span></div><div class="mk" style="left:60%"><span>−150 dBc</span></div><div class="pointer" id="ptr" style="left:36%">▼</div></div>'+
+    '<div class="row"><span style="min-width:96px;font-size:13px;color:var(--sub)">'+X("Measured level","Nivel medido")+'</span><input type="range" id="lv" min="-165" max="-140" step="1" value="-156"><span class="val" id="lvVal"></span></div>'+
+    '<div class="readout"><div class="stat"><b id="rdBc"></b><span>'+X("dBc · Kaelus reading","dBc · lectura Kaelus")+'</span></div><div class="stat"><b id="rdBm"></b><span>'+X("dBm · BBU in EMS","dBm · BBU en EMS")+'</span></div><div class="stat"><b id="rVer"></b><span>'+X("Verdict","Veredicto")+'</span></div></div>'+
+    '<p class="note good"><b>'+X("Rule:","Regla:")+'</b> '+X("pass if ≤ −153 dBc. Instrument residual PIM must be ≥10 dB better (≤ −163 dBc).","pasa si ≤ −153 dBc. El PIM residual del equipo debe ser ≥10 dB mejor (≤ −163 dBc).")+'</p>';
+}
+function i_levels(){ var lv=$("lv");
+  function upd(){ var d=+lv.value, dbm=d+43; var st=d<=-158?[X("Excellent","Excelente"),"var(--ok)"]:d<=-153?[X("PASS","PASA"),"var(--ok)"]:d<=-150?[X("Marginal","Marginal"),"var(--amber)"]:[X("FAIL","FALLA"),"var(--bad)"];
+    $("lvVal").textContent=d+" dBc"; $("rdBc").textContent=d; $("rdBm").textContent=dbm; $("rVer").textContent=st[0]; $("rVer").style.color=st[1];
+    $("ptr").style.left=Math.max(2,Math.min(98,(d-(-165))/25*100))+"%"; }
+  lv.oninput=upd; upd();
+}
+/* 6 */
+function s_slope(){
+  return tit("Test power & PIM slope","Potencia y pendiente de PIM")+
+    '<p class="lead">'+X("PIM magnitude depends strongly on test power: IM3 changes ~2.2–3.0 dB for every 1 dB of Tx power. That is why the whole industry tests at 20 W (+43 dBm) — so results are comparable. Move the power:","La magnitud del PIM depende mucho de la potencia: el IM3 cambia ~2.2–3.0 dB por cada 1 dB de potencia Tx. Por eso toda la industria prueba a 20 W (+43 dBm) — para que los resultados sean comparables. Mueve la potencia:")+'</p>'+
+    screen("slope","","")+
+    '<div class="row"><span style="min-width:96px;font-size:13px;color:var(--sub)">'+X("Power / tone","Potencia / tono")+'</span><input type="range" id="pw" min="30" max="46" step="1" value="43"><span class="val" id="pwv"></span></div>'+
+    '<p class="note warn">'+X("Low-power sets find gross failures, but only 20 W gives a certifiable, comparable number.","Los equipos de baja potencia hallan fallas gruesas, pero solo 20 W da un número certificable y comparable.")+'</p>';
+}
+function i_slope(){ var pw=$("pw"), cv=document.querySelector('#card .illus canvas');
+  function upd(){ var P=+pw.value; $("pwv").textContent=P+" dBm ("+(Math.round(Math.pow(10,(P-30)/10)*10)/10)+" W)"; if(cv) drawSlope(cv,P); }
+  pw.oninput=upd; if(cv){drawSlope(cv,43);} upd();
+}
+/* 7 */
+function s_freq(){
+  return tit("Test frequencies","Frecuencias de prueba")+
+    '<p class="lead">'+X("Choose the two Tx tones so the IM3 lands inside the Rx band under test, and so every component in the path passes f1, f2 and the IM.","Elige los dos tonos Tx para que el IM3 caiga dentro de la banda Rx bajo prueba, y para que cada componente del camino pase f1, f2 y el IM.")+'</p>'+
+    '<div class="grid2">'+
+      '<div class="box"><h3>'+X("Rules","Reglas")+'</h3><p>'+X("Tones within licensed spectrum or guard band; IM must fall in the Rx band.","Tonos dentro del espectro licenciado o banda de guarda; el IM debe caer en la banda Rx.")+'</p></div>'+
+      '<div class="box"><h3>'+X("Swept mode","Modo barrido")+'</h3><p>'+X("Only into a low-PIM load (it transmits outside licensed spectrum).","Solo hacia una carga de bajo PIM (transmite fuera del espectro licenciado).")+'</p></div>'+
+    '</div>'+
+    '<p class="note">'+X("Use the Kaelus band preset that matches the sector; it sets valid f1/f2 for that band.","Usa el preset de banda del Kaelus que coincida con el sector; fija f1/f2 válidos para esa banda.")+'</p>';
+}
+/* 8 */
+var SRC=[
+  {en:"Loose connector",es:"Conector flojo",d_en:"#1 cause. Insufficient/misaligned torque. Fix: re-torque to spec with a torque wrench.",d_es:"Causa #1. Torque insuficiente/desalineado. Solución: re-torquear a especificación con llave de torque."},
+  {en:"Contamination / oxidation",es:"Contaminación / oxidación",d_en:"Dust, moisture or rust make non-linear contacts. Fix: clean before assembly, re-seal.",d_es:"Polvo, humedad u óxido crean contactos no lineales. Solución: limpiar antes de armar, re-sellar."},
+  {en:"Metal flakes / debris",es:"Virutas / restos metálicos",d_en:"Filings inside the connector. Fix: inspect and clean before connecting.",d_es:"Limaduras dentro del conector. Solución: inspeccionar y limpiar antes de conectar."},
+  {en:"Nearby metal in the beam",es:"Metal cercano en el haz",d_en:"Pipes, flashing, guy wires reflect and create external PIM. Fix: secure/remove metal.",d_es:"Tubos, tapajuntas, vientos reflejan y crean PIM externo. Solución: fijar/retirar el metal."},
+  {en:"Over-tightened back nut",es:"Tuerca sobre-apretada",d_en:"Deforms the coax outer conductor. Fix: use the exact torque, no more.",d_es:"Deforma el conductor exterior del coaxial. Solución: usar el torque exacto, ni más."}
+];
+function s_sources(){
+  var pts=[[20,42],[45,64],[68,34],[86,66],[34,26]];
+  var hs=SRC.map(function(_,i){return '<button class="hs" data-i="'+i+'" style="left:'+pts[i][0]+'%;top:'+pts[i][1]+'%">'+(i+1)+'</button>';}).join("");
+  return tit("Sources of PIM","Fuentes de PIM")+
+    '<p class="lead">'+X("Almost all PIM comes from defective metal-to-metal contacts. Tap each point.","Casi todo el PIM viene de contactos metal-metal defectuosos. Toca cada punto.")+'</p>'+
+    '<div class="scene" style="height:210px"><svg viewBox="0 0 100 60" preserveAspectRatio="none" style="width:100%;height:100%"><path d="M14 58 L22 6 M30 58 L22 6 M18 32 H26 M14 20 H30" stroke="var(--sub)" stroke-width="0.6" fill="none"/><rect x="40" y="24" width="20" height="7" rx="1.5" fill="var(--accent)"/><line x1="60" y1="27" x2="88" y2="27" stroke="var(--sub)" stroke-width="0.8"/><rect x="84" y="20" width="10" height="16" rx="1.5" fill="none" stroke="var(--sub)" stroke-width="0.8"/></svg>'+hs+'</div>'+
+    '<div class="reveal" id="rev">'+X("Tap a point (1–5).","Toca un punto (1–5).")+'</div>';
+}
+function i_sources(){ var seen={}; document.querySelectorAll(".hs").forEach(function(b){ b.onclick=function(){ var s=SRC[+b.dataset.i]; $("rev").innerHTML='<b>'+(+b.dataset.i+1)+'. '+X(s.en,s.es)+'</b><br>'+X(s.d_en,s.d_es); b.classList.add("seen"); }; }); }
+/* 9 */
+function s_intext(){
+  return tit("Internal vs external PIM","PIM interno vs externo")+
+    '<p class="lead">'+X("PIM can be generated INSIDE the system (connectors, cables, TMA, antenna) or OUTSIDE it (metal objects in the antenna beam). Telling them apart guides the fix.","El PIM puede generarse DENTRO del sistema (conectores, cables, TMA, antena) o FUERA (objetos metálicos en el haz). Distinguirlos guía la solución.")+'</p>'+
+    '<div class="grid2">'+
+      '<div class="box"><h3>'+X("Internal PIM","PIM interno")+'</h3><p>'+X("Connectors, jumpers, feeder, TMA, antenna. Found with Distance-to-PIM (RTF).","Conectores, jumpers, feeder, TMA, antena. Se ubica con Distancia al PIM (RTF).")+'</p></div>'+
+      '<div class="box"><h3>'+X("External PIM","PIM externo")+'</h3><p>'+X("Rusty metal, flashing, pipes in the beam. Moves when you move/secure the object.","Metal oxidado, tapajuntas, tubos en el haz. Cambia al mover/fijar el objeto.")+'</p></div>'+
+    '</div>'+
+    '<p class="note">'+X("Trick: if the PIM changes when you shake a nearby metal object (not the line), it is external.","Truco: si el PIM cambia al sacudir un objeto metálico cercano (no la línea), es externo.")+'</p>';
+}
+/* 10 */
+var BANDS=[["iPA-0707A","698–806 MHz","LTE 700"],["iPA-0850A","824–894 MHz","850 (B5)"],["iPA-0900A","880–960 MHz","GSM/LTE 900"],["iPA-1800A","1710–1880 MHz","DCS/LTE 1800"],["iPA-1921A","1850–2170 MHz","PCS/AWS"],["iPA-2100A","1920–2170 MHz","UMTS 2100"],["iPA-2600A","2500–2690 MHz","LTE 2600"]];
+function s_gear(){
+  var rows=BANDS.map(function(x){return '<tr><td><b>'+x[0]+'</b></td><td>'+x[1]+'</td><td>'+x[2]+'</td></tr>';}).join("");
+  return tit("Kaelus units & their bands","Equipos Kaelus y sus bandas")+
+    '<p class="lead">'+X("Analyzers are band-specific: the two Tx tones and the IM3 must fall inside the antenna band. Pick the model by the sector frequency.","Los analizadores son específicos por banda: los dos tonos Tx y el IM3 deben caer dentro de la banda de la antena. Elige el modelo por la frecuencia del sector.")+'</p>'+
+    '<div class="grid2"><div>'+imgSlot("ipa",G.analyzer,"iPA — battery portable, 20 W. One model per band.","iPA — portátil a batería, 20 W. Un modelo por banda.","thumb")+'</div><div>'+imgSlot("iqa",G.analyzer,"iQA / iXA — 2-port, touch panel, RTF, site report.","iQA / iXA — 2 puertos, panel táctil, RTF, reporte.","thumb")+'</div></div>'+
+    '<div class="tbl-wrap"><table class="tbl"><tr><th>'+X("Model","Modelo")+'</th><th>'+X("Band","Banda")+'</th><th>'+X("Use","Uso")+'</th></tr>'+rows+'</table></div>'+
+    '<p class="note warn">'+X("Warm up ~5 min. Instrument residual PIM must be ≤ −163 dBc.","Calienta ~5 min. El PIM residual del equipo debe ser ≤ −163 dBc.")+'</p>';
+}
+/* 11 */
+function s_tools(){
+  return tit("Tools you need","Herramientas necesarias")+
+    '<div class="grid3"><div>'+imgSlot("load",G.load,"Low-PIM load (check residual).","Carga de bajo PIM (revisar residual).","thumb")+'</div><div>'+imgSlot("torque",G.torque,"Torque wrench (per connector).","Llave de torque (por conector).","thumb")+'</div><div>'+imgSlot("jumper",G.jumper,"Low-PIM jumpers + adapters.","Jumpers de bajo PIM + adaptadores.","thumb")+'</div></div>'+
+    '<div class="tbl-wrap"><table class="tbl"><tr><th>'+X("Connector","Conector")+'</th><th>'+X("Torque","Torque")+'</th></tr><tr><td><b>7-16 DIN</b></td><td>≈ 25 N·m</td></tr><tr><td><b>4.3-10</b></td><td>≈ 5 N·m</td></tr><tr><td><b>N-type</b></td><td>≈ 1.7 N·m</td></tr></table></div>'+
+    '<p class="note warn">'+X("Follow the connector maker torque. Also carry a cleaning kit and compressed air.","Sigue el torque del fabricante. Lleva también kit de limpieza y aire comprimido.")+'</p>';
+}
+/* 12 */
+function s_verify(){
+  return tit("Verify the instrument (residual PIM)","Verificar el instrumento (PIM residual)")+
+    '<p class="lead">'+X("Before testing the line, confirm the analyzer + jumpers are clean by measuring residual PIM into a low-PIM load. If your own setup is noisy, every reading is wrong.","Antes de medir la línea, confirma que el analizador + jumpers estén limpios midiendo el PIM residual hacia una carga de bajo PIM. Si tu propio arreglo hace ruido, toda lectura es incorrecta.")+'</p>'+
+    '<ol><li>'+X("Connect a low-PIM load to the analyzer output.","Conecta una carga de bajo PIM a la salida del analizador.")+'</li>'+
+    '<li>'+X("Select band; run PIM. Residual should be ≤ −163 dBc (≥10 dB below the −153 limit).","Selecciona banda; corre PIM. El residual debe ser ≤ −163 dBc (≥10 dB bajo el límite −153).")+'</li>'+
+    '<li>'+X("If it fails, clean/replace jumpers and adapters, re-torque and repeat.","Si falla, limpia/cambia jumpers y adaptadores, re-torquea y repite.")+'</li>'+
+    '<li>'+X("Record the residual in the report.","Anota el residual en el reporte.")+'</li></ol>'+
+    '<p class="note good"><b>'+X("Golden rule:","Regla de oro:")+'</b> '+X("no clean residual = no valid PIM test.","sin residual limpio = prueba de PIM no válida.")+'</p>';
+}
+/* 13 */
+var FA=[
+  {k:"f_loose",g:G.loose,en:"Loose connector",es:"Conector flojo",d_en:"Variable PIM that worsens with vibration. Fix: disassemble, inspect, re-torque.",d_es:"PIM variable que empeora con vibración. Solución: desarmar, inspeccionar, re-torquear."},
+  {k:"f_corr",g:G.corr,en:"Wet / corroded",es:"Húmedo / corroído",d_en:"Moisture/oxidation from failed weatherproofing. Fix: clean or replace, re-seal.",d_es:"Humedad/oxidación por impermeabilización fallida. Solución: limpiar o reemplazar, re-sellar."},
+  {k:"f_coax",g:G.coax,en:"Damaged coax",es:"Coaxial dañado",d_en:"Crushed/kinked or over-tightened back nut. Fix: replace the section.",d_es:"Aplastado/doblado o back-nut sobre-apretada. Solución: reemplazar el tramo."},
+  {k:"f_ext",g:G.external,en:"External PIM",es:"PIM externo",d_en:"Loose metal in the beam. Fix: secure/remove/isolate the metal.",d_es:"Metal suelto en el haz. Solución: fijar/retirar/aislar el metal."},
+  {k:"f_ant",g:G.antenna,en:"Damaged antenna",es:"Antena dañada",d_en:"Loose/corroded internal element or cracked radome. Fix: replace the antenna.",d_es:"Elemento interno suelto/corroído o radomo agrietado. Solución: reemplazar la antena."}
+];
+function s_faults(){
+  var cards=FA.map(function(f,i){return '<button class="fault" data-i="'+i+'"><div class="illus">'+f.g+(IMG[f.k]?'<img src="'+IMG[f.k]+'" alt="" onerror="this.remove()">':'')+'</div><div class="ft"><b>'+(i+1)+'. '+X(f.en,f.es)+'</b><span>'+X("Tap for detail","Toca para el detalle")+'</span></div></button>';}).join("");
+  return tit("Faults that cause PIM","Fallas que causan PIM")+'<p class="lead">'+X("Tap each to see the cause and fix.","Toca cada una para ver la causa y solución.")+'</p><div class="faults">'+cards+'</div><div class="reveal" id="rev">'+X("Select a fault (1–5).","Selecciona una falla (1–5).")+'</div>';
+}
+function i_faults(){ document.querySelectorAll(".fault").forEach(function(b){ b.onclick=function(){ var f=FA[+b.dataset.i]; $("rev").innerHTML='<b>'+(+b.dataset.i+1)+'. '+X(f.en,f.es)+'</b><br>'+X(f.d_en,f.d_es); }; }); }
+/* 14 */
+var PHASES=[
+  {en:"Preparation & safety",es:"Preparación y seguridad",steps:[{en:"Permit, LOTO, harness. No one in front of the antenna.",es:"Permiso, LOTO, arnés. Nadie frente a la antena."},{en:"Identify the band; pick the Kaelus analyzer for it.",es:"Identifica la banda; elige el analizador Kaelus."},{en:"Warm up ~5 min; confirm 20 W (+43 dBm).",es:"Calienta ~5 min; confirma 20 W (+43 dBm)."}]},
+  {en:"Verify instrument",es:"Verificar instrumento",steps:[{en:"Measure residual PIM into a low-PIM load (≤ −163 dBc).",es:"Mide el PIM residual en una carga de bajo PIM (≤ −163 dBc)."},{en:"Record it; fix jumpers if it fails.",es:"Anótalo; arregla jumpers si falla."}]},
+  {en:"Connect & measure static",es:"Conectar y medir estático",steps:[{en:"Connect with low-PIM jumper, torque the connector.",es:"Conecta con jumper de bajo PIM, torquea el conector."},{en:"Apply 2×20 W; read IM3 (dBc), compare to −153.",es:"Aplica 2×20 W; lee IM3 (dBc), compara con −153."}]},
+  {en:"Dynamic test",es:"Prueba dinámica",steps:[{en:"Tap nuts/back-shell (never the coax); flex the cable.",es:"Tap en tuercas/back-shell (nunca el coaxial); flexiona el cable."},{en:"Watch for spikes; report intermittents.",es:"Observa picos; reporta intermitentes."}]},
+  {en:"Locate, repair, retest",es:"Ubicar, reparar, re-probar",steps:[{en:"If it fails, use Distance-to-PIM (RTF) to locate.",es:"Si falla, usa Distancia al PIM (RTF) para ubicar."},{en:"Clean/re-torque/replace; retest until stable PASS.",es:"Limpia/re-torquea/reemplaza; re-prueba hasta PASA estable."}]},
+  {en:"Report",es:"Reporte",steps:[{en:"Save values; take the 3 photos; fill the site report.",es:"Guarda valores; toma las 3 fotos; llena el reporte."}]}
+];
+function s_proc(){
+  var n=0, html=PHASES.map(function(ph,pi){var items=ph.steps.map(function(s){var id=n++;return '<div class="chk" data-i="'+id+'"><span class="bx">✓</span><span class="txt"><b>'+X(s.en,s.es)+'</b></span></div>';}).join("");return '<div class="phase"><h3><span class="n">'+(pi+1)+'</span>'+X(ph.en,ph.es)+'</h3>'+items+'</div>';}).join("");
+  return tit("Detailed procedure","Procedimiento detallado")+'<p class="lead">'+X("6 phases. Check each action on site.","6 fases. Marca cada acción en el sitio.")+'</p>'+html+'<p class="note" id="procMsg"></p>';
+}
+function i_proc(){ var total=document.querySelectorAll(".chk").length; function upd(){ var d=document.querySelectorAll(".chk.done").length; $("procMsg").textContent=d<total?(X("Actions: ","Acciones: ")+d+"/"+total):X("Procedure complete. Site certified.","Procedimiento completo. Sitio certificado."); } document.querySelectorAll(".chk").forEach(function(c){ c.onclick=function(){ c.classList.toggle("done"); upd(); }; }); upd(); }
+/* 15 */
+function s_dyn(){
+  return tit("Dynamic test","Prueba dinámica")+
+    '<p class="lead">'+X("Intermittent PIM may not show at rest. Apply light mechanical stress while watching the live meter. Press the buttons:","Un PIM intermitente puede no aparecer en reposo. Aplica estrés mecánico ligero mientras miras el medidor en vivo. Pulsa los botones:")+'</p>'+
+    screen("meter","Live IM3 meter — a spike during tap/flex means an intermittent joint.","Medidor de IM3 en vivo — un pico durante tap/flex indica unión intermitente.")+
+    '<div class="row" style="justify-content:center;gap:10px;margin-top:8px"><button class="btn" id="tap">Tap</button><button class="btn ghost" id="flex">Flex</button></div>'+
+    '<div class="grid2"><div class="box"><h3>Tap</h3><p>'+X("Tap nut/back-shell with hard plastic. Never the coax.","Tap en tuerca/back-shell con plástico duro. Nunca el coaxial.")+'</p></div><div class="box"><h3>Flex</h3><p>'+X("Flex the cable ±25 mm ~300 mm from the connector.","Flexiona el cable ±25 mm a ~300 mm del conector.")+'</p></div></div>'+
+    '<p class="note warn">'+X("Report a spike even if the static test passed.","Reporta un pico aunque el estático haya pasado.")+'</p>';
+}
+function i_dyn(){ var tp=$("tap"), fx=$("flex"); function spike(){ _spike=1; } if(tp)tp.onclick=spike; if(fx)fx.onclick=spike; }
+/* 16 */
+function s_dpim(){
+  return tit("Distance-to-PIM (RTF)","Distancia al PIM (RTF)")+
+    '<p class="lead">'+X("If the line fails, the RTF / Distance-to-PIM module converts the PIM into the distance domain and shows exactly how far the PIM source is — so you climb straight to it.","Si la línea falla, el módulo RTF / Distancia al PIM convierte el PIM al dominio de la distancia y muestra exactamente a qué distancia está la fuente — para subir directo a ella.")+'</p>'+
+    screen("dpim","Distance-to-PIM trace: the spike marks the PIM source location.","Traza de Distancia al PIM: el pico marca la ubicación de la fuente.")+
+    '<p class="note good"><b>'+X("Note:","Nota:")+'</b> '+X("small spikes at each connector are normal; a large one is the culprit.","picos pequeños en cada conector son normales; uno grande es el culpable.")+'</p>';
+}
+/* 17 */
+var PHOTOS=[
+  {en:"Analyzer screen (PASS/FAIL)",es:"Pantalla del analizador (PASA/FALLA)",d_en:"Kaelus screen with the result and IM3 value in dBc, readable.",d_es:"Pantalla Kaelus con el resultado y el valor IM3 en dBc, legible."},
+  {en:"Distance-to-PIM (RTF)",es:"Distancia al PIM (RTF)",d_en:"RTF trace with distance to fault, or clean trace if it passed.",d_es:"Traza RTF con la distancia a la falla, o traza limpia si pasó."},
+  {en:"Corrections made",es:"Correcciones hechas",d_en:"Before/after of the fix (connector cleaned, re-torqued or replaced).",d_es:"Antes/después del arreglo (conector limpio, re-torqueado o cambiado)."}
+];
+function s_photos(){
+  var items=PHOTOS.map(function(p,i){return '<div class="photo" data-i="'+i+'"><span class="cam">'+I.camera+'</span><div class="pt"><b>'+(i+1)+'. '+X(p.en,p.es)+'</b><span>'+X(p.d_en,p.d_es)+'</span><span class="req">'+X("Required","Obligatoria")+'</span></div><button class="snap">'+X("Photo taken","Foto tomada")+'</button></div>';}).join("");
+  return tit("Report photos","Fotos del reporte")+'<p class="lead">'+X("Each technician MUST upload these 3 photos to the site report.","Cada técnico DEBE subir estas 3 fotos al reporte del sitio.")+'</p>'+items+'<p class="note" id="phMsg"></p><p class="note warn">'+X("Without the 3 photos the site is not closed.","Sin las 3 fotos el sitio no se cierra.")+'</p>';
+}
+function i_photos(){ function upd(){ var n=document.querySelectorAll(".photo.done").length; $("phMsg").textContent=n<PHOTOS.length?(X("Photos: ","Fotos: ")+n+"/"+PHOTOS.length):X("All 3 photos ready. Attach them to the report.","Las 3 fotos listas. Adjúntalas al reporte."); } document.querySelectorAll(".photo").forEach(function(c){ c.querySelector(".snap").onclick=function(){ c.classList.toggle("done"); this.textContent=c.classList.contains("done")?X("✓ Taken","✓ Tomada"):X("Photo taken","Foto tomada"); upd(); }; }); upd(); }
+/* 18 */
+var QUIZ=[
+  {en:"Which product is measured for PIM?",es:"¿Qué producto se mide para el PIM?",o_en:["IM2","IM3","IM5","IM7"],o_es:["IM2","IM3","IM5","IM7"],a:1},
+  {en:"Which reading PASSES?",es:"¿Qué lectura PASA?",o_en:["−148 dBc","−156 dBc","−150 dBc","−145 dBc"],o_es:["−148 dBc","−156 dBc","−150 dBc","−145 dBc"],a:1},
+  {en:"For a 2100 MHz sector, which analyzer?",es:"Para un sector de 2100 MHz, ¿qué analizador?",o_en:["iPA-0707A","iPA-0850A","iPA-2100A","iPA-0900A"],o_es:["iPA-0707A","iPA-0850A","iPA-2100A","iPA-0900A"],a:2},
+  {en:"IM3 changes per 1 dB of test power by about…",es:"El IM3 cambia por cada 1 dB de potencia aprox…",o_en:["0.1 dB","2.2–3.0 dB","10 dB","0 dB"],o_es:["0.1 dB","2.2–3.0 dB","10 dB","0 dB"],a:1},
+  {en:"Instrument residual PIM must be…",es:"El PIM residual del equipo debe ser…",o_en:["Equal to the limit","≥10 dB better (≤ −163 dBc)","Worse","Irrelevant"],o_es:["Igual al límite","≥10 dB mejor (≤ −163 dBc)","Peor","No importa"],a:1},
+  {en:"External PIM comes from…",es:"El PIM externo viene de…",o_en:["A loose internal connector","Loose metal in the antenna beam","Low battery","A USB cable"],o_es:["Un conector interno flojo","Metal suelto en el haz de la antena","Batería baja","Un cable USB"],a:1},
+  {en:"During the dynamic test you must NOT tap…",es:"En la prueba dinámica NO debes golpear…",o_en:["The nut","The coaxial cable","The back-shell","The analyzer"],o_es:["La tuerca","El cable coaxial","El back-shell","El analizador"],a:1}
+];
+function s_quiz(){
+  var qs=QUIZ.map(function(q,i){var opts=(LANG==="es"?q.o_es:q.o_en).map(function(o,j){return '<button class="opt" data-q="'+i+'" data-o="'+j+'">'+o+'</button>';}).join("");return '<div class="q"><h3>'+(i+1)+'. '+X(q.en,q.es)+'</h3>'+opts+'</div>';}).join("");
+  return tit("Quiz","Evaluación")+'<p class="lead">'+X("7 technical questions.","7 preguntas técnicas.")+'</p>'+qs+'<div class="score" id="score"></div>';
+}
+function i_quiz(){ var answered={}, correct=0; document.querySelectorAll(".opt").forEach(function(b){ b.onclick=function(){ var qi=+b.dataset.q; if(answered[qi])return; answered[qi]=1; var a=QUIZ[qi].a; document.querySelectorAll('.opt[data-q="'+qi+'"]').forEach(function(x){ x.disabled=true; if(+x.dataset.o===a)x.classList.add("correct"); }); if(+b.dataset.o===a)correct++; else b.classList.add("wrong"); if(Object.keys(answered).length===QUIZ.length){ $("score").textContent=X("Score: ","Puntaje: ")+correct+"/"+QUIZ.length+(correct>=5?X(" · Passed"," · Aprobado"):X(" · Review"," · Repasa")); } }; }); }
+/* 19 */
+function s_end(){
+  return tit("Wrap-up","Cierre")+
+    '<ul><li>'+X("PIM = mixing at a non-linear junction; IM3 = 2·f1 − f2 lands in the Rx band.","PIM = mezcla en una unión no lineal; IM3 = 2·f1 − f2 cae en la banda Rx.")+'</li>'+
+    '<li>'+X("Test at 2×20 W (+43 dBm); PASS if IM3 ≤ −153 dBc; residual ≤ −163 dBc.","Prueba a 2×20 W (+43 dBm); PASA si IM3 ≤ −153 dBc; residual ≤ −163 dBc.")+'</li>'+
+    '<li>'+X("Pick the analyzer for the sector band (700…2600 MHz).","Elige el analizador de la banda del sector (700…2600 MHz).")+'</li>'+
+    '<li>'+X("Static + dynamic; if it fails, RTF to locate, repair, retest.","Estático + dinámico; si falla, RTF para ubicar, reparar, re-probar.")+'</li>'+
+    '<li>'+X("Report values + 3 photos (analyzer, RTF, corrections).","Reporte con valores + 3 fotos (analizador, RTF, correcciones).")+'</li></ul>'+
+    '<p class="note warn"><b>'+X("Safety","Seguridad")+':</b> '+X("never PIM-test antennas indoors; keep people out of the RF beam.","nunca pruebes antenas en interiores; mantén a las personas fuera del haz de RF.")+'</p>'+
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px"><span class="verdict ok">✓ '+X("Training completed","Entrenamiento completado")+'</span><a class="btn ghost" href="../index.html" target="_top">'+X("Back to portal","Volver al portal")+'</a></div>';
+}
+
+/* ===== Engine ===== */
+function pintarChrome(){
+  document.documentElement.lang=LANG;
+  $("brand").textContent=X("PIM Testing","Prueba de PIM");
+  $("brandsub").textContent=X("Telecom · Kaelus","Telecom · Kaelus");
+  $("homeTxt").textContent=X("Home","Inicio");
+  document.querySelectorAll("#lang button").forEach(function(b){ b.classList.toggle("on", b.dataset.l===LANG); });
+  var dark=document.documentElement.getAttribute("data-theme")==="dark";
+  $("temaIco").innerHTML=dark?I.sun:I.moon; $("temaTxt").textContent=dark?X("Light","Claro"):X("Dark","Oscuro");
+  $("prev").innerHTML="‹ "+X("Back","Anterior");
+  $("next").innerHTML=(cur>=STEPS.length-1?X("Restart","Reiniciar"):X("Next","Siguiente")+" ›");
+}
+function render(){
+  stopAnim(); _spike=0;
+  pintarChrome();
+  var s=STEPS[cur];
+  $("card").innerHTML=s.b();
+  if(s.i) s.i();
+  initCanvases();
+  $("progbar").style.width=((cur+1)/STEPS.length*100)+"%";
+  $("mStep").textContent=X("Step ","Paso ")+(cur+1)+" / "+STEPS.length+" · "+X(s.t[0],s.t[1]);
+  $("mDur").textContent="≈ 8 min";
+  $("prev").disabled=(cur===0);
+  $("dots").innerHTML=STEPS.map(function(_,i){return '<button class="dot'+(i===cur?' on':'')+'" data-i="'+i+'" aria-label="'+(i+1)+'"></button>';}).join("");
+  document.querySelectorAll(".dot").forEach(function(d){ d.onclick=function(){ cur=+d.dataset.i; render(); }; });
+  window.scrollTo(0,0);
+}
+$("prev").onclick=function(){ if(cur>0){cur--;render();} };
+$("next").onclick=function(){ cur=(cur>=STEPS.length-1)?0:cur+1; render(); };
+document.querySelectorAll("#lang button").forEach(function(b){ b.onclick=function(){ LANG=b.dataset.l; render(); }; });
+$("tema").onclick=function(){ var d=document.documentElement.getAttribute("data-theme")==="dark"; document.documentElement.setAttribute("data-theme", d?"light":"dark"); pintarChrome(); };
+render();
+</script>
+</body>
+</html>

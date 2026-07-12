@@ -1,0 +1,21 @@
+[
+  {
+    "area": "onboarding",
+    "titulo": {
+      "en": "Example module (from the template)",
+      "es": "Módulo de ejemplo (desde la plantilla)"
+    },
+    "descripcion": {
+      "en": "Copy animations/module-template.html, edit CONFIG, IMG and STEPS, then add an entry here.",
+      "es": "Copia animations/module-template.html, edita CONFIG, IMG y STEPS, y agrega una entrada aquí."
+    },
+    "categoria": {
+      "en": "Getting started",
+      "es": "Inicio"
+    },
+    "duracion": "6:00",
+    "video": "animations/module-template.html",
+    "poster": "assets/poster-example.svg",
+    "tipo": "animacion"
+  }
+]

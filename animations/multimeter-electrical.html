@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multimeter & Electrical / Multímetro y Electricidad</title>
+<!--
+  =============================================================================
+  ELECTRICAL TRAINING — Using a multimeter (volt/amp) + breaker panels + -48VDC
+  DC/AC · continuity · resistance · frequency · current (series & clamp) · watts
+  Testing common faults in a breaker box and a 120-220 VAC -> -48 VDC rectifier.
+  Bilingual EN/ES (EN default) · Responsive · sticky header · canvas animations
+  DISCLAIMER: training overview only. Not a substitute for certified electrical
+  training, NEC/NFPA 70E, or your employer's LOTO / EHS procedures.
+  REAL PHOTOS: drop images in assets/ with the names in IMG (paths ../assets/).
+  =============================================================================
+-->
+<style>
+  :root{
+    --pg:#f6f5f1; --card:#ffffff; --ink:#231c10; --sub:#6b6152; --line:#ece7dc;
+    --bar:#5a3a09; --accent:#b45309; --tint:rgba(180,83,9,.10);
+    --ok:#15803D; --okt:rgba(21,128,61,.10); --bad:#dc2626; --badt:rgba(220,38,38,.10);
+    --amber:#b45309; --ambt:rgba(180,83,9,.12); --radius:14px;
+    --shadow:0 1px 2px rgba(45,30,5,.05),0 10px 26px rgba(45,30,5,.08);
+  }
+  html[data-theme="dark"]{
+    --pg:#14100a; --card:#1e1810; --ink:#f5eede; --sub:#c0b199; --line:#2e2618;
+    --bar:#0f0b06; --accent:#fbbf24; --tint:rgba(251,191,36,.14);
+    --ok:#4ade80; --okt:rgba(74,222,128,.14); --bad:#f87171; --badt:rgba(248,113,113,.14);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  .shell{max-width:940px;margin:0 auto;padding:14px 16px 34px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0 8px;box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
+  .head .meta{margin-bottom:0}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:600;display:block;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+  .prog{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:6px 0 4px}
+  .prog>i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);gap:8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;min-height:340px}
+  .step-ico{width:44px;height:44px;border-radius:12px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+  h1{font-size:clamp(20px,3.3vw,26px);margin:0 0 8px;font-weight:700;line-height:1.2}
+  h2{font-size:15.5px;margin:18px 0 8px;font-weight:600}
+  p{margin:0 0 12px}
+  .lead{color:var(--sub);font-size:15px}
+  ul,ol{margin:6px 0 12px;padding-left:20px}
+  li{margin:5px 0}
+  .pill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:var(--tint);padding:5px 11px;border-radius:999px;margin-bottom:10px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:8px 0}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:12px;margin:8px 0}
+  .box{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:13px}
+  .box h3{margin:0 0 6px;font-size:14.5px;font-weight:600}
+  .box p{margin:0;font-size:13px;color:var(--sub)}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;min-height:42px;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .btn.on{outline:2px solid var(--accent);outline-offset:1px}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;flex:1}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line);border:0;cursor:pointer;padding:0}
+  .dot.on{background:var(--accent);transform:scale(1.3)}
+  .note{font-size:13px;color:var(--sub);border-left:3px solid var(--accent);background:var(--tint);padding:9px 12px;margin:12px 0;border-radius:0 8px 8px 0}
+  .warn{border-left-color:var(--amber);color:var(--amber);background:var(--ambt)}
+  .danger{border-left-color:var(--bad);color:var(--bad);background:var(--badt)}
+  .good{border-left-color:var(--ok);color:var(--ink);background:var(--okt)}
+  .good b{color:var(--ok)}
+  .illus{position:relative;aspect-ratio:16/9;background:#12100a;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .illus svg{width:100%;height:100%}
+  .illus canvas{width:100%;height:100%;display:block}
+  .illus img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#12100a}
+  .mcap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);margin:6px 2px 2px}
+  .thumb{aspect-ratio:4/3}
+  .tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin:6px 0}
+  .tbl th,.tbl td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--line)}
+  .tbl th{color:var(--sub);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+  .tbl td b{color:var(--accent)}
+  .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+  .row{display:flex;align-items:center;gap:12px;margin:12px 0;flex-wrap:wrap}
+  input[type=range]{flex:1;accent-color:var(--accent);min-width:150px}
+  .val{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;min-width:90px;text-align:right}
+  .readout{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+  .stat{background:var(--pg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;flex:1;min-width:100px}
+  .stat b{display:block;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+  .stat span{font-size:11.5px;color:var(--sub)}
+  .verdict{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;font-weight:700;font-size:15px}
+  .verdict.ok{background:var(--okt);color:var(--ok)}.verdict.bad{background:var(--badt);color:var(--bad)}
+  .scene{position:relative;background:var(--pg);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .hs{position:absolute;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;border:0;cursor:pointer;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.25);animation:pulse 2s infinite;transform:translate(-50%,-50%)}
+  .hs.seen{background:var(--ok);animation:none}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(180,83,9,.5)}70%{box-shadow:0 0 0 12px rgba(180,83,9,0)}100%{box-shadow:0 0 0 0 rgba(180,83,9,0)}}
+  .reveal{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px;min-height:64px;font-size:13.5px}
+  .faults{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin:8px 0}
+  .fault{background:var(--pg);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;text-align:left;padding:0;font-family:inherit;color:inherit}
+  .fault .illus{border:0;border-radius:0;border-bottom:1px solid var(--line)}
+  .fault .ft{padding:10px 11px}.fault .ft b{font-size:13px}.fault .ft span{display:block;font-size:11.5px;color:var(--sub);margin-top:2px}
+  .chk{display:flex;gap:11px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:8px 0;cursor:pointer}
+  .chk .bx{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;margin-top:1px}
+  .chk.done .bx{background:var(--ok);border-color:var(--ok)}.chk.done .txt b{text-decoration:line-through;opacity:.7}
+  .chk .txt b{font-size:13.5px}.chk .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .q{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:12px}
+  .q h3{margin:0 0 10px;font-size:14px}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:11px 14px;border-radius:10px;margin:7px 0;cursor:pointer;font-size:14px;font-family:inherit}
+  .opt.correct{border-color:var(--ok);background:var(--okt);color:var(--ok);font-weight:600}
+  .opt.wrong{border-color:var(--bad);background:var(--badt);color:var(--bad)}
+  .opt:disabled{cursor:default}
+  .score{font-size:16px;font-weight:700;text-align:center;padding:10px}
+  @media(max-width:520px){ .card{padding:15px} .shell{padding:12px 12px 28px} .brand small{display:none} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+  <div class="top">
+    <div class="brand">
+      <span class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
+      <div><b id="brand"></b><small id="brandsub"></small></div>
+    </div>
+    <div class="tools">
+      <a class="tbtn" id="home" href="../index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span id="homeTxt"></span></a>
+      <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+      <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+    </div>
+  </div>
+  <div class="prog"><i id="progbar"></i></div>
+  <div class="meta"><span id="mStep"></span><span id="mDur"></span></div>
+  </div>
+  <div class="card" id="card"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev"></button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="next"></button>
+  </div>
+</div>
+
+<script>
+var IMG = {
+  meter:"../assets/multimeter.jpg", clamp:"../assets/clamp-meter.jpg",
+  panel:"../assets/breaker-panel.jpg", rect:"../assets/rectifier-48v.jpg"
+};
+var params=new URLSearchParams(location.search);
+var LANG=params.get("lang")?(params.get("lang").toLowerCase().startsWith("es")?"es":"en"):"en";
+function X(en,es){ return LANG==="es"?es:en; }
+function $(id){ return document.getElementById(id); }
+
+var I={
+  target:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>',
+  meter:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><rect x="7" y="5" width="10" height="5" rx="1"/><circle cx="12" cy="15" r="3"/></svg>',
+  shield:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>',
+  wave:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4M6 12c0-6 4-6 4 0s4 6 4 0 4-6 4 0h2"/></svg>',
+  dc:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20M4 8h4M4 16h4M16 8v8"/></svg>',
+  beep:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>',
+  ohm:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 19h4v-2a5 5 0 1 1 4 0v2h4"/></svg>',
+  hz:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5v14M4 12h7M11 5v14M15 8h5l-5 8h5"/></svg>',
+  amp:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 20 12 4l4 16M9 14h6"/></svg>',
+  clamp:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a7 7 0 1 0 6 3.5"/><path d="M12 8v13"/></svg>',
+  calc:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01"/></svg>',
+  bolt:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+  panel:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="11" y2="7"/><line x1="13" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="11" y2="11"/><line x1="13" y1="11" x2="16" y2="11"/></svg>',
+  bug:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  battery:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2"/><line x1="22" y1="11" x2="22" y2="13"/><line x1="6" y1="10" x2="6" y2="14"/><line x1="10" y1="12" x2="14" y2="12"/></svg>',
+  list:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><path d="M3 6l1 1 2-2M3 12l1 1 2-2M3 18l1 1 2-2"/></svg>',
+  quiz:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  flag:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
+  img:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>',
+  sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+};
+var G={
+  meter:'<svg viewBox="0 0 140 100"><defs><linearGradient id="mmb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8b25a"/><stop offset="1" stop-color="#b47c28"/></linearGradient></defs><rect x="38" y="8" width="64" height="86" rx="11" fill="url(#mmb)" stroke="#6e4712" stroke-width="2"/><rect x="44" y="14" width="52" height="22" rx="3" fill="#08201a" stroke="#2a3a2c"/><text x="92" y="31" fill="#54e0c7" font-family="monospace" font-size="13" text-anchor="end">120.0</text><text x="48" y="21" fill="#54e0c7" font-family="monospace" font-size="6">DCV</text><circle cx="70" cy="58" r="17" fill="#2a1c0a" stroke="#6e4712" stroke-width="1.5"/><g stroke="#caa96a" stroke-width="1"><line x1="70" y1="43" x2="70" y2="46"/><line x1="85" y1="58" x2="82" y2="58"/><line x1="70" y1="73" x2="70" y2="70"/><line x1="55" y1="58" x2="58" y2="58"/><line x1="80.5" y1="47.5" x2="78.5" y2="49.5"/><line x1="80.5" y1="68.5" x2="78.5" y2="66.5"/><line x1="59.5" y1="68.5" x2="61.5" y2="66.5"/><line x1="59.5" y1="47.5" x2="61.5" y2="49.5"/></g><line x1="70" y1="58" x2="79" y2="49" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><circle cx="70" cy="58" r="3" fill="#caa96a"/><circle cx="52" cy="86" r="3.5" fill="#141414"/><circle cx="70" cy="88" r="3.5" fill="#cc3333"/><circle cx="88" cy="86" r="3.5" fill="#141414"/><text x="70" y="99" fill="#5a3f18" font-size="5" text-anchor="middle">COM   VΩ   A</text><path d="M70 91 q-22 6 -30 9" stroke="#cc3333" stroke-width="2" fill="none"/><path d="M52 89 q-16 8 -22 11" stroke="#141414" stroke-width="2" fill="none"/></svg>',
+  clamp:'<svg viewBox="0 0 140 100"><defs><linearGradient id="clb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8b25a"/><stop offset="1" stop-color="#b47c28"/></linearGradient></defs><line x1="70" y1="4" x2="70" y2="96" stroke="#7a4a1e" stroke-width="7"/><line x1="70" y1="4" x2="70" y2="96" stroke="#caa06a" stroke-width="2.5"/><path d="M70 22 a20 20 0 1 0 13 6" fill="none" stroke="url(#clb)" stroke-width="7" stroke-linecap="round"/><rect x="57" y="58" width="26" height="36" rx="6" fill="url(#clb)" stroke="#6e4712" stroke-width="1.5"/><rect x="61" y="62" width="18" height="10" rx="2" fill="#08201a"/><text x="70" y="70" fill="#54e0c7" font-family="monospace" font-size="6.5" text-anchor="middle">12.4A</text><rect x="66" y="84" width="8" height="4" rx="1" fill="#8a5e26"/><text x="70" y="99" fill="#5a3f18" font-size="6" text-anchor="middle">one conductor</text></svg>',
+  panel:'<svg viewBox="0 0 140 100"><rect x="28" y="6" width="84" height="90" rx="4" fill="#d9d4c7" stroke="#6e4712" stroke-width="1.5"/><rect x="34" y="12" width="72" height="78" rx="2" fill="#c6c1b3"/><rect x="52" y="15" width="36" height="10" rx="2" fill="#2f2f2f"/><rect x="66" y="17.5" width="8" height="5" rx="1" fill="#e6a94e"/><text x="70" y="23" fill="#d7d2c4" font-size="4" text-anchor="middle">MAIN</text><g><rect x="40" y="31" width="26" height="7" rx="1.5" fill="#2f2f2f"/><rect x="41.5" y="32.5" width="5" height="4" fill="#e6a94e"/><rect x="74" y="31" width="26" height="7" rx="1.5" fill="#2f2f2f"/><rect x="75.5" y="32.5" width="5" height="4" fill="#e6a94e"/><rect x="40" y="41" width="26" height="7" rx="1.5" fill="#2f2f2f"/><rect x="41.5" y="42.5" width="5" height="4" fill="#e6a94e"/><rect x="74" y="41" width="26" height="7" rx="1.5" fill="#2f2f2f"/><rect x="75.5" y="42.5" width="5" height="4" fill="#cc3333"/><rect x="40" y="51" width="26" height="7" rx="1.5" fill="#2f2f2f"/><rect x="41.5" y="52.5" width="5" height="4" fill="#e6a94e"/><rect x="74" y="51" width="26" height="7" rx="1.5" fill="#2f2f2f"/><rect x="75.5" y="52.5" width="5" height="4" fill="#e6a94e"/></g><rect x="40" y="66" width="60" height="5" rx="1" fill="#b8b2a2"/><g fill="#7a5a24"><circle cx="45" cy="68.5" r="1"/><circle cx="53" cy="68.5" r="1"/><circle cx="61" cy="68.5" r="1"/><circle cx="69" cy="68.5" r="1"/><circle cx="77" cy="68.5" r="1"/><circle cx="85" cy="68.5" r="1"/><circle cx="93" cy="68.5" r="1"/></g><text x="70" y="82" fill="#5a3f18" font-size="5" text-anchor="middle">N / G bus</text></svg>',
+  rect:'<svg viewBox="0 0 140 100"><rect x="18" y="18" width="104" height="64" rx="4" fill="#1c1710" stroke="#6e4712" stroke-width="1.5"/><rect x="22" y="22" width="4" height="56" fill="#2e2618"/><rect x="114" y="22" width="4" height="56" fill="#2e2618"/><g><rect x="30" y="24" width="17" height="52" rx="2" fill="#2a2216" stroke="#4a3a20"/><circle cx="38" cy="30" r="2" fill="#4ade80"/><rect x="33" y="60" width="11" height="12" rx="1" fill="#141009"/><rect x="49" y="24" width="17" height="52" rx="2" fill="#2a2216" stroke="#4a3a20"/><circle cx="57" cy="30" r="2" fill="#4ade80"/><rect x="52" y="60" width="11" height="12" rx="1" fill="#141009"/><rect x="68" y="24" width="17" height="52" rx="2" fill="#2a2216" stroke="#4a3a20"/><circle cx="76" cy="30" r="2" fill="#f59e0b"/><rect x="71" y="60" width="11" height="12" rx="1" fill="#141009"/></g><rect x="90" y="24" width="22" height="52" rx="2" fill="#241d12" stroke="#4a3a20"/><rect x="94" y="29" width="14" height="9" rx="1" fill="#08201a"/><text x="101" y="36" fill="#54e0c7" font-family="monospace" font-size="5.5" text-anchor="middle">-54.5</text><text x="101" y="70" fill="#7a5a24" font-size="4" text-anchor="middle">CTRL</text><text x="70" y="92" fill="#f59e0b" font-size="7" text-anchor="middle">-48 VDC plant</text></svg>'
+};
+
+/* ===== Canvas engine ===== */
+var _gen=0, _wmode="both";
+function stopAnim(){ _gen++; }
+function fitCanvas(cv){ var r=cv.getBoundingClientRect(); var dpr=window.devicePixelRatio||1; cv.width=Math.max(1,Math.round(r.width*dpr)); cv.height=Math.max(1,Math.round(r.height*dpr)); var ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx:ctx,w:r.width,h:r.height}; }
+function screen(type, capEn, capEs){ return '<div class="illus"><canvas class="cv" data-cv="'+type+'"></canvas></div><div class="mcap">'+I.img+' '+X(capEn,capEs)+'</div>'; }
+function imgSlot(key, svg, capEn, capEs, cls){ var src=IMG[key]; var img=src?'<img src="'+src+'" alt="" onerror="this.remove()">':''; return '<div class="illus '+(cls||'')+'">'+svg+img+'</div><div class="mcap">'+I.img+' '+X(capEn,capEs)+(src?' · '+src.replace("../",""):'')+'</div>'; }
+function screenBg(ctx,w,h){ ctx.fillStyle="#0a1424"; ctx.fillRect(0,0,w,h);
+  var padL=40,padR=14,padT=18,padB=26,pw=w-padL-padR,ph=h-padT-padB,i;
+  ctx.strokeStyle="rgba(120,110,80,.20)"; ctx.lineWidth=1;
+  for(i=0;i<=8;i++){var x=padL+pw*i/8+.5;ctx.beginPath();ctx.moveTo(x,padT);ctx.lineTo(x,padT+ph);ctx.stroke();}
+  for(i=0;i<=4;i++){var y=padT+ph*i/4+.5;ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(padL+pw,y);ctx.stroke();}
+  ctx.strokeStyle="rgba(180,150,90,.35)"; ctx.strokeRect(padL+.5,padT+.5,pw,ph);
+  return {padL:padL,padT:padT,pw:pw,ph:ph};
+}
+/* ---- shared drawing helpers ---- */
+function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function deviceBg(ctx,w,h){ var gd=ctx.createLinearGradient(0,0,0,h); gd.addColorStop(0,"#111c28"); gd.addColorStop(1,"#0a121b"); ctx.fillStyle=gd; ctx.fillRect(0,0,w,h); ctx.fillStyle="rgba(255,255,255,.025)"; for(var y=6;y<h;y+=13)for(var x=6;x<w;x+=13){ctx.fillRect(x,y,1,1);} }
+var SEG={'0':[1,1,1,1,1,1,0],'1':[0,1,1,0,0,0,0],'2':[1,1,0,1,1,0,1],'3':[1,1,1,1,0,0,1],'4':[0,1,1,0,0,1,1],'5':[1,0,1,1,0,1,1],'6':[1,0,1,1,1,1,1],'7':[1,1,1,0,0,0,0],'8':[1,1,1,1,1,1,1],'9':[1,1,1,1,0,1,1],'-':[0,0,0,0,0,0,1],' ':[0,0,0,0,0,0,0]};
+function seg7(ctx,x,y,w,h,ch,color){ var m=SEG[ch]||SEG[' '],t=Math.max(2.2,w*0.2),my=y+h/2,pad=t*0.6;
+  var L=[[x,y,x+w,y],[x+w,y,x+w,my],[x+w,my,x+w,y+h],[x,y+h,x+w,y+h],[x,my,x,y+h],[x,y,x,my],[x,my,x+w,my]];
+  ctx.lineCap="round"; ctx.lineWidth=t;
+  for(var i=0;i<7;i++){ var a=L[i],on=m[i]; ctx.strokeStyle=on?color:"rgba(90,150,140,.10)"; ctx.shadowBlur=on?7:0; ctx.shadowColor=color;
+    var dx=a[2]-a[0],dy=a[3]-a[1],ln=Math.hypot(dx,dy)||1,ux=dx/ln,uy=dy/ln;
+    ctx.beginPath(); ctx.moveTo(a[0]+ux*pad,a[1]+uy*pad); ctx.lineTo(a[2]-ux*pad,a[3]-uy*pad); ctx.stroke(); }
+  ctx.shadowBlur=0;
+}
+function lcdWidth(str,dh){ var dw=dh*0.56,gap=dh*0.24,w=0; for(var i=0;i<str.length;i++){ w+= str[i]==='.'?dw*0.42:(dw+gap);} return w; }
+function drawLCD(ctx,x,y,dh,str,color){ var dw=dh*0.56,gap=dh*0.24,cx=x;
+  for(var i=0;i<str.length;i++){ var ch=str[i];
+    if(ch==='.'){ ctx.fillStyle=color; ctx.shadowColor=color; ctx.shadowBlur=6; ctx.beginPath(); ctx.arc(cx+dw*0.18,y+dh,dh*0.09,0,7); ctx.fill(); ctx.shadowBlur=0; cx+=dw*0.42; continue; }
+    seg7(ctx,cx,y,dw,dh,ch,color); cx+=dw+gap; }
+  return cx;
+}
+function heatColor(t){ t=Math.max(0,Math.min(1,t)); var a,b,f; if(t<0.5){a=[77,139,255];b=[245,158,11];f=t/0.5;}else{a=[245,158,11];b=[220,38,38];f=(t-0.5)/0.5;} return 'rgb('+Math.round(a[0]+(b[0]-a[0])*f)+','+Math.round(a[1]+(b[1]-a[1])*f)+','+Math.round(a[2]+(b[2]-a[2])*f)+')'; }
+function loopPt(x0,y0,x1,y1,d){ var wA=x1-x0,hA=y1-y0; if(d<wA)return[x0+d,y0]; d-=wA; if(d<hA)return[x1,y0+d]; d-=hA; if(d<wA)return[x1-d,y1]; d-=wA; return[x0,y1-d]; }
+function glow(ctx,color,wid,fn){ ctx.strokeStyle=color; ctx.lineWidth=wid; ctx.shadowColor=color; ctx.shadowBlur=10; ctx.beginPath(); fn(); ctx.stroke(); ctx.shadowBlur=0; }
+
+/* ---- Oscilloscope: AC / DC waveforms ---- */
+function animWaves(cv){
+  var g=fitCanvas(cv),ctx=g.ctx,w=g.w,h=g.h,gen=_gen,start=performance.now();
+  function frame(now){ if(gen!==_gen)return; var t=(now-start)/1000,P=screenBg(ctx,w,h),mid=P.padT+P.ph/2,amp=P.ph*0.30,x;
+    ctx.setLineDash([4,5]); ctx.strokeStyle="rgba(200,170,110,.30)"; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(P.padL,mid); ctx.lineTo(P.padL+P.pw,mid); ctx.stroke(); ctx.setLineDash([]);
+    if(_wmode==="dc"||_wmode==="both"){ var yd=mid-amp*0.72; glow(ctx,"#4d8bff",2.6,function(){ctx.moveTo(P.padL,yd);ctx.lineTo(P.padL+P.pw,yd);}); }
+    if(_wmode==="ac"||_wmode==="both"){ glow(ctx,"#f59e0b",2.6,function(){ for(x=0;x<=P.pw;x+=2){var y=mid-amp*Math.sin((x/P.pw)*Math.PI*4 - t*3);if(x===0)ctx.moveTo(P.padL+x,y);else ctx.lineTo(P.padL+x,y);} }); }
+    var sx=P.padL+((t*0.4)%1)*P.pw; ctx.strokeStyle="rgba(120,220,190,.22)"; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(sx,P.padT); ctx.lineTo(sx,P.padT+P.ph); ctx.stroke();
+    var L=(_wmode==="dc")?[["DC ⎓","#4d8bff"],["12.6 V",""],[X("steady line","línea constante"),""]]
+        :(_wmode==="ac")?[["AC ~","#f59e0b"],["120.0 Vrms",""],["60 Hz"]]
+        :[["DC + AC","#5ff0d0"],["12.6 V ⎓",""],["120 V~ · 60 Hz",""]];
+    var bx=P.padL+P.pw-120,by=P.padT+6; roundRect(ctx,bx,by,114,52,6); ctx.fillStyle="rgba(6,20,30,.80)"; ctx.fill(); ctx.strokeStyle="rgba(120,180,160,.30)"; ctx.lineWidth=1; ctx.stroke();
+    ctx.textAlign="left"; ctx.font="bold 11px system-ui"; ctx.fillStyle=L[0][1]||"#cbe"; ctx.fillText(L[0][0],bx+8,by+16);
+    ctx.font="13px monospace"; ctx.fillStyle="#e6f2ee"; ctx.fillText(L[1][0],bx+8,by+33);
+    ctx.font="10px system-ui"; ctx.fillStyle="#9fcdbe"; ctx.fillText(L[2][0]||"",bx+8,by+47);
+    ctx.fillStyle="rgba(200,170,110,.5)"; ctx.font="9px system-ui"; ctx.textAlign="left"; ctx.fillText("50 V/div · 2 ms/div",P.padL+4,P.padT+P.ph+16);
+    requestAnimationFrame(frame); }
+  requestAnimationFrame(frame);
+}
+
+/* ---- Live DMM display (DC / AC voltage) ---- */
+var DCSEQ=[{v:"12.6",u:"V",full:60,en:"Car battery — 12.6 V DC",es:"Batería de auto — 12.6 V DC"},{v:"-54.5",u:"V",full:60,en:"-48V plant on float — -54.5 V",es:"Planta -48V en flote — -54.5 V"},{v:"5.0",u:"V",full:60,en:"USB supply — 5.0 V DC",es:"Fuente USB — 5.0 V DC"}];
+var ACSEQ=[{v:"120.0",u:"V",full:250,en:"Outlet L-N — 120 V AC",es:"Tomacorriente L-N — 120 V AC"},{v:"208.0",u:"V",full:250,en:"Three-phase L-L — 208 V AC",es:"Trifásico L-L — 208 V AC"},{v:"240.0",u:"V",full:250,en:"Split-phase L-L — 240 V AC",es:"Bifásico L-L — 240 V AC"}];
+function animMeter(cv,seq,sine){
+  var g=fitCanvas(cv),ctx=g.ctx,w=g.w,h=g.h,gen=_gen,start=performance.now(),per=2800;
+  function frame(now){ if(gen!==_gen)return; var el=now-start,idx=Math.floor(el/per)%seq.length,loc=el%per,cfg=seq[idx];
+    deviceBg(ctx,w,h);
+    var px=w*0.05,py=h*0.12,pw=w*0.55,ph=h*0.50;
+    roundRect(ctx,px,py,pw,ph,10); ctx.fillStyle="#06231d"; ctx.fill(); ctx.strokeStyle="rgba(80,180,150,.35)"; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.fillStyle="rgba(95,240,208,.55)"; ctx.font="bold "+(ph*0.14)+"px system-ui"; ctx.textAlign="left"; ctx.fillText(sine?"AC ~":"DC ⎓", px+10, py+ph*0.22);
+    var settle=Math.min(1,loc/500),neg=cfg.v.indexOf("-")===0,target=parseFloat(cfg.v),shown=target*(0.12+0.88*settle);
+    var dec=(cfg.v.split(".")[1]||"").length,str=shown.toFixed(dec); if(neg&&str.indexOf("-")!==0)str="-"+str;
+    var dh=ph*0.40,ty=py+ph*0.30,uw=pw*0.20,sw=lcdWidth(str,dh),sx=Math.max(px+pw*0.06,(px+pw-uw-10)-sw);
+    drawLCD(ctx,sx,ty,dh,str,"#5ff0d0");
+    ctx.fillStyle="#5ff0d0"; ctx.font="bold "+(ph*0.19)+"px system-ui"; ctx.textAlign="right"; ctx.fillText(cfg.u,px+pw-10,ty+dh*0.9);
+    var gy=py+ph-14,gx=px+12,gw=pw-24; ctx.strokeStyle="rgba(95,240,208,.3)"; ctx.lineWidth=1; ctx.strokeRect(gx,gy,gw,6);
+    ctx.fillStyle="rgba(95,240,208,.65)"; ctx.fillRect(gx,gy,gw*Math.min(1,Math.abs(shown)/(cfg.full||150)),6);
+    var cx=w*0.82,cy=h*0.34;
+    if(sine){ roundRect(ctx,cx-24,cy-30,48,58,8); ctx.fillStyle="#e9e3d3"; ctx.fill(); ctx.fillStyle="#333"; ctx.fillRect(cx-6,cy-16,4,15); ctx.fillRect(cx+2,cy-16,4,15); ctx.beginPath(); ctx.arc(cx,cy+12,4,0,7); ctx.fill(); ctx.fillStyle="#9a8f78"; ctx.font=(h*0.05)+"px system-ui"; ctx.textAlign="center"; ctx.fillText(X("outlet","toma"),cx,cy+44); }
+    else { var bt=cy-22,bh2=h*0.36; ctx.fillStyle="#2b3550"; roundRect(ctx,cx-20,bt,40,bh2,5); ctx.fill(); ctx.fillStyle="#e0483a"; ctx.fillRect(cx-20,bt,40,bh2*0.5); ctx.fillStyle="#fff"; ctx.font="bold "+(h*0.09)+"px system-ui"; ctx.textAlign="center"; ctx.fillText("+",cx,bt+bh2*0.34); ctx.fillText("–",cx,bt+bh2*0.86); }
+    var tipR=sine?[cx-4,cy-14]:[cx,cy-20],tipB=sine?[cx+4,cy-14]:[cx,cy+ (h*0.36)-24];
+    ctx.lineCap="round"; ctx.lineWidth=3;
+    ctx.strokeStyle="#e0483a"; ctx.beginPath(); ctx.moveTo(px+pw+4,py+ph*0.32); ctx.quadraticCurveTo(w*0.70,h*0.08,tipR[0],tipR[1]); ctx.stroke();
+    ctx.strokeStyle="#1c1c1c"; ctx.beginPath(); ctx.moveTo(px+pw+4,py+ph*0.62); ctx.quadraticCurveTo(w*0.70,h*0.92,tipB[0],tipB[1]); ctx.stroke();
+    var pulse=0.4+0.6*Math.abs(Math.sin(el/260)); ctx.fillStyle="rgba(255,220,120,"+pulse+")"; ctx.beginPath(); ctx.arc(tipR[0],tipR[1],3,0,7); ctx.fill(); ctx.beginPath(); ctx.arc(tipB[0],tipB[1],3,0,7); ctx.fill();
+    ctx.fillStyle="#cbb98a"; ctx.font=(h*0.072)+"px system-ui"; ctx.textAlign="center"; ctx.fillText(X(cfg.en,cfg.es),w/2,h-8);
+    requestAnimationFrame(frame); }
+  requestAnimationFrame(frame);
+}
+
+/* ---- Ohm's law: analyzer panel (V,R -> I,P) ---- */
+function drawOhm(cv,V,R){
+  var g=fitCanvas(cv),ctx=g.ctx,w=g.w,h=g.h; deviceBg(ctx,w,h);
+  var Iamp=V/R,P=V*Iamp;
+  var px=w*0.04,py=h*0.10,pw=w*0.40,ph=h*0.42;
+  roundRect(ctx,px,py,pw,ph,9); ctx.fillStyle="#06231d"; ctx.fill(); ctx.strokeStyle="rgba(80,180,150,.35)"; ctx.lineWidth=1.4; ctx.stroke();
+  ctx.fillStyle="rgba(95,240,208,.55)"; ctx.font="bold "+(ph*0.15)+"px system-ui"; ctx.textAlign="left"; ctx.fillText("DC ⎓ A",px+8,py+ph*0.24);
+  var istr=(Iamp>=100?Iamp.toFixed(0):Iamp.toFixed(2)),dh=ph*0.40,ty=py+ph*0.34,uw=pw*0.18,sw=lcdWidth(istr,dh),sx=Math.max(px+pw*0.05,(px+pw-uw-8)-sw);
+  drawLCD(ctx,sx,ty,dh,istr,"#5ff0d0");
+  ctx.fillStyle="#5ff0d0"; ctx.font="bold "+(ph*0.2)+"px system-ui"; ctx.textAlign="right"; ctx.fillText("A",px+pw-8,ty+dh*0.9);
+  var x0=w*0.52,x1=w*0.94,y0=h*0.12,y1=h*0.58,my=(y0+y1)/2;
+  ctx.strokeStyle="#8896ad"; ctx.lineWidth=3; ctx.strokeRect(x0,y0,x1-x0,y1-y0);
+  ctx.fillStyle="#e0483a"; ctx.fillRect(x0-7,my-16,14,16); ctx.fillStyle="#2b3550"; ctx.fillRect(x0-7,my,14,16);
+  ctx.fillStyle="#cfe0ff"; ctx.font="10px system-ui"; ctx.textAlign="center"; ctx.fillText(V+" V",x0,y0-6);
+  var heat=Math.min(1,P/2400),rc=heatColor(heat);
+  ctx.fillStyle=rc; ctx.shadowColor=rc; ctx.shadowBlur=6+heat*16; ctx.fillRect(x1-8,my-18,16,36); ctx.shadowBlur=0;
+  ctx.fillStyle="#e7d9b0"; ctx.fillText(R+" Ω",x1,y0-6);
+  var tt=performance.now()/1000,per=2*((x1-x0)+(y1-y0)),n=Math.max(4,Math.min(16,Math.round(Iamp)+3)),spd=50+Math.min(1,Iamp/12)*220;
+  for(var k=0;k<n;k++){ var d=((tt*spd+k*per/n)%per),pt=loopPt(x0,y0,x1,y1,d); ctx.fillStyle="#ffd86b"; ctx.shadowColor="#ffd86b"; ctx.shadowBlur=6; ctx.beginPath(); ctx.arc(pt[0],pt[1],2.6,0,7); ctx.fill(); }
+  ctx.shadowBlur=0;
+  ctx.fillStyle="#cfe0d8"; ctx.font="11px system-ui"; ctx.textAlign="center"; ctx.fillText("I = V / R",(x0+x1)/2,y1+16);
+  var by=h*0.80,bx=w*0.04,bw=w*0.92,bh=h*0.13; roundRect(ctx,bx,by,bw,bh,7); ctx.fillStyle="rgba(255,255,255,.05)"; ctx.fill();
+  var pf=Math.min(1,P/2400); ctx.fillStyle=heatColor(pf); roundRect(ctx,bx,by,Math.max(6,bw*pf),bh,7); ctx.fill();
+  ctx.fillStyle="#fff"; ctx.font="bold "+(bh*0.58)+"px system-ui"; ctx.textAlign="left"; ctx.fillText("P = V·I = "+Math.round(P)+" W",bx+10,by+bh*0.68);
+}
+
+/* ---- Watts: power + amps vs breaker limit ---- */
+function drawWatt(cv,V,Iamp){
+  var g=fitCanvas(cv),ctx=g.ctx,w=g.w,h=g.h; deviceBg(ctx,w,h);
+  var P=V*Iamp;
+  var px=w*0.05,py=h*0.10,pw=w*0.55,ph=h*0.42;
+  roundRect(ctx,px,py,pw,ph,9); ctx.fillStyle="#06231d"; ctx.fill(); ctx.strokeStyle="rgba(80,180,150,.35)"; ctx.lineWidth=1.4; ctx.stroke();
+  ctx.fillStyle="rgba(255,207,107,.6)"; ctx.font="bold "+(ph*0.14)+"px system-ui"; ctx.textAlign="left"; ctx.fillText("POWER",px+8,py+ph*0.22);
+  var kw=P>=1000,val=kw?(P/1000).toFixed(P>=10000?1:2):Math.round(P).toString(),unit=kw?"kW":"W";
+  var dh=ph*0.40,ty=py+ph*0.32,uw=pw*0.22,sw=lcdWidth(val,dh),sx=Math.max(px+pw*0.05,(px+pw-uw-8)-sw);
+  drawLCD(ctx,sx,ty,dh,val,"#ffcf6b");
+  ctx.fillStyle="#ffcf6b"; ctx.font="bold "+(ph*0.2)+"px system-ui"; ctx.textAlign="right"; ctx.fillText(unit,px+pw-8,ty+dh*0.9);
+  ctx.fillStyle="#9fb2c0"; ctx.font=(h*0.058)+"px system-ui"; ctx.textAlign="left"; ctx.fillText("P = "+V+" V × "+Iamp.toFixed(1)+" A",px+8,py+ph-8);
+  var bx=w*0.05,bw=w*0.9,by=h*0.66,bh=h*0.15,max=25;
+  ctx.fillStyle="#cbb98a"; ctx.font=(bh*0.42)+"px system-ui"; ctx.textAlign="left"; ctx.fillText(X("Current draw vs breaker limit","Corriente vs límite del breaker"),bx,by-6);
+  roundRect(ctx,bx,by,bw,bh,6); ctx.fillStyle="rgba(255,255,255,.06)"; ctx.fill();
+  var col=Iamp>15?"#dc2626":(Iamp>12?"#f59e0b":"#22c55e");
+  ctx.fillStyle=col; roundRect(ctx,bx,by,Math.max(6,bw*Math.min(1,Iamp/max)),bh,6); ctx.fill();
+  [15,20].forEach(function(a){ var tx=bx+bw*(a/max); ctx.strokeStyle="rgba(255,255,255,.5)"; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(tx,by-3); ctx.lineTo(tx,by+bh+3); ctx.stroke(); ctx.fillStyle="#dfe6ea"; ctx.font=(bh*0.32)+"px system-ui"; ctx.textAlign="center"; ctx.fillText(a+"A",tx,by+bh+bh*0.5); });
+  ctx.fillStyle="#fff"; ctx.font="bold "+(bh*0.5)+"px system-ui"; ctx.textAlign="left"; ctx.fillText(Iamp.toFixed(1)+" A",bx+8,by+bh*0.64);
+}
+function initCanvases(){ document.querySelectorAll("#card canvas.cv").forEach(function(cv){ var t=cv.dataset.cv; if(t==="waves")animWaves(cv); else if(t==="dcv")animMeter(cv,DCSEQ,false); else if(t==="acv")animMeter(cv,ACSEQ,true); }); }
+
+/* ===== Steps ===== */
+var STEPS=[
+  {ico:I.target, t:["Objective & safety","Objetivo y seguridad"], b:s_obj},
+  {ico:I.meter,  t:["The multimeter","El multímetro"], b:s_meter},
+  {ico:I.shield, t:["Safety & CAT ratings","Seguridad y CAT"], b:s_cat},
+  {ico:I.dc,     t:["DC voltage","Voltaje DC"], b:s_dcv},
+  {ico:I.wave,   t:["AC voltage","Voltaje AC"], b:s_acv},
+  {ico:I.wave,   t:["AC vs DC","AC vs DC"], b:s_acdc, i:i_acdc},
+  {ico:I.beep,   t:["Continuity","Continuidad"], b:s_cont},
+  {ico:I.ohm,    t:["Resistance (Ohms)","Resistencia (Ohms)"], b:s_res},
+  {ico:I.hz,     t:["Frequency (Hz)","Frecuencia (Hz)"], b:s_hz},
+  {ico:I.amp,    t:["Current — in series","Corriente — en serie"], b:s_amps},
+  {ico:I.clamp,  t:["Current — clamp meter","Corriente — pinza"], b:s_clamp},
+  {ico:I.calc,   t:["Ohm's law","Ley de Ohm"], b:s_ohm, i:i_ohm},
+  {ico:I.bolt,   t:["Power (Watts)","Potencia (Watts)"], b:s_watt, i:i_watt},
+  {ico:I.panel,  t:["Breaker panel basics","Tablero de breakers"], b:s_panel},
+  {ico:I.panel,  t:["Testing the panel","Probar el tablero"], b:s_ptest, i:i_ptest},
+  {ico:I.bug,    t:["Panel faults","Fallas del tablero"], b:s_pfault, i:i_pfault},
+  {ico:I.battery,t:["-48 VDC rectifier plant","Planta rectificadora -48 VDC"], b:s_rect},
+  {ico:I.battery,t:["Testing the -48V plant","Probar la planta -48V"], b:s_rtest, i:i_rtest},
+  {ico:I.bug,    t:["Rectifier faults","Fallas del rectificador"], b:s_rfault, i:i_rfault},
+  {ico:I.list,   t:["Procedure & safety recap","Procedimiento y seguridad"], b:s_proc, i:i_proc},
+  {ico:I.quiz,   t:["Quiz","Evaluación"], b:s_quiz, i:i_quiz},
+  {ico:I.flag,   t:["Wrap-up","Cierre"], b:s_end}
+];
+var cur=0;
+function tit(en,es){ return '<div class="step-ico">'+STEPS[cur].ico+'</div><h1>'+X(en,es)+'</h1>'; }
+
+/* 0 */
+function s_obj(){ return tit("Multimeter & electrical work — objective","Multímetro y trabajo eléctrico — objetivo")+
+  '<span class="pill">'+X("Electrical · Technical","Electricidad · Técnico")+'</span>'+
+  '<p class="lead">'+X("Learn to use a digital multimeter (volt/amp) for DC and AC voltage, continuity, resistance, frequency and current, calculate watts, and troubleshoot a breaker panel and a 120–220 VAC → −48 VDC rectifier.","Aprende a usar un multímetro digital (volt/amp) para voltaje DC y AC, continuidad, resistencia, frecuencia y corriente, calcular watts, y diagnosticar un tablero de breakers y un rectificador de 120–220 VAC → −48 VDC.")+'</p>'+
+  '<div class="grid3"><div class="box"><h3>'+X("Measure","Mide")+'</h3><p>V⎓ · V~ · Ω · Hz · A · '+X("continuity","continuidad")+'</p></div><div class="box"><h3>'+X("Calculate","Calcula")+'</h3><p>Ohm: V=I·R · P=V·I</p></div><div class="box"><h3>'+X("Troubleshoot","Diagnostica")+'</h3><p>'+X("breaker box · -48V plant","tablero · planta -48V")+'</p></div></div>'+
+  '<p class="note danger"><b>'+X("Safety","Seguridad")+':</b> '+X("electricity kills. De-energize and LOTO when possible; use PPE and a CAT-rated meter; use the one-hand rule; verify the meter on a known source first. This is an overview, not a substitute for certified training and NFPA 70E.","la electricidad mata. Des-energiza y aplica LOTO cuando sea posible; usa EPP y un multímetro con CAT adecuado; regla de una mano; verifica el multímetro en una fuente conocida primero. Es un resumen, no reemplaza el entrenamiento certificado ni NFPA 70E.")+'</p>'; }
+/* 1 */
+function s_meter(){ return tit("The digital multimeter","El multímetro digital")+
+  imgSlot("meter", G.meter, "Display, rotary dial, and input jacks.","Pantalla, perilla y jacks de entrada.","thumb")+
+  '<ul><li><b>'+X("Display","Pantalla")+'</b> — '+X("shows the reading and the mode symbol.","muestra la lectura y el símbolo del modo.")+'</li>'+
+  '<li><b>'+X("Rotary dial","Perilla")+'</b> — '+X("select the function: V⎓ (DC), V~ (AC), Ω, continuity, Hz, A.","selecciona la función: V⎓ (DC), V~ (AC), Ω, continuidad, Hz, A.")+'</li>'+
+  '<li><b>'+X("Jacks","Jacks")+'</b> — '+X("BLACK lead in COM always; RED in VΩ for volts/ohms, or in the A (fused) jack for current.","punta NEGRA en COM siempre; ROJA en VΩ para volts/ohms, o en el jack A (con fusible) para corriente.")+'</li></ul>'+
+  '<p class="note warn">'+X("Auto-range meters pick the range for you; on manual meters start high and step down.","Los de auto-rango eligen el rango; en los manuales empieza alto y baja.")+'</p>'; }
+/* 2 */
+function s_cat(){ return tit("Safety & CAT ratings","Seguridad y CAT")+
+  '<p class="lead">'+X("CAT ratings tell you the transient over-voltage a meter can survive. Use the right category for where you work.","Los CAT indican la sobretensión transitoria que soporta el multímetro. Usa la categoría correcta para donde trabajas.")+'</p>'+
+  '<div class="tbl-wrap"><table class="tbl"><tr><th>CAT</th><th>'+X("Where","Dónde")+'</th></tr>'+
+  '<tr><td><b>CAT II</b></td><td>'+X("receptacle circuits, appliances.","circuitos de tomacorriente, electrodomésticos.")+'</td></tr>'+
+  '<tr><td><b>CAT III</b></td><td>'+X("distribution: breaker panels, busbars, 3-phase.","distribución: tableros, busbars, trifásico.")+'</td></tr>'+
+  '<tr><td><b>CAT IV</b></td><td>'+X("service entrance, utility, the meter/main.","acometida, servicio, el medidor/main.")+'</td></tr></table></div>'+
+  '<ul><li>'+X("For a breaker panel use CAT III 600/1000V minimum (CAT IV at the service entrance).","Para un tablero usa mínimo CAT III 600/1000V (CAT IV en la acometida).")+'</li>'+
+  '<li>'+X("Inspect leads for cracks; look for UL/ETL marks; keep fingers behind the guards.","Revisa las puntas; busca marcas UL/ETL; dedos detrás de los protectores.")+'</li>'+
+  '<li>'+X("Live-dead-live: prove the meter works on a known live source before AND after testing a \"dead\" circuit.","Vivo-muerto-vivo: comprueba el multímetro en una fuente viva conocida antes Y después de medir un circuito \"muerto\".")+'</li></ul>'; }
+/* 3 */
+function s_dcv(){ return tit("Measuring DC voltage (V⎓)","Medir voltaje DC (V⎓)")+
+  '<p class="lead">'+X("DC is steady, one direction (batteries, the −48V plant, control circuits). Set the dial to V⎓.","La DC es constante, en un solo sentido (baterías, planta −48V, circuitos de control). Pon la perilla en V⎓.")+'</p>'+
+  screen("dcv","The meter reads a steady DC value across the source.","El multímetro lee un valor DC constante a través de la fuente.")+
+  '<ol><li>'+X("BLACK lead → COM, RED → VΩ jack.","Punta NEGRA → COM, ROJA → jack VΩ.")+'</li>'+
+  '<li>'+X("Touch RED to +, BLACK to −, across the two points (in parallel).","Toca ROJA a +, NEGRA a −, entre los dos puntos (en paralelo).")+'</li>'+
+  '<li>'+X("Read the number. A minus sign just means the leads are reversed (or it is a negative rail like −48V).","Lee el número. El signo menos solo indica puntas invertidas (o un riel negativo como −48V).")+'</li></ol>'+
+  '<div class="grid3"><div class="box"><h3>'+X("Car battery","Batería")+'</h3><p>≈ 12.6 V</p></div><div class="box"><h3>-48V plant</h3><p>≈ −54.5 V '+X("(float)","(flote)")+'</p></div><div class="box"><h3>'+X("USB","USB")+'</h3><p>≈ 5 V</p></div></div>'+
+  '<p class="note">'+X("Measure in parallel (across) — never break the circuit for voltage.","Mide en paralelo (a través) — nunca abras el circuito para medir voltaje.")+'</p>'; }
+/* 4 */
+function s_acv(){ return tit("Measuring AC voltage (V~)","Medir voltaje AC (V~)")+
+  '<p class="lead">'+X("AC alternates direction 50/60 times per second (mains power). Set the dial to V~. The meter shows the RMS (effective) value.","La AC alterna 50/60 veces por segundo (red eléctrica). Pon la perilla en V~. El multímetro muestra el valor RMS (eficaz).")+'</p>'+
+  screen("acv","On V~ the meter shows the RMS value of the alternating voltage.","En V~ el multímetro muestra el valor RMS del voltaje alterno.")+
+  '<div class="grid3"><div class="box"><h3>L-N (US)</h3><p>≈ 120 V</p></div><div class="box"><h3>L-L / L-N</h3><p>≈ 208–240 V</p></div><div class="box"><h3>'+X("Freq","Frec")+'</h3><p>50 / 60 Hz</p></div></div>'+
+  '<ul><li>'+X("Black to neutral/ground first, then tap red to the hot — minimizes an accidental short.","Negra a neutro/tierra primero, luego toca la roja al vivo — reduce un corto accidental.")+'</li>'+
+  '<li>'+X("For voltage you do NOT need to break the circuit; measure across.","Para voltaje NO necesitas abrir el circuito; mide a través.")+'</li></ul>'+
+  '<p class="note warn">'+X("Confirm you are on V~, not Ω or A, before touching a live circuit.","Confirma que estás en V~, no en Ω ni A, antes de tocar un circuito vivo.")+'</p>'; }
+/* 5 */
+function s_acdc(){ return tit("AC vs DC","AC vs DC")+
+  '<p class="lead">'+X("Same volts, different shape. Pick the wrong mode and the reading is wrong. Toggle the view:","Mismos volts, distinta forma. Si eliges mal el modo, la lectura es incorrecta. Cambia la vista:")+'</p>'+
+  screen("waves","DC is a flat line; AC is a sine wave.","La DC es una línea recta; la AC es una onda senoidal.")+
+  '<div class="row" style="justify-content:center;gap:8px"><button class="btn ghost" id="bAc">AC</button><button class="btn ghost" id="bDc">DC</button><button class="btn ghost on" id="bBoth">'+X("Both","Ambas")+'</button></div>'+
+  '<p class="note good"><b>'+X("Tip:","Tip:")+'</b> '+X("a DC reading on an AC circuit (or vice-versa) reads ~0 or garbage — a clue you are on the wrong mode.","una lectura DC en un circuito AC (o al revés) da ~0 o basura — señal de que estás en el modo equivocado.")+'</p>'; }
+function i_acdc(){ _wmode="both"; function set(m,btn){ _wmode=m; ["bAc","bDc","bBoth"].forEach(function(id){$(id).classList.remove("on");}); btn.classList.add("on"); }
+  $("bAc").onclick=function(){set("ac",this);}; $("bDc").onclick=function(){set("dc",this);}; $("bBoth").onclick=function(){set("both",this);}; }
+/* 6 */
+function s_cont(){ return tit("Continuity","Continuidad")+
+  '<p class="lead">'+X("Checks if two points are electrically joined. The meter beeps when resistance is very low (a good path). Power MUST be off.","Verifica si dos puntos están unidos eléctricamente. El multímetro pita cuando la resistencia es muy baja (buen camino). El circuito DEBE estar apagado.")+'</p>'+
+  '<ul><li>'+X("Set the dial to the continuity symbol (sound waves).","Pon la perilla en el símbolo de continuidad (ondas de sonido).")+'</li>'+
+  '<li>'+X("Beep + near 0 Ω = continuous (good fuse, wire, closed switch).","Pita + cerca de 0 Ω = continuo (fusible bueno, cable, interruptor cerrado).")+'</li>'+
+  '<li>'+X("No beep + \"OL\" = open (blown fuse, broken wire, open switch).","Sin pitido + \"OL\" = abierto (fusible fundido, cable roto, interruptor abierto).")+'</li></ul>'+
+  '<p class="note danger">'+X("Never run continuity on a live circuit — de-energize first.","Nunca hagas continuidad en un circuito vivo — des-energiza primero.")+'</p>'; }
+/* 7 */
+function s_res(){ return tit("Resistance (Ohms, Ω)","Resistencia (Ohms, Ω)")+
+  '<p class="lead">'+X("Resistance is the opposition to current. Measure with the circuit DE-ENERGIZED and the component isolated (other paths can fool the reading).","La resistencia es la oposición a la corriente. Mide con el circuito DES-ENERGIZADO y el componente aislado (otros caminos alteran la lectura).")+'</p>'+
+  '<div class="grid3"><div class="box"><h3>'+X("Good wire","Cable bueno")+'</h3><p>≈ 0 Ω</p></div><div class="box"><h3>'+X("Heater / coil","Resistencia / bobina")+'</h3><p>'+X("a few Ω to kΩ","unos Ω a kΩ")+'</p></div><div class="box"><h3>'+X("Open","Abierto")+'</h3><p>OL (∞)</p></div></div>'+
+  '<ul><li>'+X("\"OL\" means over-limit / open. 0 Ω means a short or a solid connection.","\"OL\" significa fuera de límite / abierto. 0 Ω es un corto o conexión sólida.")+'</li>'+
+  '<li>'+X("Compare to the datasheet or a known-good part.","Compara con la hoja de datos o una pieza buena conocida.")+'</li></ul>'; }
+/* 8 */
+function s_hz(){ return tit("Frequency (Hz)","Frecuencia (Hz)")+
+  '<p class="lead">'+X("Frequency = cycles per second of an AC signal. Mains is 60 Hz (Americas) or 50 Hz (much of the world). Useful to check generators and VFDs.","Frecuencia = ciclos por segundo de una señal AC. La red es 60 Hz (América) o 50 Hz (gran parte del mundo). Útil para revisar generadores y variadores.")+'</p>'+
+  '<div class="grid3"><div class="box"><h3>'+X("Mains","Red")+'</h3><p>50 / 60 Hz</p></div><div class="box"><h3>'+X("Generator","Generador")+'</h3><p>'+X("should hold 60 Hz","debe mantener 60 Hz")+'</p></div><div class="box"><h3>VFD</h3><p>'+X("varies with speed","varía con velocidad")+'</p></div></div>'+
+  '<p class="note">'+X("Select Hz (often a shared position with V~). A generator drifting off 60 Hz signals a governor/RPM problem.","Selecciona Hz (a veces comparte posición con V~). Un generador fuera de 60 Hz indica problema de governor/RPM.")+'</p>'; }
+/* 9 */
+function s_amps(){ return tit("Current — measuring in series","Corriente — medir en serie")+
+  '<p class="lead">'+X("To measure current with the leads, the meter goes IN SERIES — you break the circuit and the current flows THROUGH the meter.","Para medir corriente con las puntas, el multímetro va EN SERIE — abres el circuito y la corriente pasa POR el multímetro.")+'</p>'+
+  '<ol><li>'+X("Move the RED lead to the A (or mA) jack — it is fused.","Mueve la punta ROJA al jack A (o mA) — tiene fusible.")+'</li>'+
+  '<li>'+X("Open the circuit and connect the meter across the break, so current flows through it.","Abre el circuito y conecta el multímetro en el corte, para que la corriente pase por él.")+'</li>'+
+  '<li>'+X("Start on the highest range; do not exceed the fused rating (often 10 A).","Empieza en el rango más alto; no excedas el fusible (a menudo 10 A).")+'</li></ol>'+
+  '<p class="note danger"><b>'+X("Deadly mistake:","Error mortal:")+'</b> '+X("NEVER touch the leads across a voltage source while they are in the A jack — that is a direct short. For most field work, use a clamp meter instead.","NUNCA toques las puntas a una fuente de voltaje con ellas en el jack A — es un corto directo. Para campo, usa mejor una pinza.")+'</p>'; }
+/* 10 */
+function s_clamp(){ return tit("Current — with a clamp meter","Corriente — con pinza")+
+  imgSlot("clamp", G.clamp, "Clamp around ONE conductor — no circuit break.","Pinza alrededor de UN conductor — sin abrir el circuito.","thumb")+
+  '<p class="lead">'+X("A clamp meter reads current by the magnetic field around a conductor — no need to break the circuit, and it is safe on high current.","La pinza mide corriente por el campo magnético alrededor del conductor — sin abrir el circuito, y es segura en alta corriente.")+'</p>'+
+  '<ul><li>'+X("Clamp around ONE conductor only. Two conductors (hot + neutral) cancel and read ~0.","Abraza UN solo conductor. Dos conductores (vivo + neutro) se cancelan y da ~0.")+'</li>'+
+  '<li>'+X("AC clamps use induction; true-DC clamps use a Hall-effect sensor (zero the meter first).","Las pinzas AC usan inducción; las de DC real usan sensor de Hall (pon el cero primero).")+'</li>'+
+  '<li>'+X("Great for load current, motor amps, and the -48V plant output.","Ideal para corriente de carga, amperaje de motores y la salida de la planta -48V.")+'</li></ul>'; }
+/* 11 */
+function s_ohm(){ return tit("Ohm's law: V = I · R","Ley de Ohm: V = I · R")+
+  '<p class="lead">'+X("Voltage, current and resistance are linked: V = I · R. Change voltage or resistance and watch the current.","Voltaje, corriente y resistencia se relacionan: V = I · R. Cambia el voltaje o la resistencia y observa la corriente.")+'</p>'+
+  '<div class="illus"><canvas id="ohmCv"></canvas></div>'+
+  '<div class="row"><span style="min-width:110px;font-size:13px;color:var(--sub)">'+X("Voltage","Voltaje")+' (V)</span><input type="range" id="ov" min="1" max="240" value="120"><span class="val" id="ovv"></span></div>'+
+  '<div class="row"><span style="min-width:110px;font-size:13px;color:var(--sub)">'+X("Resistance","Resistencia")+' (Ω)</span><input type="range" id="or" min="1" max="240" value="60"><span class="val" id="orv"></span></div>'+
+  '<div class="readout"><div class="stat"><b id="oi"></b><span>'+X("Current I","Corriente I")+'</span></div><div class="stat"><b id="op"></b><span>'+X("Power P","Potencia P")+'</span></div></div>'; }
+function i_ohm(){ var ov=$("ov"),or=$("or"),cv=$("ohmCv"),V=+ov.value,R=+or.value,gen=_gen;
+  function txt(){ V=+ov.value; R=+or.value; var Iamp=V/R,P=V*Iamp; $("ovv").textContent=V+" V"; $("orv").textContent=R+" Ω"; $("oi").textContent=Iamp.toFixed(2)+" A"; $("op").textContent=Math.round(P)+" W"; }
+  ov.oninput=txt; or.oninput=txt; txt();
+  (function loop(){ if(gen!==_gen)return; if(cv) drawOhm(cv,V,R); requestAnimationFrame(loop); })(); }
+/* 12 */
+function s_watt(){ return tit("Power (Watts): P = V · I","Potencia (Watts): P = V · I")+
+  '<p class="lead">'+X("Power is how much work the electricity does. P = V · I. You can also compute P = I²·R or P = V²/R. Watts ÷ volts = the amps a load will draw.","La potencia es cuánto trabajo hace la electricidad. P = V · I. También P = I²·R o P = V²/R. Watts ÷ volts = los amperios que jalará una carga.")+'</p>'+
+  '<div class="illus"><canvas id="wattCv"></canvas></div>'+
+  '<div class="row"><span style="min-width:110px;font-size:13px;color:var(--sub)">'+X("Voltage","Voltaje")+' (V)</span><input type="range" id="wv" min="12" max="240" value="120"><span class="val" id="wvv"></span></div>'+
+  '<div class="row"><span style="min-width:110px;font-size:13px;color:var(--sub)">'+X("Current","Corriente")+' (A)</span><input type="range" id="wi" min="0.1" max="20" step="0.1" value="5"><span class="val" id="wiv"></span></div>'+
+  '<div class="readout"><div class="stat"><b id="wp"></b><span>'+X("Power","Potencia")+'</span></div></div>'+
+  '<p class="note good"><b>'+X("Example:","Ejemplo:")+'</b> '+X("a 1500 W heater on 120 V draws 1500 ÷ 120 = 12.5 A — near a 15 A breaker limit.","un calentador de 1500 W en 120 V jala 1500 ÷ 120 = 12.5 A — cerca del límite de un breaker de 15 A.")+'</p>'; }
+function i_watt(){ var wv=$("wv"),wi=$("wi"),cv=$("wattCv"),gen=_gen; function upd(){ var V=+wv.value,Iamp=+wi.value,P=V*Iamp; $("wvv").textContent=V+" V"; $("wiv").textContent=Iamp.toFixed(1)+" A"; $("wp").textContent=Math.round(P)+" W"; } wv.oninput=upd; wi.oninput=upd; upd(); (function loop(){ if(gen!==_gen)return; if(cv)drawWatt(cv,+wv.value,+wi.value); requestAnimationFrame(loop); })(); }
+/* 13 */
+function s_panel(){ return tit("Breaker panel basics","Fundamentos del tablero")+
+  '<p class="lead">'+X("US residential/small-commercial power is split-phase: two hot legs (L1, L2) 180° apart, a neutral and a ground.","La energía residencial/comercial pequeña en EE.UU. es bifásica (split-phase): dos vivos (L1, L2) a 180°, un neutro y una tierra.")+'</p>'+
+  '<div class="tbl-wrap"><table class="tbl"><tr><th>'+X("Measure","Medir")+'</th><th>'+X("Expected","Esperado")+'</th></tr>'+
+  '<tr><td>L1 → N</td><td><b>≈ 120 V</b></td></tr><tr><td>L2 → N</td><td><b>≈ 120 V</b></td></tr>'+
+  '<tr><td>L1 → L2</td><td><b>≈ 240 V</b></td></tr><tr><td>N → G</td><td><b>≈ 0–2 V</b></td></tr></table></div>'+
+  '<p class="note">'+X("240V loads use both hots; 120V loads use one hot + neutral. Neutral and ground are bonded only at the main service.","Las cargas de 240V usan ambos vivos; las de 120V usan un vivo + neutro. Neutro y tierra se unen solo en el servicio principal.")+'</p>'; }
+/* 14 */
+var PT=[
+  {en:"Main breaker (in)",es:"Breaker principal (entrada)",d_en:"Verify incoming L1-L2 ≈ 240 V and each leg-to-neutral ≈ 120 V.",d_es:"Verifica L1-L2 ≈ 240 V y cada vivo a neutro ≈ 120 V."},
+  {en:"Branch breaker (out)",es:"Breaker de rama (salida)",d_en:"Leg-to-neutral ≈ 120 V with breaker ON. 0 V = tripped/bad breaker.",d_es:"Vivo a neutro ≈ 120 V con el breaker en ON. 0 V = disparado/breaker malo."},
+  {en:"Neutral bus",es:"Barra de neutro",d_en:"Should be ~0 V to ground. Loose neutral causes voltage swings.",d_es:"Debe estar a ~0 V respecto a tierra. Un neutro flojo causa variaciones."},
+  {en:"Ground bus",es:"Barra de tierra",d_en:"N-G should be near 0 V. A real difference means a bonding/wiring fault.",d_es:"N-G debe ser casi 0 V. Una diferencia real indica falla de puente/cableado."}
+];
+function s_ptest(){ var pts=[[30,26],[70,40],[46,72],[80,70]];
+  var hs=PT.map(function(_,i){return '<button class="hs" data-i="'+i+'" style="left:'+pts[i][0]+'%;top:'+pts[i][1]+'%">'+(i+1)+'</button>';}).join("");
+  return tit("Testing the breaker panel","Probar el tablero")+
+  '<p class="lead">'+X("Set the meter to V~. Black on neutral/ground, tap red on each point. Tap a number:","Pon el multímetro en V~. Negra en neutro/tierra, toca la roja en cada punto. Toca un número:")+'</p>'+
+  '<div class="scene" style="height:210px">'+G.panel.replace("viewBox=\"0 0 140 100\"","viewBox=\"0 0 140 100\" style=\"width:100%;height:100%\"")+hs+'</div>'+
+  '<div class="reveal" id="rev">'+X("Tap a test point (1–4).","Toca un punto de prueba (1–4).")+'</div>'+
+  '<p class="note danger">'+X("These points are LIVE. One-hand rule, CAT III+ meter, eye protection.","Estos puntos están VIVOS. Regla de una mano, multímetro CAT III+, protección ocular.")+'</p>'; }
+function i_ptest(){ document.querySelectorAll(".hs").forEach(function(b){ b.onclick=function(){ var p=PT[+b.dataset.i]; $("rev").innerHTML='<b>'+(+b.dataset.i+1)+'. '+X(p.en,p.es)+'</b><br>'+X(p.d_en,p.d_es); b.classList.add("seen"); }; }); }
+/* 15 */
+var PF=[
+  {en:"Tripped / bad breaker",es:"Breaker disparado / malo",d_en:"120 V into the breaker but 0 V out. Reset it; if it trips again, find the fault or replace the breaker.",d_es:"120 V a la entrada pero 0 V a la salida. Resetéalo; si vuelve a disparar, busca la falla o cámbialo."},
+  {en:"Open neutral",es:"Neutro abierto",d_en:"L-L reads ~120 V (not 240), lights dim/bright, N-G elevated. Dangerous — find the loose/broken neutral.",d_es:"L-L lee ~120 V (no 240), luces tenues/brillantes, N-G elevado. Peligroso — busca el neutro flojo/roto."},
+  {en:"Voltage drop / loose lug",es:"Caída de voltaje / lug flojo",d_en:"Reads ~200 V instead of 240, connection warm. High-resistance joint — re-terminate/torque.",d_es:"Lee ~200 V en vez de 240, conexión tibia. Unión de alta resistencia — re-termina/torquea."},
+  {en:"Reversed polarity / mis-wire",es:"Polaridad invertida / mal cableado",d_en:"N-G not near 0, or hot on the wrong terminal. Live chassis hazard — correct the wiring.",d_es:"N-G no cerca de 0, o vivo en el terminal equivocado. Riesgo de chasis vivo — corrige el cableado."}
+];
+function s_pfault(){ var cards=PF.map(function(f,i){return '<button class="fault" data-i="'+i+'"><div class="illus" style="aspect-ratio:16/7">'+G.panel.replace("viewBox=\"0 0 140 100\"","viewBox=\"0 0 140 100\" style=\"width:100%;height:100%\"")+'</div><div class="ft"><b>'+(i+1)+'. '+X(f.en,f.es)+'</b><span>'+X("Tap for detail","Toca para el detalle")+'</span></div></button>';}).join("");
+  return tit("Common breaker panel faults","Fallas comunes del tablero")+'<p class="lead">'+X("Tap each to see the symptom and fix.","Toca cada una para ver el síntoma y la solución.")+'</p><div class="faults">'+cards+'</div><div class="reveal" id="rev">'+X("Select a fault (1–4).","Selecciona una falla (1–4).")+'</div>'; }
+function i_pfault(){ document.querySelectorAll(".fault").forEach(function(b){ b.onclick=function(){ var f=PF[+b.dataset.i]; $("rev").innerHTML='<b>'+(+b.dataset.i+1)+'. '+X(f.en,f.es)+'</b><br>'+X(f.d_en,f.d_es); }; }); }
+/* 16 */
+function s_rect(){ return tit("-48 VDC rectifier plant","Planta rectificadora -48 VDC")+
+  imgSlot("rect", G.rect, "Rectifier modules convert AC to -48 VDC and float the battery.","Los módulos rectificadores convierten AC a -48 VDC y flotan la batería.","thumb")+
+  '<p class="lead">'+X("Telecom equipment runs on −48 VDC. Rectifiers convert 120–220 VAC to −48 VDC, power the load and float-charge the battery, which keeps the load up if AC fails.","Los equipos de telecom usan −48 VDC. Los rectificadores convierten 120–220 VAC a −48 VDC, alimentan la carga y flotan la batería, que sostiene la carga si falla la AC.")+'</p>'+
+  '<ul><li>'+X("−48V uses POSITIVE ground: the return (0 V) is grounded, the −48V rail is negative. This reduces corrosion.","−48V usa TIERRA POSITIVA: el retorno (0 V) va a tierra, el riel −48V es negativo. Reduce la corrosión.")+'</li>'+
+  '<li>'+X("Float voltage is about −54.5 V (a 24-cell string at ~2.27 V/cell), not exactly −48.","El voltaje de flote es de unos −54.5 V (24 celdas a ~2.27 V/celda), no exactamente −48.")+'</li>'+
+  '<li>'+X("Parts: AC input breaker, rectifier modules, controller, battery, distribution breakers/fuses, LVD.","Partes: breaker de entrada AC, módulos rectificadores, controlador, batería, breakers/fusibles de distribución, LVD.")+'</li></ul>'; }
+/* 17 */
+var RT=[
+  {en:"AC input",es:"Entrada AC",d_en:"Measure V~ at the input: ≈ 120 or 208–240 VAC. 0 V = tripped AC breaker or lost feed.",d_es:"Mide V~ en la entrada: ≈ 120 o 208–240 VAC. 0 V = breaker AC disparado o alimentación perdida."},
+  {en:"-48V DC bus",es:"Bus -48V DC",d_en:"V⎓, black on return/ground, red on -48: ≈ −54.5 V on float. Around −48 and falling = on battery (AC failed).",d_es:"V⎓, negra en retorno/tierra, roja en -48: ≈ −54.5 V en flote. Cerca de −48 y bajando = en batería (falló la AC)."},
+  {en:"Ripple",es:"Ripple",d_en:"Switch to AC mV on the DC output: should be tens of mV. High ripple = failing filter/rectifier.",d_es:"Cambia a mV AC en la salida DC: debe ser decenas de mV. Ripple alto = filtro/rectificador fallando."},
+  {en:"Fuses / breakers",es:"Fusibles / breakers",d_en:"0 V across a closed breaker/good fuse. Voltage across it = open device; the load beyond is dead.",d_es:"0 V a través de un breaker cerrado/fusible bueno. Voltaje a través = dispositivo abierto; la carga más allá está muerta."}
+];
+function s_rtest(){ var pts=[[22,30],[80,42],[50,72],[30,72]];
+  var hs=RT.map(function(_,i){return '<button class="hs" data-i="'+i+'" style="left:'+pts[i][0]+'%;top:'+pts[i][1]+'%">'+(i+1)+'</button>';}).join("");
+  return tit("Testing the -48V plant","Probar la planta -48V")+
+  '<p class="lead">'+X("Check the AC in, the DC out, ripple and the protective devices. Tap a point:","Revisa la AC de entrada, la DC de salida, el ripple y las protecciones. Toca un punto:")+'</p>'+
+  '<div class="scene" style="height:210px">'+G.rect.replace("viewBox=\"0 0 140 100\"","viewBox=\"0 0 140 100\" style=\"width:100%;height:100%\"")+hs+'</div>'+
+  '<div class="reveal" id="rev">'+X("Tap a test point (1–4).","Toca un punto de prueba (1–4).")+'</div>'+
+  '<p class="note warn">'+X("Mind polarity: on the DC bus the -48 terminal is negative and the return is ground (positive).","Cuida la polaridad: en el bus DC el terminal -48 es negativo y el retorno es tierra (positivo).")+'</p>'; }
+function i_rtest(){ document.querySelectorAll(".hs").forEach(function(b){ b.onclick=function(){ var p=RT[+b.dataset.i]; $("rev").innerHTML='<b>'+(+b.dataset.i+1)+'. '+X(p.en,p.es)+'</b><br>'+X(p.d_en,p.d_es); b.classList.add("seen"); }; }); }
+/* 18 */
+var RF=[
+  {en:"Tripped AC breaker / blown input fuse",es:"Breaker AC disparado / fusible de entrada fundido",d_en:"Rectifiers off, plant runs on battery and voltage drops. Restore AC; find why it tripped.",d_es:"Rectificadores apagados, la planta va en batería y el voltaje baja. Restaura la AC; halla por qué disparó."},
+  {en:"Failed rectifier module",es:"Módulo rectificador fallado",d_en:"Alarm LED, less total current available. Hot-swap the module (they are redundant).",d_es:"LED de alarma, menos corriente total disponible. Cambia el módulo en caliente (son redundantes)."},
+  {en:"Low output / on battery",es:"Salida baja / en batería",d_en:"Bus near −48 and falling means AC failed or the rectifiers can't hold float. Act before LVD.",d_es:"Bus cerca de −48 y bajando: falló la AC o los rectificadores no sostienen el flote. Actúa antes del LVD."},
+  {en:"High ripple",es:"Ripple alto",d_en:"AC mV on the DC bus is high — a failing filter capacitor or rectifier. Replace the module.",d_es:"mV AC en el bus DC altos — capacitor de filtro o rectificador fallando. Cambia el módulo."},
+  {en:"Reversed polarity",es:"Polaridad invertida",d_en:"-48 and return swapped — damages equipment and is a hazard. Verify before connecting a load.",d_es:"-48 y retorno intercambiados — daña equipos y es peligroso. Verifica antes de conectar una carga."}
+];
+function s_rfault(){ var cards=RF.map(function(f,i){return '<button class="fault" data-i="'+i+'"><div class="illus" style="aspect-ratio:16/7">'+G.rect.replace("viewBox=\"0 0 140 100\"","viewBox=\"0 0 140 100\" style=\"width:100%;height:100%\"")+'</div><div class="ft"><b>'+(i+1)+'. '+X(f.en,f.es)+'</b><span>'+X("Tap for detail","Toca para el detalle")+'</span></div></button>';}).join("");
+  return tit("Common rectifier / -48V faults","Fallas comunes del rectificador / -48V")+'<p class="lead">'+X("Tap each to see the symptom and fix.","Toca cada una para ver el síntoma y la solución.")+'</p><div class="faults">'+cards+'</div><div class="reveal" id="rev">'+X("Select a fault (1–5).","Selecciona una falla (1–5).")+'</div>'; }
+function i_rfault(){ document.querySelectorAll(".fault").forEach(function(b){ b.onclick=function(){ var f=RF[+b.dataset.i]; $("rev").innerHTML='<b>'+(+b.dataset.i+1)+'. '+X(f.en,f.es)+'</b><br>'+X(f.d_en,f.d_es); }; }); }
+/* 19 */
+var CHK=[
+  {en:"Right tool: CAT III+ meter, inspected leads, correct function.",es:"Herramienta correcta: multímetro CAT III+, puntas revisadas, función correcta."},
+  {en:"De-energize + LOTO where possible; verify dead (live-dead-live).",es:"Des-energiza + LOTO cuando se pueda; verifica muerto (vivo-muerto-vivo)."},
+  {en:"PPE: rated gloves, eye protection; one-hand rule.",es:"EPP: guantes adecuados, protección ocular; regla de una mano."},
+  {en:"Voltage in parallel; current with a clamp (or A-jack in series only when needed).",es:"Voltaje en paralelo; corriente con pinza (o jack A en serie solo si hace falta)."},
+  {en:"Continuity/ohms ONLY on de-energized circuits.",es:"Continuidad/ohms SOLO en circuitos des-energizados."},
+  {en:"Mind polarity on the -48V plant (positive ground).",es:"Cuida la polaridad en la planta -48V (tierra positiva)."}
+];
+function s_proc(){ var items=CHK.map(function(c,i){return '<div class="chk" data-i="'+i+'"><span class="bx">✓</span><span class="txt"><b>'+X(c.en,c.es)+'</b></span></div>';}).join("");
+  return tit("Procedure & safety recap","Procedimiento y seguridad")+'<p class="lead">'+X("Run this every time. Tap each item.","Hazlo siempre. Toca cada punto.")+'</p>'+items+'<p class="note" id="ckMsg"></p>'; }
+function i_proc(){ var t=CHK.length; function upd(){ var d=document.querySelectorAll(".chk.done").length; $("ckMsg").textContent=d<t?(X("Checked: ","Verificados: ")+d+"/"+t):X("Ready — work safe.","Listo — trabaja seguro."); } document.querySelectorAll(".chk").forEach(function(c){ c.onclick=function(){ c.classList.toggle("done"); upd(); }; }); upd(); }
+/* 20 */
+var QUIZ=[
+  {en:"To measure voltage, the meter goes…",es:"Para medir voltaje, el multímetro va…",o_en:["In series","In parallel (across)","In the A jack","Off"],o_es:["En serie","En paralelo (a través)","En el jack A","Apagado"],a:1},
+  {en:"Continuity/ohms must be done…",es:"Continuidad/ohms se hace…",o_en:["On a live circuit","On a de-energized circuit","At 240 V","Never"],o_es:["En circuito vivo","En circuito des-energizado","A 240 V","Nunca"],a:1},
+  {en:"L1-to-L2 in a US split-phase panel ≈",es:"L1 a L2 en un tablero split-phase ≈",o_en:["120 V","240 V","48 V","12 V"],o_es:["120 V","240 V","48 V","12 V"],a:1},
+  {en:"L1-L2 reads ~120 V instead of 240. Likely…",es:"L1-L2 lee ~120 V en vez de 240. Probable…",o_en:["Normal","Open/lost neutral or leg","Too much power","Good"],o_es:["Normal","Neutro/vivo abierto o perdido","Demasiada potencia","Bien"],a:1},
+  {en:"A -48V plant float voltage is about…",es:"El voltaje de flote de una planta -48V es de unos…",o_en:["-48.0 V","-54.5 V","-24 V","-120 V"],o_es:["-48.0 V","-54.5 V","-24 V","-120 V"],a:1},
+  {en:"A 1500 W heater on 120 V draws…",es:"Un calentador de 1500 W en 120 V jala…",o_en:["1.25 A","12.5 A","125 A","0.8 A"],o_es:["1.25 A","12.5 A","125 A","0.8 A"],a:1},
+  {en:"A clamp meter must go around…",es:"La pinza debe abrazar…",o_en:["Both conductors","One conductor","The whole cable jacket","Nothing"],o_es:["Ambos conductores","Un conductor","Toda la chaqueta","Nada"],a:1}
+];
+function s_quiz(){ var qs=QUIZ.map(function(q,i){var o=(LANG==="es"?q.o_es:q.o_en).map(function(x,j){return '<button class="opt" data-q="'+i+'" data-o="'+j+'">'+x+'</button>';}).join("");return '<div class="q"><h3>'+(i+1)+'. '+X(q.en,q.es)+'</h3>'+o+'</div>';}).join("");
+  return tit("Quiz","Evaluación")+'<p class="lead">'+X("7 questions.","7 preguntas.")+'</p>'+qs+'<div class="score" id="score"></div>'; }
+function i_quiz(){ var ans={},ok=0; document.querySelectorAll(".opt").forEach(function(b){ b.onclick=function(){ var qi=+b.dataset.q; if(ans[qi])return; ans[qi]=1; var a=QUIZ[qi].a; document.querySelectorAll('.opt[data-q="'+qi+'"]').forEach(function(x){ x.disabled=true; if(+x.dataset.o===a)x.classList.add("correct"); }); if(+b.dataset.o===a)ok++; else b.classList.add("wrong"); if(Object.keys(ans).length===QUIZ.length)$("score").textContent=X("Score: ","Puntaje: ")+ok+"/"+QUIZ.length+(ok>=6?X(" · Passed"," · Aprobado"):X(" · Review"," · Repasa")); }; }); }
+/* 21 */
+function s_end(){ return tit("Wrap-up","Cierre")+
+  '<ul><li>'+X("Black in COM; red in VΩ for volts/ohms, A jack for series current.","Negra en COM; roja en VΩ para volts/ohms, jack A para corriente en serie.")+'</li>'+
+  '<li>'+X("Voltage in parallel; continuity/ohms only de-energized; use a clamp for current.","Voltaje en paralelo; continuidad/ohms solo des-energizado; pinza para corriente.")+'</li>'+
+  '<li>'+X("Ohm: V=I·R; Power: P=V·I (watts ÷ volts = amps).","Ohm: V=I·R; Potencia: P=V·I (watts ÷ volts = amperios).")+'</li>'+
+  '<li>'+X("Panel: L-N≈120, L-L≈240, N-G≈0. Faults: tripped breaker, open neutral, voltage drop, mis-wire.","Tablero: L-N≈120, L-L≈240, N-G≈0. Fallas: breaker disparado, neutro abierto, caída de voltaje, mal cableado.")+'</li>'+
+  '<li>'+X("-48V plant: AC in → rectifiers → −54.5 V float, positive ground; watch ripple, fuses, modules.","Planta -48V: AC → rectificadores → −54.5 V flote, tierra positiva; cuida ripple, fusibles, módulos.")+'</li></ul>'+
+  '<p class="note danger"><b>'+X("Safety","Seguridad")+':</b> '+X("this is an overview — follow certified training, NFPA 70E and your LOTO/EHS procedures.","es un resumen — sigue el entrenamiento certificado, NFPA 70E y tus procedimientos LOTO/EHS.")+'</p>'+
+  '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px"><span class="verdict ok">✓ '+X("Training completed","Entrenamiento completado")+'</span><a class="btn ghost" href="../index.html" target="_top">'+X("Back to portal","Volver al portal")+'</a></div>'; }
+
+/* ===== Engine ===== */
+function pintarChrome(){
+  document.documentElement.lang=LANG;
+  $("brand").textContent=X("Multimeter & Electrical","Multímetro y Electricidad");
+  $("brandsub").textContent=X("Electrical · Multimeter","Electricidad · Multímetro");
+  $("homeTxt").textContent=X("Home","Inicio");
+  document.querySelectorAll("#lang button").forEach(function(b){ b.classList.toggle("on", b.dataset.l===LANG); });
+  var dark=document.documentElement.getAttribute("data-theme")==="dark";
+  $("temaIco").innerHTML=dark?I.sun:I.moon; $("temaTxt").textContent=dark?X("Light","Claro"):X("Dark","Oscuro");
+  $("prev").innerHTML="‹ "+X("Back","Anterior");
+  $("next").innerHTML=(cur>=STEPS.length-1?X("Restart","Reiniciar"):X("Next","Siguiente")+" ›");
+}
+function render(){
+  stopAnim(); _ohmActive=false;
+  pintarChrome();
+  var s=STEPS[cur];
+  $("card").innerHTML=s.b();
+  if(s.i) s.i();
+  initCanvases();
+  $("progbar").style.width=((cur+1)/STEPS.length*100)+"%";
+  $("mStep").textContent=X("Step ","Paso ")+(cur+1)+" / "+STEPS.length+" · "+X(s.t[0],s.t[1]);
+  $("mDur").textContent="≈ 9 min";
+  $("prev").disabled=(cur===0);
+  $("dots").innerHTML=STEPS.map(function(_,i){return '<button class="dot'+(i===cur?' on':'')+'" data-i="'+i+'" aria-label="'+(i+1)+'"></button>';}).join("");
+  document.querySelectorAll(".dot").forEach(function(d){ d.onclick=function(){ cur=+d.dataset.i; render(); }; });
+  window.scrollTo(0,0);
+}
+$("prev").onclick=function(){ if(cur>0){cur--;render();} };
+$("next").onclick=function(){ cur=(cur>=STEPS.length-1)?0:cur+1; render(); };
+document.querySelectorAll("#lang button").forEach(function(b){ b.onclick=function(){ LANG=b.dataset.l; render(); }; });
+$("tema").onclick=function(){ var d=document.documentElement.getAttribute("data-theme")==="dark"; document.documentElement.setAttribute("data-theme", d?"light":"dark"); pintarChrome(); };
+render();
+</script>
+</body>
+</html>
