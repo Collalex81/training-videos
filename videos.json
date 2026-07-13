@@ -38,6 +38,25 @@
     "tipo": "animacion"
   },
   {
+    "area": "induccion",
+    "titulo": {
+      "es": "Cómo instalar y configurar Fieldclix",
+      "en": "How to install and set up Fieldclix"
+    },
+    "descripcion": {
+      "es": "Guía de inducción paso a paso: instala la app de Fieldclix en Android, activa los permisos, inicia sesión y conoce el menú. Incluye el video completo.",
+      "en": "Step-by-step onboarding guide: install the Fieldclix Android app, turn on permissions, log in and learn the menu. Includes the full video."
+    },
+    "categoria": {
+      "es": "Inducción",
+      "en": "Onboarding"
+    },
+    "duracion": "4:07",
+    "video": "animations/fieldclix-instalacion.html",
+    "poster": "assets/poster-fieldclix.svg",
+    "tipo": "animacion"
+  },
+  {
     "area": "telecom",
     "titulo": {
       "es": "Prueba de PIM en torres (equipo Kaelus)",
