@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fieldclix — Install & Setup / Instalación y configuración</title>
+<!--
+  Módulo de inducción: cómo instalar y configurar la app Fieldclix (Android).
+  Onboarding module: how to install and set up the Fieldclix app (Android).
+  Motor basado en Starter-Kit/animations/module-template.html. Área: induccion (morado).
+  Fotos reales en ../assets/ (capturas del video). Video en ../videos/fieldclix-instalacion.mp4 (sin audio).
+-->
+<style>
+  :root{
+    --pg:#f4f6fb; --card:#ffffff; --ink:#0f2544; --sub:#5b6b84; --line:#e6ebf5;
+    --bar:#0b2e59; --accent:#7c3aed; --tint:rgba(124,58,237,.10);
+    --ok:#15803D; --okt:rgba(21,128,61,.10); --bad:#dc2626; --badt:rgba(220,38,38,.10);
+    --amber:#b45309; --ambt:rgba(180,83,9,.10); --radius:14px;
+    --shadow:0 1px 2px rgba(16,37,68,.05),0 10px 26px rgba(16,37,68,.07);
+  }
+  html[data-theme="dark"]{
+    --pg:#0b1220; --card:#151d30; --ink:#eaf0ff; --sub:#9fb0cc; --line:#243149;
+    --bar:#0a1526; --accent:#a78bfa; --tint:rgba(167,139,250,.16);
+    --ok:#4ade80; --okt:rgba(74,222,128,.14); --bad:#f87171; --badt:rgba(248,113,113,.14);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  .shell{max-width:940px;margin:0 auto;padding:14px 16px 34px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0 8px;box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:600;display:block;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+  .prog{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:6px 0 4px}
+  .prog>i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);gap:8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;min-height:340px}
+  .step-ico{width:44px;height:44px;border-radius:12px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+  h1{font-size:clamp(20px,3.3vw,26px);margin:0 0 8px;font-weight:700;line-height:1.2}
+  h2{font-size:15.5px;margin:18px 0 8px;font-weight:600}
+  p{margin:0 0 12px}
+  .lead{color:var(--sub);font-size:15px}
+  ul,ol{margin:6px 0 12px;padding-left:20px}
+  li{margin:5px 0}
+  .pill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:var(--tint);padding:5px 11px;border-radius:999px;margin-bottom:10px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:8px 0}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:12px;margin:8px 0}
+  .box{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:13px}
+  .box h3{margin:0 0 6px;font-size:14.5px;font-weight:600}
+  .box p{margin:0;font-size:13px;color:var(--sub)}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;min-height:42px;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;flex:1}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line);border:0;cursor:pointer;padding:0}
+  .dot.on{background:var(--accent);transform:scale(1.3)}
+  .note{font-size:13px;color:var(--sub);border-left:3px solid var(--accent);background:var(--tint);padding:9px 12px;margin:12px 0;border-radius:0 8px 8px 0}
+  .warn{border-left-color:var(--amber);color:var(--amber);background:var(--ambt)}
+  .good{border-left-color:var(--ok);color:var(--ink);background:var(--okt)}
+  .good b{color:var(--ok)}
+  .mcap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);margin:8px 2px 2px;justify-content:center}
+  /* --- marco de teléfono para capturas verticales / phone frame for vertical screenshots --- */
+  .phone{width:100%;max-width:250px;margin:6px auto 0;aspect-ratio:392/850;background:#0a1424;
+    border:2px solid var(--line);border-radius:24px;overflow:hidden;position:relative;box-shadow:var(--shadow)}
+  .phone img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  .videowrap{width:100%;max-width:300px;margin:6px auto 0;border-radius:22px;overflow:hidden;border:2px solid var(--line);background:#000;box-shadow:var(--shadow)}
+  .videowrap video{width:100%;display:block}
+  .chk{display:flex;gap:11px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:8px 0;cursor:pointer}
+  .chk .bx{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;margin-top:1px}
+  .chk.done .bx{background:var(--ok);border-color:var(--ok)}
+  .chk.done .txt b{text-decoration:line-through;opacity:.7}
+  .chk .txt b{font-size:13.5px}.chk .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .verdict{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;font-weight:700;font-size:15px}
+  .verdict.ok{background:var(--okt);color:var(--ok)}
+  @media(max-width:520px){ .card{padding:15px} .shell{padding:12px 12px 28px} .brand small{display:none} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+  <div class="top">
+    <div class="brand">
+      <span class="logo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      <div><b id="brand"></b><small id="brandsub"></small></div>
+    </div>
+    <div class="tools">
+      <a class="tbtn" id="home" href="../index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span id="homeTxt"></span></a>
+      <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+      <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+    </div>
+  </div>
+  <div class="prog"><i id="progbar"></i></div>
+  <div class="meta"><span id="mStep"></span><span id="mDur"></span></div>
+  </div>
+  <div class="card" id="card"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev"></button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="next"></button>
+  </div>
+</div>
+
+<script>
+/* ===================== 1) CONFIG ===================== */
+var CONFIG = {
+  brand:   ["Install & set up Fieldclix","Instalar y configurar Fieldclix"],
+  subtitle:["Onboarding · Fieldclix app","Inducción · app Fieldclix"],
+  duration:"≈ 4 min",
+  defaultLang:"en"
+};
+
+/* ===================== 2) IMG — capturas reales (../assets/) ===================== */
+var IMG = {
+  search:      "../assets/fieldclix-01-search.jpg",
+  install:     "../assets/fieldclix-02-install.jpg",
+  perms:       "../assets/fieldclix-03-permissions.jpg",
+  data:        "../assets/fieldclix-04-data-usage.jpg",
+  login:       "../assets/fieldclix-05-login.jpg",
+  menu:        "../assets/fieldclix-06-menu.jpg",
+  timekeeping: "../assets/fieldclix-07-timekeeping.jpg",
+  workorder:   "../assets/fieldclix-08-workorder.jpg",
+  ready:       "../assets/fieldclix-09-ready.jpg"
+};
+
+/* ===================== helpers ===================== */
+var params=new URLSearchParams(location.search);
+var LANG=params.get("lang")?(params.get("lang").toLowerCase().startsWith("es")?"es":"en"):CONFIG.defaultLang;
+function X(en,es){ return LANG==="es"?es:en; }
+function $(id){ return document.getElementById(id); }
+function tit(en,es){ return '<div class="step-ico">'+STEPS[cur].ico+'</div><h1>'+X(en,es)+'</h1>'; }
+function phoneSlot(key, capEn, capEs){
+  var src=IMG[key]; var img=src?'<img src="'+src+'" alt="" onerror="this.parentNode.style.display=\'none\'">':'';
+  return '<div class="phone">'+img+'</div><div class="mcap">'+ICO.img+' '+X(capEn,capEs)+'</div>';
+}
+var ICO={
+  dot:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>',
+  img:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>',
+  play:'<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  store:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>',
+  down:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>',
+  shield:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg>',
+  wifi:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5 5 0 0 1 7 0"/><path d="M12 19.5h.01"/></svg>',
+  key:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.5 12.5 8-8"/><path d="m16 5 2 2"/><path d="m19 8 2-2"/></svg>',
+  grid:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
+  clock:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  pin:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+  check:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+};
+
+/* ===================== 3) STEPS ===================== */
+var STEPS = [
+  /* --- intro --- */
+  { ico:ICO.play, t:["Before you start","Antes de empezar"], b:function(){
+      return tit("Install &amp; set up Fieldclix","Instalar y configurar Fieldclix")+
+        '<span class="pill">'+X("Onboarding","Inducción")+'</span>'+
+        '<p class="lead">'+X("Fieldclix is the app we use in the field for time keeping, work orders and materials. This guide takes about 4 minutes.","Fieldclix es la app que usamos en el campo para registrar tiempo, órdenes de trabajo y materiales. Esta guía toma unos 4 minutos.")+'</p>'+
+        '<h2>'+X("You will need","Necesitarás")+'</h2>'+
+        '<div class="grid3">'+
+          '<div class="box"><h3>'+X("Android phone","Teléfono Android")+'</h3><p>'+X("With the Google Play Store.","Con Google Play Store.")+'</p></div>'+
+          '<div class="box"><h3>'+X("Your login","Tu acceso")+'</h3><p>'+X("Username &amp; password from your supervisor.","Usuario y contraseña de tu supervisor.")+'</p></div>'+
+          '<div class="box"><h3>Wi-Fi</h3><p>'+X("Recommended for the download.","Recomendado para la descarga.")+'</p></div>'+
+        '</div>'+
+        '<p class="note">'+X("Tip: tap Next (or use the arrow keys) to move through the steps.","Consejo: toca Siguiente (o usa las flechas) para avanzar por los pasos.")+'</p>';
+  }},
+  /* --- 1 search --- */
+  { ico:ICO.store, t:["1 · Search","1 · Buscar"], b:function(){
+      return tit("Search Fieldclix in Play Store","Busca Fieldclix en Play Store")+
+        '<p class="lead">'+X("Open the Google Play Store, tap the search bar and type “Fieldclix”.","Abre Google Play Store, toca la barra de búsqueda y escribe “Fieldclix”.")+'</p>'+
+        phoneSlot("search","Play Store search.","Búsqueda en Play Store.")+
+        '<p class="note warn">'+X("Make sure it is the official app: <b>Fieldclix NEXT</b>, by Fieldclix, Inc.","Asegúrate de que sea la app oficial: <b>Fieldclix NEXT</b>, de Fieldclix, Inc.")+'</p>';
+  }},
+  /* --- 2 install --- */
+  { ico:ICO.down, t:["2 · Install","2 · Instalar"], b:function(){
+      return tit("Install the app","Instala la aplicación")+
+        '<p class="lead">'+X("Tap “Install”. It is verified by Play Protect. Wait for the download to finish (about 114 MB).","Toca “Install”. Está verificada por Play Protect. Espera a que termine la descarga (unos 114 MB).")+'</p>'+
+        phoneSlot("install","Fieldclix NEXT · Install.","Fieldclix NEXT · Instalar.")+
+        '<p class="note">'+X("Connect to Wi-Fi to download faster and save mobile data.","Conéctate a Wi-Fi para descargar más rápido y ahorrar datos.")+'</p>';
+  }},
+  /* --- 3 permissions --- */
+  { ico:ICO.shield, t:["3 · Permissions","3 · Permisos"], b:function(){
+      return tit("Turn on permissions","Activa los permisos")+
+        '<p class="lead">'+X("In Settings › Apps › Fieldclix › Permissions, allow <b>Camera</b>, <b>Location</b> and <b>Notifications</b>.","En Ajustes › Aplicaciones › Fieldclix › Permisos, permite <b>Cámara</b>, <b>Ubicación</b> y <b>Notificaciones</b>.")+'</p>'+
+        phoneSlot("perms","App permissions.","Permisos de la app.")+
+        '<p class="note">'+X("They are used to take photos, geolocate work orders and receive important alerts.","Se usan para tomar fotos, geolocalizar las órdenes de trabajo y recibir avisos importantes.")+'</p>';
+  }},
+  /* --- 4 background data --- */
+  { ico:ICO.wifi, t:["4 · Data","4 · Datos"], b:function(){
+      return tit("Allow background data","Permite datos en segundo plano")+
+        '<p class="lead">'+X("In the app’s “Data usage”, turn on <b>Allow background data usage</b>.","En “Uso de datos” de la app, activa <b>Permitir uso de datos en segundo plano</b>.")+'</p>'+
+        phoneSlot("data","Application data usage.","Uso de datos de la app.")+
+        '<p class="note">'+X("This lets Fieldclix sync your information even when the app is closed.","Así Fieldclix sincroniza tu información aunque no tengas la app abierta.")+'</p>';
+  }},
+  /* --- 5 login --- */
+  { ico:ICO.key, t:["5 · Log in","5 · Iniciar sesión"], b:function(){
+      return tit("Log in","Inicia sesión")+
+        '<p class="lead">'+X("Open Fieldclix. Enter your username (e.g. first.last) and your password, then tap LOGIN.","Abre Fieldclix. Escribe tu usuario (por ejemplo nombre.apellido) y tu contraseña, y toca LOGIN.")+'</p>'+
+        phoneSlot("login","Fieldclix login.","Inicio de sesión de Fieldclix.")+
+        '<p class="note warn">'+X("No username or password yet? Ask your supervisor.","¿No tienes usuario o contraseña? Pídelos a tu supervisor.")+'</p>';
+  }},
+  /* --- 6 menu --- */
+  { ico:ICO.grid, t:["6 · Menu","6 · Menú"], b:function(){
+      return tit("Get to know the main menu","Conoce el menú principal")+
+        '<p class="lead">'+X("You will see the main sections of the app.","Verás las secciones principales de la app.")+'</p>'+
+        phoneSlot("menu","Main menu.","Menú principal.")+
+        '<div class="grid2">'+
+          '<div class="box"><h3>Time Keeping</h3><p>'+X("Clock in / out.","Marcar entrada / salida.")+'</p></div>'+
+          '<div class="box"><h3>Work Orders</h3><p>'+X("Your assigned jobs.","Tus trabajos asignados.")+'</p></div>'+
+          '<div class="box"><h3>Assets · Warehouse</h3><p>'+X("Equipment &amp; stock.","Equipos e inventario.")+'</p></div>'+
+          '<div class="box"><h3>Requests · Close Out</h3><p>'+X("Requests &amp; job closing.","Solicitudes y cierre.")+'</p></div>'+
+        '</div>';
+  }},
+  /* --- 7 time keeping --- */
+  { ico:ICO.clock, t:["7 · Time","7 · Tiempo"], b:function(){
+      return tit("Track your time","Registra tu tiempo")+
+        '<p class="lead">'+X("In <b>Time Keeping</b> you Check In and Check Out. The app calculates your actual duration and full day.","En <b>Time Keeping</b> marcas Check In y Check Out. La app calcula tu duración real y tu jornada.")+'</p>'+
+        phoneSlot("timekeeping","Time keeping.","Registro de tiempo.")+
+        '<p class="note warn">'+X("Check In when you start and Check Out when you finish so your hours are correct.","Marca Check In al empezar y Check Out al terminar para que tus horas queden correctas.")+'</p>';
+  }},
+  /* --- 8 work orders / time off --- */
+  { ico:ICO.pin, t:["8 · Work orders","8 · Órdenes"], b:function(){
+      return tit("Allocate work orders &amp; Time Off","Asigna órdenes y solicita Time Off")+
+        '<p class="lead">'+X("Split your time across work orders (TAR), or log absences under <b>Time Off</b> (Vacation, Sick, etc.).","Distribuye tu tiempo entre órdenes de trabajo (TAR), o registra ausencias en <b>Time Off</b> (Vacation, Sick, etc.).")+'</p>'+
+        phoneSlot("workorder","Work-order allocation / Time Off.","Asignación de órdenes / Time Off.")+
+        '<p class="note">'+X("Your work-order allocation must add up to 100% of the time you worked.","La asignación de órdenes debe sumar 100% de tu tiempo trabajado.")+'</p>';
+  }},
+  /* --- 9 full video --- */
+  { ico:ICO.play, t:["Full video","Video completo"], b:function(){
+      return tit("Watch the full recording","Mira la grabación completa")+
+        '<p class="lead">'+X("Screen recording of the whole process (no audio). Watch it as many times as you need.","Grabación de pantalla del proceso completo (sin audio). Míralo cuantas veces necesites.")+'</p>'+
+        '<div class="videowrap"><video controls preload="metadata" playsinline poster="../assets/poster-fieldclix.svg"><source src="../videos/fieldclix-instalacion.mp4" type="video/mp4"></video></div>'+
+        '<p class="mcap">'+ICO.img+' videos/fieldclix-instalacion.mp4</p>';
+  }},
+  /* --- 10 checklist / wrap-up --- */
+  { ico:ICO.check, t:["Done","Listo"], b:function(){
+      var items=[
+        ["Fieldclix installed from the Play Store","Fieldclix instalada desde Play Store"],
+        ["Camera, Location &amp; Notifications allowed","Cámara, Ubicación y Notificaciones permitidas"],
+        ["Background data turned on","Datos en segundo plano activados"],
+        ["Logged in successfully","Sesión iniciada correctamente"]
+      ];
+      return tit("You are ready to use Fieldclix","Ya puedes usar Fieldclix")+
+        '<p class="lead">'+X("Quick check — tap each item you completed:","Repaso rápido — toca cada punto que completaste:")+'</p>'+
+        items.map(function(it){return '<div class="chk"><span class="bx">'+ICO.check+'</span><span class="txt"><b>'+X(it[0],it[1])+'</b></span></div>';}).join("")+
+        '<p class="note good" id="ckMsg"></p>'+
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px"><span class="verdict ok">'+ICO.check+' '+X("Completed","Completado")+'</span><a class="btn ghost" href="../index.html" target="_top">'+X("Back to portal","Volver al portal")+'</a></div>';
+    }, i:function(){ var t=document.querySelectorAll(".chk").length; function upd(){var d=document.querySelectorAll(".chk.done").length;$("ckMsg").textContent=X("Completed: ","Completado: ")+d+"/"+t;} document.querySelectorAll(".chk").forEach(function(c){c.onclick=function(){c.classList.toggle("done");upd();};}); upd(); }
+  }
+];
+var cur=0;
+
+/* ===================== engine ===================== */
+function pintarChrome(){
+  document.documentElement.lang=LANG;
+  $("brand").textContent=X(CONFIG.brand[0],CONFIG.brand[1]);
+  $("brandsub").textContent=X(CONFIG.subtitle[0],CONFIG.subtitle[1]);
+  $("homeTxt").textContent=X("Home","Inicio");
+  document.querySelectorAll("#lang button").forEach(function(b){ b.classList.toggle("on", b.dataset.l===LANG); });
+  var dark=document.documentElement.getAttribute("data-theme")==="dark";
+  $("temaIco").innerHTML=dark?ICO.sun:ICO.moon; $("temaTxt").textContent=dark?X("Light","Claro"):X("Dark","Oscuro");
+  $("prev").innerHTML="‹ "+X("Back","Anterior");
+  $("next").innerHTML=(cur>=STEPS.length-1?X("Restart","Reiniciar"):X("Next","Siguiente")+" ›");
+}
+function render(){
+  pintarChrome();
+  var s=STEPS[cur];
+  $("card").innerHTML=s.b();
+  if(s.i) s.i();
+  $("progbar").style.width=((cur+1)/STEPS.length*100)+"%";
+  $("mStep").textContent=X("Step ","Paso ")+(cur+1)+" / "+STEPS.length+" · "+X(s.t[0],s.t[1]);
+  $("mDur").textContent=CONFIG.duration;
+  $("prev").disabled=(cur===0);
+  $("dots").innerHTML=STEPS.map(function(_,i){return '<button class="dot'+(i===cur?' on':'')+'" data-i="'+i+'" aria-label="'+(i+1)+'"></button>';}).join("");
+  document.querySelectorAll(".dot").forEach(function(d){ d.onclick=function(){ cur=+d.dataset.i; render(); }; });
+  window.scrollTo(0,0);
+}
+$("prev").onclick=function(){ if(cur>0){cur--;render();} };
+$("next").onclick=function(){ cur=(cur>=STEPS.length-1)?0:cur+1; render(); };
+document.querySelectorAll("#lang button").forEach(function(b){ b.onclick=function(){ LANG=b.dataset.l; render(); }; });
+$("tema").onclick=function(){ var d=document.documentElement.getAttribute("data-theme")==="dark"; document.documentElement.setAttribute("data-theme", d?"light":"dark"); pintarChrome(); };
+document.addEventListener("keydown",function(e){ if(e.key==="ArrowRight")$("next").click(); if(e.key==="ArrowLeft")$("prev").click(); });
+render();
+</script>
+</body>
+</html>

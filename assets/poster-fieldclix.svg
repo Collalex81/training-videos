@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" font-family="system-ui,Segoe UI,Roboto,sans-serif">
+  <defs>
+    <linearGradient id="bgf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b1a63"/><stop offset="1" stop-color="#140d24"/></linearGradient>
+    <linearGradient id="scr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2440"/><stop offset="1" stop-color="#101830"/></linearGradient>
+  </defs>
+  <rect width="320" height="180" fill="url(#bgf)"/>
+  <g stroke="#4b2f79" stroke-width="0.6" opacity="0.35"><line x1="0" y1="70" x2="320" y2="70"/><line x1="0" y1="110" x2="320" y2="110"/><line x1="0" y1="150" x2="320" y2="150"/></g>
+  <!-- phone -->
+  <g transform="translate(238,30)">
+    <rect x="0" y="0" width="60" height="120" rx="11" fill="#0a1120" stroke="#5a3f8c" stroke-width="1.4"/>
+    <rect x="5" y="9" width="50" height="102" rx="5" fill="url(#scr)"/>
+    <rect x="22" y="4" width="16" height="3" rx="1.5" fill="#2a2140"/>
+    <!-- fieldclix check + wordmark on screen -->
+    <path d="M17 34 l6 6 12 -13" fill="none" stroke="#37d67a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="30" y="58" fill="#37d67a" font-size="8.5" font-weight="700" text-anchor="middle">Fieldclix</text>
+    <rect x="12" y="70" width="36" height="6" rx="3" fill="#2b3555"/>
+    <rect x="12" y="82" width="36" height="6" rx="3" fill="#2b3555"/>
+    <rect x="12" y="95" width="36" height="9" rx="4" fill="#7c3aed"/>
+  </g>
+  <!-- top accent bar -->
+  <rect x="0" y="0" width="320" height="4" fill="#7c3aed"/>
+  <!-- badge check -->
+  <g transform="translate(22,26)"><circle cx="9" cy="6" r="9" fill="none" stroke="#a78bfa" stroke-width="1.6"/><path d="M5 6 l2.6 2.6 5-5.2" fill="none" stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <text x="42" y="40" fill="#ffffff" font-size="25" font-weight="700">Fieldclix</text>
+  <text x="22" y="60" fill="#c9b8ff" font-size="9" letter-spacing="1.1">INSTALL &amp; SETUP · INDUCCIÓN · ONBOARDING</text>
+  <text x="22" y="150" fill="#8a7bb5" font-size="8.5">Android · Play Store · permisos · login</text>
+</svg>
