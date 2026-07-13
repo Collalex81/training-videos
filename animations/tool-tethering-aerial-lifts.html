@@ -390,26 +390,67 @@ var STEPS = [
         '<p class="lead">'+X("This one rule covers everything: tools, materials, hardware, radios, phones, water bottles. Anything loose at height is a hazard.","Esta sola regla lo cubre todo: herramientas, materiales, tornillería, radios, teléfonos, botellas de agua. Cualquier cosa suelta en altura es un peligro.")+'</p>'+
         '<div class="stat3"><div class="s"><b>✓</b><span>'+X("Tethered","Amarrado")+'</span></div><div class="s"><b>✓</b><span>'+X("In a pouch","En bolsa")+'</span></div><div class="s"><b>✓</b><span>'+X("Or on the ground","O en el piso")+'</span></div></div>';
   }},
-  /* 7 interactive drop test — lift + harnessed worker + tools + live speed */
+  /* 7 interactive drop test — polished SVG lift scene + live speed */
   { ico:ICO.gauge, t:["Drop test","Prueba de caída"], b:function(){
+      var svg=''+
+      '<svg id="sceneSvg" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block" xmlns="http://www.w3.org/2000/svg">'+
+      '<defs>'+
+      '<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#13271c"/><stop offset="1" stop-color="#0a160f"/></linearGradient>'+
+      '<linearGradient id="steel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#356048"/><stop offset=".5" stop-color="#8fd6ac"/><stop offset="1" stop-color="#356048"/></linearGradient>'+
+      '<linearGradient id="hiv" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dcf76e"/><stop offset="1" stop-color="#a6d63f"/></linearGradient>'+
+      '<filter id="sh" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.35"/></filter>'+
+      '</defs>'+
+      '<rect width="400" height="300" fill="url(#sky)"/>'+
+      '<g stroke="#1c3325" stroke-width="1"><line x1="0" y1="232" x2="400" y2="232"/><line x1="0" y1="184" x2="400" y2="184"/><line x1="0" y1="128" x2="400" y2="128"/></g>'+
+      '<rect x="0" y="272" width="400" height="28" fill="#0c1a12"/><line x1="0" y1="272" x2="400" y2="272" stroke="#2f5a42" stroke-width="2"/>'+
+      '<g><rect x="228" y="260" width="72" height="12" fill="#f59e0b" opacity="0.14"/><line x1="228" y1="260" x2="300" y2="260" stroke="#f59e0b" stroke-width="2" stroke-dasharray="7 5"/>'+
+      '<g transform="translate(233,270)"><path d="M0,-11 L-5,1 L5,1 Z" fill="#f59e0b"/><rect x="-3.5" y="-4" width="7" height="2" fill="#fff"/></g>'+
+      '<g transform="translate(296,270)"><path d="M0,-11 L-5,1 L5,1 Z" fill="#f59e0b"/><rect x="-3.5" y="-4" width="7" height="2" fill="#fff"/></g></g>'+
+      '<rect x="170" y="250" width="60" height="16" rx="3" fill="#26442f" filter="url(#sh)"/>'+
+      '<circle cx="182" cy="268" r="8" fill="#0f1913" stroke="#3b6a4e" stroke-width="2"/><circle cx="218" cy="268" r="8" fill="#0f1913" stroke="#3b6a4e" stroke-width="2"/>'+
+      '<rect id="lm" x="193" y="150" width="14" height="100" rx="2" fill="url(#steel)"/>'+
+      '<g id="lp" transform="translate(200,150)">'+
+      '<rect x="-58" y="-6" width="116" height="10" rx="2" fill="#3b6a4e" filter="url(#sh)"/>'+
+      '<rect x="-58" y="-12" width="116" height="6" fill="#2b4d38"/>'+
+      '<g stroke="#8fd6ac" stroke-width="3" fill="none" stroke-linecap="round"><line x1="-58" y1="-6" x2="-58" y2="-48"/><line x1="58" y1="-6" x2="58" y2="-48"/><line x1="-58" y1="-48" x2="58" y2="-48"/><line x1="-58" y1="-28" x2="58" y2="-28"/></g>'+
+      '<circle cx="46" cy="-46" r="3.5" fill="#f59e0b"/>'+
+      '<line x1="30" y1="-48" x2="30" y2="-30" stroke="#f59e0b" stroke-width="1.5"/><g transform="translate(30,-24)"><rect x="-7" y="-4" width="13" height="8" rx="2" fill="#2b6cff"/><rect x="-10" y="-2" width="4" height="4" fill="#1e40af"/><rect x="-2" y="4" width="5" height="7" fill="#101820"/></g>'+
+      '<g transform="translate(-26,0)" filter="url(#sh)">'+
+      '<line x1="-4" y1="-20" x2="-6" y2="-6" stroke="#26324e" stroke-width="5" stroke-linecap="round"/><line x1="4" y1="-20" x2="6" y2="-6" stroke="#26324e" stroke-width="5" stroke-linecap="round"/>'+
+      '<rect x="-10" y="-42" width="20" height="24" rx="5" fill="url(#hiv)"/>'+
+      '<rect x="-10" y="-32" width="20" height="3" fill="#eef4f6"/><rect x="-3" y="-42" width="3" height="24" fill="#eef4f6" opacity="0.85"/>'+
+      '<path d="M-8,-40 L6,-24 M8,-40 L-6,-24" stroke="#243049" stroke-width="1.6" fill="none"/>'+
+      '<line x1="-10" y1="-38" x2="-17" y2="-28" stroke="#c3ea55" stroke-width="5" stroke-linecap="round"/><line x1="10" y1="-38" x2="17" y2="-30" stroke="#c3ea55" stroke-width="5" stroke-linecap="round"/>'+
+      '<circle cx="0" cy="-48" r="6" fill="#f0c19a"/>'+
+      '<path d="M-8,-49 A8,8 0 0 1 8,-49 Z" fill="#15803D"/><rect x="-9" y="-50" width="18" height="2.6" rx="1" fill="#0f5c2c"/><rect x="-1.5" y="-56" width="3" height="4" fill="#0f5c2c"/>'+
+      '</g>'+
+      '<path d="M-14,-38 C2,-52 30,-52 46,-46" stroke="#f59e0b" stroke-width="2" fill="none"/>'+
+      '</g>'+
+      '<g id="lg" transform="translate(262,0)"><line x1="-4" y1="258" x2="-5" y2="270" stroke="#3a4560" stroke-width="5" stroke-linecap="round"/><line x1="4" y1="258" x2="5" y2="270" stroke="#3a4560" stroke-width="5" stroke-linecap="round"/><rect x="-8" y="246" width="16" height="16" rx="4" fill="#5a6b8c"/><line x1="-8" y1="250" x2="-15" y2="258" stroke="#5a6b8c" stroke-width="4.5" stroke-linecap="round"/><line x1="8" y1="250" x2="15" y2="258" stroke="#5a6b8c" stroke-width="4.5" stroke-linecap="round"/><circle cx="0" cy="240" r="6" fill="#f0c19a"/><path d="M-6,240 A6,6 0 0 1 6,240 Z" fill="#3a2b20"/></g>'+
+      '<g transform="translate(262,0)"><line x1="9" y1="240" x2="16" y2="238" stroke="#f87171" stroke-width="1.4"/><text x="18" y="242" fill="#f87171" font-family="system-ui" font-size="10" font-weight="700">'+X("No hard hat!","¡Sin casco!")+'</text></g>'+
+      '<g id="lhit" transform="translate(262,240)" style="display:none"><g stroke="#f87171" stroke-width="1.8" stroke-linecap="round"><line x1="-13" y1="-9" x2="-20" y2="-13"/><line x1="13" y1="-9" x2="20" y2="-13"/><line x1="-14" y1="-1" x2="-21" y2="-1"/><line x1="14" y1="-1" x2="21" y2="-1"/></g></g>'+
+      '<g id="lt" transform="translate(262,116) rotate(12)"><rect x="-2" y="-9" width="4" height="18" rx="2" fill="#d3dce0"/><circle cx="0" cy="-9" r="4.6" fill="#aeb9bf"/><circle cx="0" cy="-9" r="2" fill="#0d1b12"/><circle cx="0" cy="9" r="4.6" fill="#aeb9bf"/><circle cx="0" cy="9" r="2" fill="#0d1b12"/></g>'+
+      '<g id="lb" style="display:none"><g stroke="#f87171" stroke-width="2" stroke-linecap="round"><line x1="0" y1="-2" x2="0" y2="-15"/><line x1="0" y1="-2" x2="-13" y2="-8"/><line x1="0" y1="-2" x2="13" y2="-8"/><line x1="0" y1="-2" x2="-9" y2="3"/><line x1="0" y1="-2" x2="9" y2="3"/></g></g>'+
+      '</svg>';
       return tit("Drop a tool from the lift","Suelta una herramienta desde la plataforma")+
-        '<p class="lead">'+X("Set the working height, then press Drop. Watch the loose tool’s speed build and the impact when it lands. The worker stays harnessed — only the untethered tool falls.","Ajusta la altura de trabajo y toca Soltar. Observa cómo sube la velocidad de la herramienta suelta y el impacto al caer. El trabajador permanece con arnés — solo cae la herramienta sin amarre.")+'</p>'+
-        '<div class="illus" style="aspect-ratio:16/11"><canvas id="sceneCv"></canvas></div>'+
+        '<p class="lead">'+X("Set the working height, then press Drop. Watch the loose tool speed up and the impact when it lands — the worker stays harnessed, only the untethered tool falls.","Ajusta la altura de trabajo y toca Soltar. Observa cómo la herramienta suelta acelera y el impacto al caer — el trabajador queda con arnés, solo cae la herramienta sin amarre.")+'</p>'+
+        '<div class="illus" style="aspect-ratio:4/3;background:#0a160f">'+svg+'</div>'+
         '<div class="row"><span class="lbl">'+X("Working height","Altura de trabajo")+'</span><input type="range" id="hSld" min="10" max="50" value="20"><span class="val" id="hVal"></span></div>'+
         '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0"><button class="btn" id="dropBtn"></button>'+
           '<div class="stat"><b id="spd">0 mph</b><span>'+X("impact speed","velocidad de impacto")+'</span></div>'+
           '<div class="stat"><b id="eng">0 J</b><span>'+X("impact energy","energía de impacto")+'</span></div></div>'+
-        '<p class="note warn">'+X("A 3 lb tool from 20 ft reaches ≈24 mph. Tether it and keep everyone out of the line of fire.","Una herramienta de 3 lb desde 20 ft llega a ≈24 mph. Amárrala y mantén a todos fuera de la línea de fuego.")+'</p>';
-    }, i:function(){ var cv=$("sceneCv"),hs=$("hSld"),btn=$("dropBtn"),gen=_gen; var ft=+hs.value,p=null,state="idle",dropStart=0,dur=1600;
-        function lab(){ $("hVal").textContent=ft+" ft"; }
+        '<p class="note bad">'+X("The worker below has no hard hat. A 3 lb tool from 20 ft hits at ~24 mph and can cause a serious head injury — this is why we tether tools, barricade the drop zone, and wear a hard hat.","El trabajador de abajo no lleva casco. Una herramienta de 3 lb desde 20 ft golpea a ~24 mph y puede causar una lesión grave en la cabeza — por eso amarramos las herramientas, delimitamos la zona de caída y usamos casco.")+'</p>';
+    }, i:function(){ var lm=$("lm"),lp=$("lp"),lt=$("lt"),lb=$("lb"),lg=$("lg"),lhit=$("lhit"),hs=$("hSld"),btn=$("dropBtn"),gen=_gen;
+        var ft=+hs.value,state="idle",p=0,t0=0,dur=1500,startY=0,groundY=240;
+        function floorY(){ return 210-(ft-10)/40*150; }
+        function stats(pp){ var vms=Math.sqrt(2*9.81*ft*0.3048); $("spd").textContent=(pp<=0?0:vms*2.23694*pp).toFixed(0)+" mph"; $("eng").textContent=(0.5*1.5*vms*vms).toFixed(0)+" J"; }
+        function hurt(on){ if(lhit)lhit.style.display=on?"":"none"; if(lg)lg.setAttribute("transform","translate(262,0)"+(on?" rotate(15 0 270)":"")); }
+        function place(){ var fy=floorY(); lp.setAttribute("transform","translate(200,"+fy+")"); lm.setAttribute("y",fy); lm.setAttribute("height",Math.max(0,250-fy)); startY=fy-34; if(state!=="falling"){ lt.setAttribute("transform","translate(262,"+startY+") rotate(12)"); } $("hVal").textContent=ft+" ft"; }
         btn.textContent=X("Drop tool","Soltar herramienta");
-        hs.oninput=function(){ ft=+hs.value; lab(); };
-        btn.onclick=function(){ if(state==="idle"){state="falling";p=0;dropStart=performance.now();btn.textContent=X("Reset","Reiniciar");} else {state="idle";p=null;btn.textContent=X("Drop tool","Soltar herramienta");} };
-        function frame(now){ if(gen!==_gen)return; if(state==="falling"){ p=(now-dropStart)/dur; if(p>=1){p=1;state="impact";} } liftDraw(cv,ft,p);
-          var vms=Math.sqrt(2*9.81*ft*0.3048),spd=(p===null?0:vms*2.23694*p),eng=0.5*1.5*vms*vms;
-          if($("spd"))$("spd").textContent=spd.toFixed(0)+" mph"; if($("eng"))$("eng").textContent=eng.toFixed(0)+" J";
-          requestAnimationFrame(frame); }
-        lab(); requestAnimationFrame(frame);
+        hs.oninput=function(){ ft=+hs.value; if(state==="falling"){state="idle";} btn.textContent=X("Drop tool","Soltar herramienta"); lb.style.display="none"; hurt(false); place(); stats(0); };
+        btn.onclick=function(){ if(state==="idle"){ state="falling"; p=0; t0=performance.now(); lb.style.display="none"; hurt(false); btn.textContent=X("Reset","Reiniciar"); } else { state="idle"; lb.style.display="none"; hurt(false); place(); stats(0); btn.textContent=X("Drop tool","Soltar herramienta"); } };
+        function frame(now){ if(gen!==_gen)return; if(state==="falling"){ p=(now-t0)/dur; if(p>=1){p=1;state="impact";} var y=startY+(groundY-startY)*p*p; lt.setAttribute("transform","translate(262,"+y+") rotate("+(12+p*380)+")"); stats(p); if(state==="impact"){ lb.setAttribute("transform","translate(262,"+groundY+")"); lb.style.display=""; hurt(true); } } requestAnimationFrame(frame); }
+        place(); stats(0); requestAnimationFrame(frame);
     }
   },
   /* 8 tethering best practices intro */
