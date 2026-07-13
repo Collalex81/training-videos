@@ -95,6 +95,25 @@
     "tipo": "animacion"
   },
   {
+    "area": "telecom",
+    "titulo": {
+      "es": "Puesta a tierra y bonding en sitios (R56 / NEC 250)",
+      "en": "Grounding & bonding at cell sites (R56 / NEC 250)"
+    },
+    "descripcion": {
+      "es": "Tierra vs bonding, tierra común de punto único, anillo/electrodos y meta de resistencia (≤ 5 Ω), barras MGB/SSGB/RGB, kits de tierra de coax (arriba/abajo/entrada), protección de sobretensión y conexiones. Con diagrama SVG, calculadora, checklist, quiz y referencias.",
+      "en": "Grounding vs bonding, single-point common ground, ring/electrodes and resistance target (≤ 5 Ω), MGB/SSGB/RGB bus bars, coax ground kits (top/bottom/entry), surge protection and connections. Includes an SVG diagram, calculator, checklist, quiz and references."
+    },
+    "categoria": {
+      "es": "Procedimientos",
+      "en": "Procedures"
+    },
+    "duracion": "14:00",
+    "video": "animations/grounding-bonding-cell-sites.html",
+    "poster": "assets/poster-grounding.svg",
+    "tipo": "animacion"
+  },
+  {
     "area": "seguridad",
     "titulo": {
       "es": "Seguridad en torres — trabajo en altura (OSHA / Crown Castle)",
@@ -133,6 +152,25 @@
     "tipo": "animacion"
   },
   {
+    "area": "seguridad",
+    "titulo": {
+      "es": "Bloqueo y etiquetado (LOTO) — control de energía peligrosa",
+      "en": "Lockout/Tagout (LOTO) — control of hazardous energy"
+    },
+    "descripcion": {
+      "es": "Basado en OSHA 1910.147 y NFPA 70E: procedimiento escrito, tipos de energía, secuencia de bloqueo, liberación de energía almacenada, verificación de energía cero, LOTO grupal, retiro de candado ajeno y la condición eléctrica segura (vivo-muerto-vivo). Con SVG, checklist, quiz y referencias.",
+      "en": "Based on OSHA 1910.147 and NFPA 70E: written procedure, energy types, lockout sequence, releasing stored energy, zero-energy verification, group lockout, removing another’s lock, and the electrically safe work condition (live-dead-live). Includes SVG, checklist, quiz and references."
+    },
+    "categoria": {
+      "es": "Seguridad",
+      "en": "Safety"
+    },
+    "duracion": "15:00",
+    "video": "animations/loto-lockout-tagout.html",
+    "poster": "assets/poster-loto.svg",
+    "tipo": "animacion"
+  },
+  {
     "area": "electricidad",
     "titulo": {
       "es": "Multímetro y electricidad (DC, AC, ohms, watts, breakers, -48V)",
@@ -149,6 +187,25 @@
     "duracion": "9:00",
     "video": "animations/multimeter-electrical.html",
     "poster": "assets/poster-electrical.svg",
+    "tipo": "animacion"
+  },
+  {
+    "area": "construccion",
+    "titulo": {
+      "es": "Operación de plataforma elevadora (MEWP) — ANSI A92",
+      "en": "Aerial lift (MEWP) operation — ANSI A92"
+    },
+    "descripcion": {
+      "es": "Operación segura de plataformas (MEWP) según ANSI A92 y OSHA 1926.453: grupos/tipos, roles, inspección de máquina y sitio, protección contra caídas, capacidad, estabilidad/volcadura, líneas eléctricas, viento, descenso de emergencia y plan de rescate. Con SVG, calculadora, checklist, quiz y referencias.",
+      "en": "Safe operation of MEWPs per ANSI A92 and OSHA 1926.453: groups/types, roles, machine and site inspection, fall protection, capacity, stability/tip-over, power lines, wind, emergency lowering and rescue plan. Includes SVG, calculator, checklist, quiz and references."
+    },
+    "categoria": {
+      "es": "Operación",
+      "en": "Operation"
+    },
+    "duracion": "14:00",
+    "video": "animations/mewp-aerial-lift-operation.html",
+    "poster": "assets/poster-mewp.svg",
     "tipo": "animacion"
   }
 ]

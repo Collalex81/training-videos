@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" font-family="system-ui,Segoe UI,Roboto,sans-serif">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c3a12"/><stop offset="1" stop-color="#160d06"/></linearGradient></defs>
+  <rect width="320" height="180" fill="url(#bg)"/>
+  <g stroke="#5a3a1c" stroke-width="0.6" opacity="0.5"><line x1="0" y1="70" x2="320" y2="70"/><line x1="0" y1="110" x2="320" y2="110"/><line x1="0" y1="150" x2="320" y2="150"/></g>
+  <!-- boom lift -->
+  <g stroke="#fb923c" stroke-width="2" fill="none" stroke-linecap="round">
+    <rect x="236" y="150" width="34" height="12" rx="3" fill="#4a2a12"/><circle cx="244" cy="166" r="6" fill="#160d06"/><circle cx="262" cy="166" r="6" fill="#160d06"/>
+    <path d="M253 150 L288 100 L312 62"/>
+  </g>
+  <rect x="300" y="46" width="30" height="18" rx="3" fill="none" stroke="#fb923c" stroke-width="2"/>
+  <circle cx="315" cy="55" r="2.4" fill="#fdba74"/>
+  <rect x="0" y="0" width="320" height="4" fill="#ea580c"/>
+  <g transform="translate(22,26)" stroke="#fb923c" stroke-width="1.7" fill="none" stroke-linecap="round"><path d="M1 15 h5 v-3 h-5 z"/><path d="M4 12 V4 h8"/><path d="M10 4 h5 v3 h-5 z"/></g>
+  <text x="44" y="40" fill="#ffffff" font-size="23" font-weight="700">Aerial Lift (MEWP)</text>
+  <text x="22" y="60" fill="#fcd2ab" font-size="9" letter-spacing="1.1">ANSI A92 · OSHA 1926.453 · SAFE OPERATION</text>
+  <text x="22" y="150" fill="#d3a679" font-size="8.5">Operación de plataforma · Construcción</text>
+</svg>

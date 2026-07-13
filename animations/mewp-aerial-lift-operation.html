@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEWP / Aerial Lift Operation — Operación de plataforma</title>
+<!--
+  CONSTRUCCION (naranja) — Operación segura de plataformas elevadoras móviles (MEWP).
+  CONSTRUCTION (orange) — Safe operation of Mobile Elevating Work Platforms (MEWPs / aerial lifts).
+  Fuentes / Sources: ANSI/SAIA A92.20 (design), A92.22 (safe use), A92.24 (training); OSHA 29 CFR 1926.453 (aerial lifts).
+  Motor basado en Starter-Kit/animations/module-template.html. Bilingüe EN/ES (EN por defecto).
+-->
+<style>
+  :root{
+    --pg:#fbf5ef; --card:#ffffff; --ink:#2a1608; --sub:#7a5c43; --line:#f0e4d8;
+    --bar:#7c2d12; --accent:#ea580c; --tint:rgba(234,88,12,.10);
+    --ok:#15803D; --okt:rgba(21,128,61,.10); --bad:#dc2626; --badt:rgba(220,38,38,.10);
+    --amber:#b45309; --ambt:rgba(180,83,9,.12); --radius:14px;
+    --shadow:0 1px 2px rgba(42,22,8,.05),0 10px 26px rgba(42,22,8,.08);
+  }
+  html[data-theme="dark"]{
+    --pg:#160d06; --card:#20140c; --ink:#f6ece2; --sub:#c8a98f; --line:#33241a;
+    --bar:#0f0803; --accent:#fb923c; --tint:rgba(251,146,60,.14);
+    --ok:#4ade80; --okt:rgba(74,222,128,.14); --bad:#f87171; --badt:rgba(248,113,113,.14);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  .shell{max-width:940px;margin:0 auto;padding:14px 16px 34px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0 8px;box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:600;display:block;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+  .prog{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:6px 0 4px}
+  .prog>i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);gap:8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;min-height:360px}
+  .step-ico{width:44px;height:44px;border-radius:12px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+  h1{font-size:clamp(20px,3.3vw,26px);margin:0 0 8px;font-weight:700;line-height:1.2}
+  h2{font-size:15.5px;margin:16px 0 8px;font-weight:600}
+  p{margin:0 0 12px}
+  .lead{color:var(--sub);font-size:15px}
+  ul,ol{margin:6px 0 12px;padding-left:20px}
+  li{margin:6px 0}
+  .pill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:var(--tint);padding:5px 11px;border-radius:999px;margin-bottom:10px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:8px 0}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin:8px 0}
+  .box{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:13px}
+  .box h3{margin:0 0 6px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px}
+  .box p{margin:0;font-size:12.5px;color:var(--sub)}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:var(--accent);color:#fff;font-weight:800;font-size:14px;flex:none}
+  .stat3{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
+  .stat3 .s{flex:1;min-width:120px;background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center}
+  .stat3 .s b{display:block;font-size:24px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+  .stat3 .s span{font-size:12px;color:var(--sub)}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;min-height:42px;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;flex:1}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line);border:0;cursor:pointer;padding:0}
+  .dot.on{background:var(--accent);transform:scale(1.3)}
+  .note{font-size:13px;color:var(--sub);border-left:3px solid var(--accent);background:var(--tint);padding:9px 12px;margin:12px 0;border-radius:0 8px 8px 0}
+  .warn{border-left-color:var(--amber);color:var(--amber);background:var(--ambt)}
+  .bad{border-left-color:var(--bad);color:var(--bad);background:var(--badt)}
+  .good{border-left-color:var(--ok);color:var(--ink);background:var(--okt)}
+  .good b{color:var(--ok)}
+  .illus{position:relative;aspect-ratio:16/9;background:#120a05;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .illus svg{width:100%;height:100%}
+  .mcap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);margin:8px 2px 2px;justify-content:center}
+  .steps .st{display:flex;gap:12px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:7px 0}
+  .steps .st .txt b{font-size:13.5px}.steps .st .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .chk{display:flex;gap:11px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:8px 0;cursor:pointer}
+  .chk .bx{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;margin-top:1px}
+  .chk.done .bx{background:var(--ok);border-color:var(--ok)}
+  .chk.done .txt b{text-decoration:line-through;opacity:.7}
+  .chk .txt b{font-size:13.5px}.chk .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .row{display:flex;align-items:center;gap:12px;margin:10px 0;flex-wrap:wrap}
+  .row span.lbl{min-width:120px;font-size:13px;color:var(--sub)}
+  input[type=range]{flex:1;accent-color:var(--accent)}
+  .val{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;min-width:70px;text-align:right}
+  .q{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:12px}
+  .q h3{margin:0 0 10px;font-size:14px}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:11px 14px;border-radius:10px;margin:7px 0;cursor:pointer;font-size:14px;font-family:inherit}
+  .opt.correct{border-color:var(--ok);background:var(--okt);color:var(--ok);font-weight:600}
+  .opt.wrong{border-color:var(--bad);background:var(--badt);color:var(--bad)}
+  .opt:disabled{cursor:default}
+  .score{font-size:16px;font-weight:700;text-align:center;padding:10px}
+  .verdict{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;font-weight:700;font-size:15px}
+  .verdict.ok{background:var(--okt);color:var(--ok)}
+  .ref{font-size:12.5px;color:var(--sub);border-bottom:1px solid var(--line);padding:8px 0}
+  .ref b{color:var(--ink)}
+  @media(max-width:520px){ .card{padding:15px} .shell{padding:12px 12px 28px} .brand small{display:none} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+  <div class="top">
+    <div class="brand">
+      <span class="logo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h6v-4H4z"/><path d="M7 17V7h9"/><path d="M13 7h6v4h-6z"/></svg></span>
+      <div><b id="brand"></b><small id="brandsub"></small></div>
+    </div>
+    <div class="tools">
+      <a class="tbtn" id="home" href="../index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span id="homeTxt"></span></a>
+      <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+      <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+    </div>
+  </div>
+  <div class="prog"><i id="progbar"></i></div>
+  <div class="meta"><span id="mStep"></span><span id="mDur"></span></div>
+  </div>
+  <div class="card" id="card"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev"></button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="next"></button>
+  </div>
+</div>
+
+<script>
+var CONFIG = {
+  brand:   ["Aerial Lift (MEWP) Operation","Operación de plataforma (MEWP)"],
+  subtitle:["Construction · ANSI A92 / OSHA 1926.453","Construcción · ANSI A92 / OSHA 1926.453"],
+  duration:"≈ 14 min",
+  defaultLang:"en"
+};
+var params=new URLSearchParams(location.search);
+var LANG=params.get("lang")?(params.get("lang").toLowerCase().startsWith("es")?"es":"en"):CONFIG.defaultLang;
+function X(en,es){ return LANG==="es"?es:en; }
+function $(id){ return document.getElementById(id); }
+function tit(en,es){ return '<div class="step-ico">'+STEPS[cur].ico+'</div><h1>'+X(en,es)+'</h1>'; }
+var ICO={
+  lift:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h6v-4H4z"/><path d="M7 17V7h9"/><path d="M13 7h6v4h-6z"/></svg>',
+  book:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h9a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-1a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h2z"/></svg>',
+  people:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 6a3 3 0 0 1 0 6M21 20a6 6 0 0 0-4-5.6"/></svg>',
+  clipboard:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M9 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3"/><path d="M9 12h6M9 16h4"/></svg>',
+  plan:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>',
+  gear:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.3l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2.3-1.3L14 2h-4l-.3 2.2a7 7 0 0 0-2.3 1.3l-2.3-1-2 3.4 2 1.5A7 7 0 0 0 5 12a7 7 0 0 0 .1 1.3l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2.3 1.3L10 22h4l.3-2.2a7 7 0 0 0 2.3-1.3l2.3 1 2-3.4-2-1.5A7 7 0 0 0 19 12z"/></svg>',
+  ground:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M6 20l3-6M18 20l-3-6M9 14h6"/></svg>',
+  harness:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.5"/><path d="M12 7.5v4M8 9l8 0M9 12l-1 9M15 12l1 9M9 12l3 3 3-3"/></svg>',
+  weight:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 8h8l2 12H6z"/><circle cx="12" cy="6" r="2.5"/></svg>',
+  tilt:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18 21 8"/><path d="M3 18h6M3 18v-5"/></svg>',
+  power:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+  wind:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h9a2.5 2.5 0 1 1-2.5 2.5"/></svg>',
+  hand:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 0 1 4 0v6a8 8 0 0 1-8 8h-2a8 8 0 0 1-8-8"/></svg>',
+  ban:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.5 5.5l13 13"/></svg>',
+  rescue:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18" opacity="0"/><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/></svg>',
+  warn:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.6 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+  check:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  quiz:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.1 9a3 3 0 1 1 4.2 2.7c-.8.4-1.3 1-1.3 2M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>',
+  sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+  img:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>'
+};
+function bx(icon,tEn,tEs,dEn,dEs){ return '<div class="box"><h3>'+icon+X(tEn,tEs)+'</h3><p>'+X(dEn,dEs)+'</p></div>'; }
+function stepRow(n,en,es,den,des){ return '<div class="st"><span class="num">'+n+'</span><span class="txt"><b>'+X(en,es)+'</b><span>'+X(den,des)+'</span></span></div>'; }
+
+function liftsSVG(){ return ''+
+  '<svg viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">'+
+  '<rect width="360" height="200" fill="#120a05"/>'+
+  '<rect x="0" y="168" width="360" height="32" fill="#1c120a"/><line x1="0" y1="168" x2="360" y2="168" stroke="#4a3220" stroke-width="1.5"/>'+
+  /* scissor lift (Group A) */
+  '<g stroke="#fb923c" stroke-width="2" fill="none" stroke-linecap="round"><rect x="40" y="52" width="70" height="22" rx="3"/><path d="M46 74 L104 110 M104 74 L46 110 M46 110 L104 146 M104 110 L46 146"/></g>'+
+  '<rect x="40" y="146" width="70" height="12" rx="2" fill="#7c4a22"/><circle cx="56" cy="164" r="6" fill="#241207" stroke="#fb923c" stroke-width="2"/><circle cx="94" cy="164" r="6" fill="#241207" stroke="#fb923c" stroke-width="2"/>'+
+  '<text x="75" y="188" fill="#fdba74" font-family="system-ui" font-size="9" text-anchor="middle">'+X("Scissor · Group A","Tijera · Grupo A")+'</text>'+
+  /* boom lift (Group B) */
+  '<g stroke="#fb923c" stroke-width="2" fill="none" stroke-linecap="round"><path d="M250 158 L250 150"/><rect x="234" y="150" width="34" height="14" rx="3" fill="#7c4a22"/><circle cx="242" cy="168" r="6" fill="#241207"/><circle cx="262" cy="168" r="6" fill="#241207"/>'+
+  '<path d="M251 150 L290 96"/><path d="M290 96 L318 60"/></g>'+
+  '<rect x="308" y="44" width="30" height="18" rx="3" fill="none" stroke="#fb923c" stroke-width="2"/>'+
+  '<text x="285" y="188" fill="#fdba74" font-family="system-ui" font-size="9" text-anchor="middle">'+X("Boom · Group B","Brazo · Grupo B")+'</text>'+
+  '</svg>'; }
+
+var STEPS = [
+  /* 1 */
+  { ico:ICO.lift, t:["Overview","Introducción"], b:function(){
+      return tit("Operating aerial lifts (MEWPs) safely","Operar plataformas elevadoras (MEWP) con seguridad")+
+        '<span class="pill">ANSI A92 · OSHA 1926.453</span>'+
+        '<p class="lead">'+X("“Aerial lift” is now called a Mobile Elevating Work Platform (MEWP). Falls, electrocutions and tip-overs cause most MEWP fatalities — all are preventable with training, inspection, planning and safe operation.","La “plataforma elevadora” ahora se llama Plataforma Elevadora Móvil de Personal (MEWP). Las caídas, electrocuciones y volcaduras causan la mayoría de las muertes con MEWP — todas prevenibles con capacitación, inspección, planeación y operación segura.")+'</p>'+
+        '<div class="illus">'+liftsSVG()+'</div>'+
+        '<p class="mcap">'+ICO.img+' '+X("Two common families: scissor (Group A) and boom (Group B).","Dos familias comunes: tijera (Grupo A) y brazo (Grupo B).")+'</p>';
+  }},
+  /* 2 */
+  { ico:ICO.lift, t:["Classification","Clasificación"], b:function(){
+      return tit("MEWP groups and types","Grupos y tipos de MEWP")+
+        '<p class="lead">'+X("ANSI A92.20 classifies MEWPs by group (where the platform can go) and type (how it travels).","ANSI A92.20 clasifica las MEWP por grupo (hasta dónde llega la plataforma) y tipo (cómo se desplaza).")+'</p>'+
+        '<div class="grid2">'+
+          bx(ICO.lift,"Group A","Grupo A","Platform stays within the chassis footprint (scissor, vertical lifts).","La plataforma se mantiene dentro del chasis (tijera, verticales).")+
+          bx(ICO.lift,"Group B","Grupo B","Platform can extend beyond the chassis (boom lifts).","La plataforma puede salir del chasis (brazos articulados/telescópicos).")+
+        '</div>'+
+        '<div class="grid3">'+
+          bx(ICO.gear,"Type 1","Tipo 1","Travel only when stowed; moved manually.","Se desplaza solo estibada; se mueve manualmente.")+
+          bx(ICO.gear,"Type 2","Tipo 2","Driven from the chassis, can move elevated.","Se conduce desde el chasis, puede moverse elevada.")+
+          bx(ICO.gear,"Type 3","Tipo 3","Driven from the platform, elevated.","Se conduce desde la plataforma, elevada.")+
+        '</div>';
+  }},
+  /* 3 */
+  { ico:ICO.book, t:["The A92 suite","La serie A92"], b:function(){
+      return tit("Three standards that work together","Tres normas que trabajan juntas")+
+        '<div class="steps">'+
+          stepRow("20","A92.20 — Design","A92.20 — Diseño","How MEWPs are built: sensors, guards, stability. Effective Aug 2021.","Cómo se fabrican: sensores, guardas, estabilidad. Vigente ago 2021.")+
+          stepRow("22","A92.22 — Safe Use","A92.22 — Uso seguro","Application, inspection, maintenance, safe operation, planning.","Aplicación, inspección, mantenimiento, operación segura, planeación.")+
+          stepRow("24","A92.24 — Training","A92.24 — Capacitación","Training &amp; familiarization for operators, supervisors, maintenance.","Capacitación y familiarización de operadores, supervisores, mantenimiento.")+
+        '</div>'+
+        '<p class="note">'+X("ANSI standards are voluntary but are treated as industry best practice; OSHA can cite unsafe use under the General Duty Clause and 1926.453.","Las normas ANSI son voluntarias pero se tratan como mejor práctica; OSHA puede citar el uso inseguro bajo la Cláusula de Deber General y 1926.453.")+'</p>';
+  }},
+  /* 4 */
+  { ico:ICO.people, t:["Roles","Roles"], b:function(){
+      return tit("Operator, occupant, supervisor","Operador, ocupante, supervisor")+
+        '<div class="grid3">'+
+          bx(ICO.people,"Operator","Operador","Trained, authorized &amp; familiarized on THAT machine.","Capacitado, autorizado y familiarizado con ESA máquina.")+
+          bx(ICO.people,"Occupant","Ocupante","Anyone in the platform; must use fall protection &amp; know the hazards.","Cualquiera en la plataforma; usa protección contra caídas y conoce los peligros.")+
+          bx(ICO.people,"Supervisor","Supervisor","Selects the right MEWP; knows the rules and hazards; monitors work.","Elige la MEWP correcta; conoce reglas y peligros; supervisa el trabajo.")+
+        '</div>'+
+        '<p class="note">'+X("Operator training is two parts: theory + a hands-on practical evaluation (A92.24).","La capacitación del operador tiene dos partes: teoría + evaluación práctica (A92.24).")+'</p>';
+  }},
+  /* 5 */
+  { ico:ICO.plan, t:["Be qualified","Estar calificado"], b:function(){
+      return tit("Trained, authorized, familiarized","Capacitado, autorizado, familiarizado")+
+        '<p class="lead">'+X("Before operating, you must be trained on MEWPs, authorized by your employer, and familiarized with the specific model — its controls, functions, decals and emergency lowering. Never assume one lift works like another.","Antes de operar, debes estar capacitado en MEWP, autorizado por tu empleador y familiarizado con el modelo específico — sus controles, funciones, calcomanías y descenso de emergencia. Nunca supongas que una plataforma funciona igual que otra.")+'</p>'+
+        '<p class="note warn">'+X("Read the operator’s manual on the machine. Familiarization is required each time you use a model you are not used to.","Lee el manual del operador en la máquina. La familiarización es obligatoria cada vez que uses un modelo con el que no estás acostumbrado.")+'</p>';
+  }},
+  /* 6 */
+  { ico:ICO.plan, t:["Plan & rescue","Plan y rescate"], b:function(){
+      return tit("Plan the work: risk &amp; rescue","Planea el trabajo: riesgo y rescate")+
+        '<p class="lead">'+X("A92.22 requires planning before use. Do a site-specific risk assessment and prepare a written, site- and equipment-specific rescue plan — for example, how to get an operator down if a boom lift fails while elevated.","A92.22 exige planear antes de usar. Haz una evaluación de riesgos del sitio y prepara un plan de rescate escrito, específico del sitio y del equipo — por ejemplo, cómo bajar a un operador si el brazo falla estando elevado.")+'</p>'+
+        '<div class="grid2">'+
+          bx(ICO.clipboard,"Risk assessment","Evaluación de riesgos","Hazards, tasks, environment, people below.","Peligros, tareas, entorno, personas debajo.")+
+          bx(ICO.rescue,"Rescue plan","Plan de rescate","Written, practiced, no reliance on 911 alone.","Escrito, practicado, sin depender solo del 911.")+
+        '</div>';
+  }},
+  /* 7 */
+  { ico:ICO.gear, t:["Safety features","Dispositivos"], b:function(){
+      return tit("Built-in safety features (A92.20)","Dispositivos de seguridad (A92.20)")+
+        '<div class="grid2">'+
+          bx(ICO.weight,"Load sensor","Sensor de carga","Alarms &amp; stops operation if overloaded.","Alarma y detiene la operación si hay sobrecarga.")+
+          bx(ICO.tilt,"Tilt sensor","Sensor de inclinación","Alarms &amp; blocks movement past a set slope.","Alarma y bloquea el movimiento pasada cierta pendiente.")+
+          bx(ICO.lift,"Gate + toe guards","Puerta + rodapiés","Self-closing gate; chains no longer allowed on new units.","Puerta autocierre; cadenas ya no se permiten en unidades nuevas.")+
+          bx(ICO.check,"Higher rails / solid tires","Barandas / llantas","43.5-in rails; solid or foam-filled tires for rough terrain.","Barandas de 43.5 in; llantas sólidas o rellenas para terreno irregular.")+
+        '</div>'+
+        '<p class="note bad">'+X("Never bypass or disable a load or tilt sensor. They exist because overload and slope cause tip-overs.","Nunca anules un sensor de carga o inclinación. Existen porque la sobrecarga y la pendiente causan volcaduras.")+'</p>';
+  }},
+  /* 8 */
+  { ico:ICO.clipboard, t:["Machine check","Revisión máquina"], b:function(){
+      return tit("Pre-use machine inspection","Inspección de la máquina")+
+        '<p class="lead">'+X("Before each shift, inspect the MEWP with the manufacturer’s checklist:","Antes de cada turno, inspecciona la MEWP con la lista del fabricante:")+'</p>'+
+        '<ul>'+
+          '<li>'+X("Controls (upper &amp; lower), emergency stop, horn.","Controles (superior e inferior), paro de emergencia, claxon.")+'</li>'+
+          '<li>'+X("Emergency/auxiliary lowering works.","El descenso de emergencia/auxiliar funciona.")+'</li>'+
+          '<li>'+X("Tires/tracks, hoses, leaks, fluids, battery/fuel.","Llantas/orugas, mangueras, fugas, fluidos, batería/combustible.")+'</li>'+
+          '<li>'+X("Guardrails, gate, anchor points, decals legible.","Barandas, puerta, puntos de anclaje, calcomanías legibles.")+'</li>'+
+          '<li>'+X("Function test through full range before working.","Prueba de funciones en todo el rango antes de trabajar.")+'</li>'+
+        '</ul>'+
+        '<p class="note warn">'+X("Tag out and report any defect — do not operate a damaged MEWP.","Etiqueta y reporta cualquier defecto — no operes una MEWP dañada.")+'</p>';
+  }},
+  /* 9 */
+  { ico:ICO.ground, t:["Site check","Revisión sitio"], b:function(){
+      return tit("Workplace / site inspection","Inspección del sitio de trabajo")+
+        '<p class="lead">'+X("Check the area where the MEWP will be used before elevating:","Revisa el área donde se usará la MEWP antes de elevar:")+'</p>'+
+        '<div class="grid3">'+
+          bx(ICO.ground,"Ground","Terreno","Firm, level; no holes, drop-offs, soft soil or slopes over rating.","Firme, nivelado; sin hoyos, desniveles, suelo blando o pendientes fuera de rango.")+
+          bx(ICO.power,"Overhead","Arriba","Power lines, structures, other equipment.","Líneas eléctricas, estructuras, otros equipos.")+
+          bx(ICO.wind,"Weather","Clima","Wind, rain, ice, lightning, visibility.","Viento, lluvia, hielo, rayos, visibilidad.")+
+        '</div>'+
+        '<p class="note">'+X("Also plan for pedestrians and traffic — barricade the area below (drop zone).","Planea también peatones y tránsito — delimita el área de abajo (zona de caída).")+'</p>';
+  }},
+  /* 10 */
+  { ico:ICO.harness, t:["Fall protection","Protección caídas"], b:function(){
+      return tit("Fall protection in the platform","Protección contra caídas en la canasta")+
+        '<p class="lead">'+X("Occupants must use personal fall protection as required. On a boom lift (Group B), OSHA 1926.453 requires a full-body harness with a lanyard attached to the boom or basket anchor point. Scissor lifts (Group A) rely on the guardrail system — stay inside it.","Los ocupantes deben usar protección personal contra caídas según se requiera. En un brazo (Grupo B), OSHA 1926.453 exige arnés de cuerpo completo con cordón al punto de anclaje del brazo o canasta. Las tijeras (Grupo A) se basan en las barandas — permanece dentro.")+'</p>'+
+        '<p class="note bad">'+X("Never tie off to an adjacent pole or structure, and never climb, stand or sit on the guardrails.","Nunca te amarres a un poste o estructura adyacente, y nunca subas, te pares o sientes en las barandas.")+'</p>';
+  }},
+  /* 11 */
+  { ico:ICO.weight, t:["Capacity","Capacidad"], b:function(){
+      return tit("Rated capacity — count everything","Capacidad nominal — cuenta todo")+
+        '<p class="lead">'+X("Never exceed the platform’s rated capacity. The total includes workers, tools, materials and equipment. Long or wind-catching loads also add horizontal force. Check the data plate.","Nunca excedas la capacidad nominal. El total incluye trabajadores, herramientas, materiales y equipos. Cargas largas o que atrapan viento agregan fuerza horizontal. Revisa la placa de datos.")+'</p>'+
+        '<div class="row"><span class="lbl">'+X("Total on platform","Total en plataforma")+'</span><input type="range" id="capS" min="200" max="1200" step="20" value="700"><span class="val" id="capV"></span></div>'+
+        '<div class="note" id="capMsg"></div>';
+    }, i:function(){ var cap=1000, s=$("capS"); function u(){ var v=+s.value; $("capV").textContent=v+" lb"; var m=$("capMsg"); if(v>cap){ m.className="note bad"; m.innerHTML="<b>"+X("OVER CAPACITY","SOBRECARGA")+"</b> — "+X("the sensor will alarm and lock out. Remove weight.","el sensor alarmará y bloqueará. Quita peso."); } else if(v>cap*0.85){ m.className="note warn"; m.innerHTML=X("Near the limit — recheck tools and materials.","Cerca del límite — revisa herramientas y materiales."); } else { m.className="note good"; m.innerHTML="<b>"+X("Within limit","Dentro del límite")+"</b> — "+(cap-v)+" lb "+X("remaining (example 1000 lb rating).","restantes (ejemplo, capacidad 1000 lb)."); } } s.oninput=u; u(); }
+  },
+  /* 12 */
+  { ico:ICO.tilt, t:["Stability","Estabilidad"], b:function(){
+      return tit("Stability &amp; tip-over","Estabilidad y volcadura")+
+        '<p class="lead">'+X("Most tip-overs come from working on a slope, soft ground, driving elevated on uneven ground, or side loads. Keep it on firm, level ground within the rated slope, and fully retract/lower before traveling unless the machine is rated to drive elevated.","La mayoría de las volcaduras vienen de trabajar en pendiente, suelo blando, conducir elevado en terreno irregular o cargas laterales. Mantenla en suelo firme y nivelado dentro de la pendiente nominal, y retrae/baja del todo antes de desplazarte, salvo que la máquina esté clasificada para conducir elevada.")+'</p>'+
+        '<div class="grid2">'+
+          bx(ICO.ground,"Level &amp; firm","Nivelado y firme","Use the tilt alarm; use plates on soft ground.","Usa la alarma de inclinación; placas en suelo blando.")+
+          bx(ICO.gear,"Outriggers","Estabilizadores","Deploy per manual on machines that have them.","Despliega según manual en máquinas que los tengan.")+
+        '</div>';
+  }},
+  /* 13 */
+  { ico:ICO.power, t:["Power lines","Líneas eléctricas"], b:function(){
+      return tit("Overhead power lines","Líneas eléctricas aéreas")+
+        '<p class="lead">'+X("Electrocution is a leading MEWP killer. Treat every overhead line as energized and lethal. Keep the platform, boom, worker and tools at least the minimum approach distance away — for lines up to 50 kV, OSHA requires at least 10 ft (more for higher voltages).","La electrocución es una de las principales causas de muerte con MEWP. Trata toda línea aérea como energizada y letal. Mantén plataforma, brazo, trabajador y herramientas al menos a la distancia mínima de aproximación — para líneas hasta 50 kV, OSHA exige al menos 10 ft (más a mayores voltajes).")+'</p>'+
+        '<p class="note bad">'+X("A MEWP is not insulated unless specifically rated. Assume contact = death.","Una MEWP no está aislada salvo que esté específicamente clasificada. Supón que contacto = muerte.")+'</p>';
+  }},
+  /* 14 */
+  { ico:ICO.hand, t:["Safe operation","Operación segura"], b:function(){
+      return tit("Safe operating practices","Prácticas de operación segura")+
+        '<ul>'+
+          '<li>'+X("Keep both feet on the platform floor; never stand on rails, boxes or planks.","Mantén ambos pies en el piso de la plataforma; nunca te pares en barandas, cajas o tablas.")+'</li>'+
+          '<li>'+X("Operate controls smoothly; look in the direction of travel; use a spotter.","Opera los controles con suavidad; mira en la dirección de avance; usa un guía.")+'</li>'+
+          '<li>'+X("Keep clear of pinch/crush points overhead when raising near structures.","Mantente lejos de puntos de aplastamiento arriba al subir cerca de estructuras.")+'</li>'+
+          '<li>'+X("Close the gate; keep the platform clean and loads secured/tethered.","Cierra la puerta; mantén la plataforma limpia y las cargas aseguradas/amarradas.")+'</li>'+
+        '</ul>';
+  }},
+  /* 15 */
+  { ico:ICO.ban, t:["Never do","Nunca hagas"], b:function(){
+      return tit("Never do these","Nunca hagas esto")+
+        '<div class="grid2">'+
+          bx(ICO.ban,"Use it as a crane","Usarla como grúa","Do not lift loads with the platform unless rated &amp; equipped.","No ices cargas con la plataforma salvo que esté clasificada y equipada.")+
+          bx(ICO.ban,"Add height","Agregar altura","No ladders, planks or boxes to reach higher.","Sin escaleras, tablas o cajas para llegar más alto.")+
+          bx(ICO.ban,"Tie off outside","Amarrarte afuera","Never anchor your harness to an adjacent structure.","Nunca ancles el arnés a una estructura adyacente.")+
+          bx(ICO.ban,"Override sensors","Anular sensores","Never bypass load/tilt cut-outs or the gate.","Nunca anules los cortes de carga/inclinación ni la puerta.")+
+        '</div>';
+  }},
+  /* 16 */
+  { ico:ICO.wind, t:["Wind & weather","Viento y clima"], b:function(){
+      return tit("Wind and weather limits","Límites de viento y clima")+
+        '<p class="lead">'+X("Do not exceed the manufacturer’s maximum wind speed rating (often around 28 mph / 12.5 m/s for many boom lifts — check the plate). Wind force grows fast with height and with sheet-like loads. Stop work for lightning, storms or poor visibility.","No excedas la velocidad de viento máxima del fabricante (a menudo cerca de 28 mph / 12.5 m/s en muchos brazos — revisa la placa). La fuerza del viento crece rápido con la altura y con cargas tipo lámina. Detén el trabajo por rayos, tormentas o mala visibilidad.")+'</p>'+
+        '<p class="note warn">'+X("Never attach signs, tarps or sheeting to the platform — they turn it into a sail.","Nunca sujetes letreros, lonas o láminas a la plataforma — la convierten en vela.")+'</p>';
+  }},
+  /* 17 */
+  { ico:ICO.rescue, t:["Emergency","Emergencia"], b:function(){
+      return tit("Emergency lowering &amp; rescue","Descenso de emergencia y rescate")+
+        '<p class="lead">'+X("Know the emergency/auxiliary lowering controls and the ground (lower) controls before you go up. Ground personnel must know how to lower the platform if the operator cannot. Follow the written rescue plan.","Conoce los controles de descenso de emergencia/auxiliar y los controles de tierra (inferiores) antes de subir. El personal de tierra debe saber bajar la plataforma si el operador no puede. Sigue el plan de rescate escrito.")+'</p>'+
+        '<p class="note">'+X("Practice the rescue plan — suspension trauma can be life-threatening within minutes.","Practica el plan de rescate — el trauma por suspensión puede ser mortal en minutos.")+'</p>';
+  }},
+  /* 18 */
+  { ico:ICO.warn, t:["Top incidents","Incidentes"], b:function(){
+      return tit("The four big MEWP incidents","Los cuatro grandes incidentes")+
+        '<div class="grid2">'+
+          bx(ICO.harness,"Falls","Caídas","Ejected or climbing out; use fall protection, stay inside.","Salir despedido o trepar; usa protección, quédate dentro.")+
+          bx(ICO.power,"Electrocution","Electrocución","Contact with overhead lines; keep clearance.","Contacto con líneas; mantén distancia.")+
+          bx(ICO.tilt,"Tip-overs","Volcaduras","Slope, soft ground, overload, side load.","Pendiente, suelo blando, sobrecarga, carga lateral.")+
+          bx(ICO.warn,"Crushing","Aplastamiento","Caught between platform and structure overhead.","Atrapado entre plataforma y estructura arriba.")+
+        '</div>';
+  }},
+  /* 19 */
+  { ico:ICO.check, t:["Checklist","Lista"], b:function(){
+      var items=[
+        ["Trained, authorized & familiarized on this MEWP","Capacitado, autorizado y familiarizado con esta MEWP"],
+        ["Machine pre-use inspection passed","Inspección previa de la máquina aprobada"],
+        ["Site checked: ground, overhead, weather","Sitio revisado: terreno, arriba, clima"],
+        ["Fall protection worn / guardrails intact","Protección contra caídas puesta / barandas intactas"],
+        ["Load within rated capacity","Carga dentro de la capacidad nominal"],
+        ["Rescue plan in place & drop zone barricaded","Plan de rescate listo y zona de caída delimitada"]
+      ];
+      return tit("Before you elevate — checklist","Antes de elevar — lista")+'<p class="lead">'+X("Tap each item you confirmed.","Toca cada punto que confirmaste.")+'</p>'+
+        items.map(function(it){return '<div class="chk"><span class="bx">'+ICO.check+'</span><span class="txt"><b>'+X(it[0],it[1])+'</b></span></div>';}).join("")+
+        '<p class="note good" id="ckMsg"></p>';
+    }, i:function(){ var t=document.querySelectorAll(".chk").length; function u(){var d=document.querySelectorAll(".chk.done").length;$("ckMsg").textContent=X("Confirmed: ","Confirmado: ")+d+"/"+t+(d===t?X(" — cleared to elevate ✓"," — autorizado a elevar ✓"):"");} document.querySelectorAll(".chk").forEach(function(c){c.onclick=function(){c.classList.toggle("done");u();};}); u(); }
+  },
+  /* 20 */
+  { ico:ICO.quiz, t:["Quiz","Evaluación"], b:function(){
+      var QUIZ=[
+        {en:"On a boom lift (Group B), fall protection is:",es:"En un brazo (Grupo B), la protección contra caídas es:",
+         o_en:["Optional","A full-body harness + lanyard to the anchor point","Only the guardrail"],o_es:["Opcional","Arnés de cuerpo completo + cordón al anclaje","Solo la baranda"],a:1},
+        {en:"Minimum clearance from a power line up to 50 kV (OSHA):",es:"Distancia mínima a una línea hasta 50 kV (OSHA):",
+         o_en:["3 ft","10 ft","No limit if careful"],o_es:["3 ft","10 ft","Sin límite si tienes cuidado"],a:1},
+        {en:"To reach a bit higher you may:",es:"Para llegar un poco más alto puedes:",
+         o_en:["Stand on the mid-rail","Add a ladder in the basket","Nothing — never add height or climb rails"],o_es:["Pararte en la baranda media","Poner una escalera en la canasta","Nada — nunca agregues altura ni subas barandas"],a:2},
+        {en:"Rated platform capacity includes:",es:"La capacidad nominal incluye:",
+         o_en:["Only workers","Workers + tools + materials + equipment","Only materials"],o_es:["Solo trabajadores","Trabajadores + herramientas + materiales + equipos","Solo materiales"],a:1},
+        {en:"ANSI A92 requires, before use, a:",es:"ANSI A92 exige, antes de usar, un:",
+         o_en:["Verbal ok from a coworker","Written site- and equipment-specific rescue plan","Nothing"],o_es:["Visto bueno verbal de un compañero","Plan de rescate escrito específico de sitio y equipo","Nada"],a:1}
+      ];
+      window._QZ=QUIZ;
+      var qs=QUIZ.map(function(q,i){var o=(LANG==="es"?q.o_es:q.o_en).map(function(x,j){return '<button class="opt" data-q="'+i+'" data-o="'+j+'">'+x+'</button>';}).join("");return '<div class="q"><h3>'+(i+1)+'. '+X(q.en,q.es)+'</h3>'+o+'</div>';}).join("");
+      return tit("Quick check","Evaluación rápida")+qs+'<div class="score" id="score"></div>';
+    }, i:function(){ var QUIZ=window._QZ,ans={},ok=0; document.querySelectorAll(".opt").forEach(function(b){b.onclick=function(){var qi=+b.dataset.q;if(ans[qi])return;ans[qi]=1;var a=QUIZ[qi].a;document.querySelectorAll('.opt[data-q="'+qi+'"]').forEach(function(x){x.disabled=true;if(+x.dataset.o===a)x.classList.add("correct");});if(+b.dataset.o===a)ok++;else b.classList.add("wrong");if(Object.keys(ans).length===QUIZ.length)$("score").textContent=X("Score: ","Puntaje: ")+ok+"/"+QUIZ.length;};}); }
+  },
+  /* 21 */
+  { ico:ICO.book, t:["Sources","Fuentes"], b:function(){
+      return tit("Key takeaways &amp; references","Ideas clave y referencias")+
+        '<ul><li>'+X("Be trained, authorized and familiarized; inspect the machine and the site every time.","Capacítate, autorízate y familiarízate; inspecciona la máquina y el sitio siempre.")+'</li>'+
+        '<li>'+X("Use fall protection, respect capacity and slope, and keep clear of power lines.","Usa protección contra caídas, respeta la capacidad y la pendiente, y aléjate de las líneas eléctricas.")+'</li>'+
+        '<li>'+X("Plan the work with a risk assessment and a written rescue plan.","Planea el trabajo con evaluación de riesgos y plan de rescate escrito.")+'</li></ul>'+
+        '<h2>'+X("References","Referencias")+'</h2>'+
+        '<div class="ref"><b>ANSI/SAIA A92.20</b> — Design, Calculations, Safety Requirements &amp; Test Methods for MEWPs.</div>'+
+        '<div class="ref"><b>ANSI/SAIA A92.22</b> — Safe Use of MEWPs (application, inspection, planning, rescue plan).</div>'+
+        '<div class="ref"><b>ANSI/SAIA A92.24</b> — Training Requirements for MEWPs (operator, supervisor, occupant).</div>'+
+        '<div class="ref"><b>OSHA 29 CFR 1926.453</b> — Aerial lifts (fall protection, safe operation, power-line clearance under 1926.1408).</div>'+
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px"><span class="verdict ok">'+ICO.check+' '+X("Module complete","Módulo completo")+'</span><a class="btn ghost" href="../index.html" target="_top">'+X("Back to portal","Volver al portal")+'</a></div>'+
+        '<p class="note">'+X("Training overview only — not a substitute for hands-on operator training and the machine’s operator manual.","Solo es un resumen — no sustituye la capacitación práctica del operador ni el manual de la máquina.")+'</p>';
+  }}
+];
+var cur=0;
+
+function pintarChrome(){
+  document.documentElement.lang=LANG;
+  $("brand").textContent=X(CONFIG.brand[0],CONFIG.brand[1]);
+  $("brandsub").textContent=X(CONFIG.subtitle[0],CONFIG.subtitle[1]);
+  $("homeTxt").textContent=X("Home","Inicio");
+  document.querySelectorAll("#lang button").forEach(function(b){ b.classList.toggle("on", b.dataset.l===LANG); });
+  var dark=document.documentElement.getAttribute("data-theme")==="dark";
+  $("temaIco").innerHTML=dark?ICO.sun:ICO.moon; $("temaTxt").textContent=dark?X("Light","Claro"):X("Dark","Oscuro");
+  $("prev").innerHTML="‹ "+X("Back","Anterior");
+  $("next").innerHTML=(cur>=STEPS.length-1?X("Restart","Reiniciar"):X("Next","Siguiente")+" ›");
+}
+function render(){
+  pintarChrome();
+  var s=STEPS[cur];
+  $("card").innerHTML=s.b();
+  if(s.i) s.i();
+  $("progbar").style.width=((cur+1)/STEPS.length*100)+"%";
+  $("mStep").textContent=X("Step ","Paso ")+(cur+1)+" / "+STEPS.length+" · "+X(s.t[0],s.t[1]);
+  $("mDur").textContent=CONFIG.duration;
+  $("prev").disabled=(cur===0);
+  $("dots").innerHTML=STEPS.map(function(_,i){return '<button class="dot'+(i===cur?' on':'')+'" data-i="'+i+'" aria-label="'+(i+1)+'"></button>';}).join("");
+  document.querySelectorAll(".dot").forEach(function(d){ d.onclick=function(){ cur=+d.dataset.i; render(); }; });
+  window.scrollTo(0,0);
+}
+$("prev").onclick=function(){ if(cur>0){cur--;render();} };
+$("next").onclick=function(){ cur=(cur>=STEPS.length-1)?0:cur+1; render(); };
+document.querySelectorAll("#lang button").forEach(function(b){ b.onclick=function(){ LANG=b.dataset.l; render(); }; });
+$("tema").onclick=function(){ var d=document.documentElement.getAttribute("data-theme")==="dark"; document.documentElement.setAttribute("data-theme", d?"light":"dark"); pintarChrome(); };
+document.addEventListener("keydown",function(e){ if(e.key==="ArrowRight")$("next").click(); if(e.key==="ArrowLeft")$("prev").click(); });
+render();
+</script>
+</body>
+</html>

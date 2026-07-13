@@ -21,6 +21,9 @@ Project/
 │   ├── coax-sweep-anritsu.html    (Telecom — VSWR/RL/DTF/cable loss, Anritsu)
 │   ├── tower-safety.html          (Seguridad — trabajo en torres OSHA/Crown Castle)
 │   ├── tool-tethering-aerial-lifts.html (Seguridad — amarre de herramientas en plataformas)
+│   ├── loto-lockout-tagout.html   (Seguridad — bloqueo/etiquetado LOTO)
+│   ├── grounding-bonding-cell-sites.html (Telecom — puesta a tierra y bonding)
+│   ├── mewp-aerial-lift-operation.html (Construcción — operación de plataforma MEWP)
 │   ├── multimeter-electrical.html (Electricidad — multímetro / -48V)
 │   ├── fieldclix-instalacion.html (Inducción — instalar y configurar la app Fieldclix)
 │   └── ejemplo-intro.html         (ejemplo)
@@ -47,9 +50,10 @@ Project/
 `videos.json` no carga con doble clic; usar servidor: `python -m http.server 8000` dentro de `Project/` y abrir `http://localhost:8000`.
 
 ### Módulos actuales
-- **Telecom:** PIM (Kaelus), Coax Sweep (Anritsu).
-- **Seguridad:** Trabajo en torres (OSHA / Crown Castle); Amarre de herramientas en plataformas elevadoras (toolbox talk).
+- **Telecom:** PIM (Kaelus), Coax Sweep (Anritsu), Puesta a tierra y bonding (R56/NEC 250).
+- **Seguridad:** Trabajo en torres (OSHA / Crown Castle); Amarre de herramientas en plataformas (toolbox talk); Bloqueo/etiquetado LOTO (OSHA 1910.147 / NFPA 70E).
 - **Electricidad:** Multímetro y electricidad (DC/AC, ohms, watts, breakers, planta -48V).
+- **Construcción:** Operación de plataforma elevadora MEWP (ANSI A92 / OSHA 1926.453).
 - **Inducción:** 2 ejemplos + **Fieldclix (instalación y configuración de la app)**.
 
 > Nota: el "Starter-Kit" (andamiaje genérico para otros proyectos) se movió fuera de esta carpeta. / Note: the generic "Starter-Kit" was moved outside this folder.
@@ -67,6 +71,7 @@ Project/
 - (Opcional) Publicar en GitHub Pages; actualizar README al esquema nuevo de videos.json. / Publish to GitHub Pages; update README.
 
 ### Hecho recientemente / Recently done (2026-07-13)
+- Tres módulos nuevos **basados en documentación** (con slide de Referencias en cada uno): **LOTO** (`loto-lockout-tagout.html`, Seguridad/verde, 24 slides — OSHA 1910.147 y Apéndice A, NFPA 70E 120.5, con demo vivo-muerto-vivo, checklist, quiz); **Puesta a tierra y bonding** (`grounding-bonding-cell-sites.html`, Telecom/azul, 18 slides — Motorola R56, NEC 250, TIA-222, con diagrama SVG del sitio y calculadora de resistencia ≤ 5 Ω); **Operación de plataforma MEWP** (`mewp-aerial-lift-operation.html`, Construcción/naranja, 21 slides — ANSI A92.20/22/24, OSHA 1926.453, con calculadora de capacidad). Pósters SVG: `poster-loto.svg`, `poster-grounding.svg`, `poster-mewp.svg`. Entradas añadidas a `videos.json` (primer módulo del área **construcción**). Respaldos: `Versiones/videos-v9-2026-07-13.json`, `Versiones/estado-del-proyecto-v3-2026-07-13.md`. / Three new documentation-based modules (LOTO, Grounding & Bonding, MEWP operation) with references, SVG visuals and interactives.
 - Seguridad: nuevo módulo **Amarre de herramientas en plataformas elevadoras** (`animations/tool-tethering-aerial-lifts.html`, área verde, 22 slides). Toolbox talk con animaciones canvas (herramienta cayendo/energía de impacto, cordón que sostiene, zona de exclusión), calculadora de energía de impacto y de carga vs capacidad, checklist previo y quiz. Portada hecha en **Canva** (`assets/poster-tool-tethering.jpg`) — se corrigió una versión previa donde el trabajador no llevaba arnés. Entrada añadida a `videos.json`. Respaldos: `Versiones/videos-v8-2026-07-13.json`, `Versiones/estado-del-proyecto-v2-2026-07-13.md`. / New green Safety toolbox-talk module on tool tethering in aerial lifts (22 slides, canvas animations, calculators, checklist, quiz); Canva-made poster (harness corrected).
 - Flujo: se habilitaron y documentaron **Canva** (portadas/gráficos exportables) y **Figma** (maquetas → código) como parte del flujo (REGLA 8 en `REGLAS-DE-TRABAJO.md`). / Enabled Canva & Figma in the workflow (working-rule 8).
 - Inducción: nuevo módulo **Fieldclix — instalación y configuración** (`animations/fieldclix-instalacion.html`, área morada). Guía paso a paso (Play Store → instalar → permisos → datos en segundo plano → login → menú → Time Keeping → órdenes/Time Off) con **9 capturas reales** extraídas del video, más el **video completo incrustado** (`videos/fieldclix-instalacion.mp4`, sin audio, comprimido a ~16 MB para GitHub). Portada `poster-fieldclix.svg`. Entrada añadida a `videos.json`. Respaldos: `Versiones/videos-v7-2026-07-13.json`, `Versiones/estado-del-proyecto-v1-2026-07-13.md`. Publicado y verificado en GitHub Pages. / New Fieldclix install & setup onboarding module with 9 real screenshots + embedded full video; published and verified on GitHub Pages.

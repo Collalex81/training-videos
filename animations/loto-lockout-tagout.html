@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lockout/Tagout (LOTO) / Bloqueo y etiquetado</title>
+<!--
+  SEGURIDAD (verde) — Control de energía peligrosa: Bloqueo/Etiquetado (LOTO).
+  SAFETY (green) — Control of hazardous energy: Lockout/Tagout.
+  Fuentes / Sources: OSHA 29 CFR 1910.147 (& App. A), 1910.333, 1910.147 defs; NFPA 70E Art. 120.5 (ESWC, 6 pasos).
+  Motor basado en Starter-Kit/animations/module-template.html. Bilingüe EN/ES (EN por defecto).
+-->
+<style>
+  :root{
+    --pg:#f2f7f3; --card:#ffffff; --ink:#0c2417; --sub:#4f6a5b; --line:#dfeae3;
+    --bar:#0b3a22; --accent:#15803D; --tint:rgba(21,128,61,.10);
+    --ok:#15803D; --okt:rgba(21,128,61,.10); --bad:#dc2626; --badt:rgba(220,38,38,.10);
+    --amber:#b45309; --ambt:rgba(180,83,9,.12); --radius:14px;
+    --shadow:0 1px 2px rgba(12,36,23,.05),0 10px 26px rgba(12,36,23,.08);
+  }
+  html[data-theme="dark"]{
+    --pg:#0a1310; --card:#12201a; --ink:#e9f6ee; --sub:#a3c2b1; --line:#22352b;
+    --bar:#07130c; --accent:#4ade80; --tint:rgba(74,222,128,.14);
+    --ok:#4ade80; --okt:rgba(74,222,128,.14); --bad:#f87171; --badt:rgba(248,113,113,.14);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  .shell{max-width:940px;margin:0 auto;padding:14px 16px 34px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0 8px;box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:600;display:block;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+  .prog{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:6px 0 4px}
+  .prog>i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);gap:8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;min-height:360px}
+  .step-ico{width:44px;height:44px;border-radius:12px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+  h1{font-size:clamp(20px,3.3vw,26px);margin:0 0 8px;font-weight:700;line-height:1.2}
+  h2{font-size:15.5px;margin:16px 0 8px;font-weight:600}
+  p{margin:0 0 12px}
+  .lead{color:var(--sub);font-size:15px}
+  ul,ol{margin:6px 0 12px;padding-left:20px}
+  li{margin:6px 0}
+  .pill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:var(--tint);padding:5px 11px;border-radius:999px;margin-bottom:10px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:8px 0}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin:8px 0}
+  .box{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:13px}
+  .box h3{margin:0 0 6px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px}
+  .box p{margin:0;font-size:12.5px;color:var(--sub)}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:var(--accent);color:#fff;font-weight:800;font-size:14px;flex:none}
+  .stat3{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
+  .stat3 .s{flex:1;min-width:120px;background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center}
+  .stat3 .s b{display:block;font-size:24px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+  .stat3 .s span{font-size:12px;color:var(--sub)}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;min-height:42px;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;flex:1}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line);border:0;cursor:pointer;padding:0}
+  .dot.on{background:var(--accent);transform:scale(1.3)}
+  .note{font-size:13px;color:var(--sub);border-left:3px solid var(--accent);background:var(--tint);padding:9px 12px;margin:12px 0;border-radius:0 8px 8px 0}
+  .warn{border-left-color:var(--amber);color:var(--amber);background:var(--ambt)}
+  .bad{border-left-color:var(--bad);color:var(--bad);background:var(--badt)}
+  .good{border-left-color:var(--ok);color:var(--ink);background:var(--okt)}
+  .good b{color:var(--ok)}
+  .illus{position:relative;aspect-ratio:16/10;background:#08140d;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .illus svg{width:100%;height:100%}
+  .mcap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);margin:8px 2px 2px;justify-content:center}
+  .steps{counter-reset:s;margin:8px 0}
+  .steps .st{display:flex;gap:12px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:7px 0}
+  .steps .st .txt b{font-size:13.5px}.steps .st .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .chk{display:flex;gap:11px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:8px 0;cursor:pointer}
+  .chk .bx{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;margin-top:1px}
+  .chk.done .bx{background:var(--ok);border-color:var(--ok)}
+  .chk.done .txt b{text-decoration:line-through;opacity:.7}
+  .chk .txt b{font-size:13.5px}.chk .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .row{display:flex;align-items:center;gap:12px;margin:10px 0;flex-wrap:wrap}
+  .stat{background:var(--pg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:120px}
+  .stat b{display:block;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+  .stat span{font-size:11px;color:var(--sub)}
+  .q{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:12px}
+  .q h3{margin:0 0 10px;font-size:14px}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:11px 14px;border-radius:10px;margin:7px 0;cursor:pointer;font-size:14px;font-family:inherit}
+  .opt.correct{border-color:var(--ok);background:var(--okt);color:var(--ok);font-weight:600}
+  .opt.wrong{border-color:var(--bad);background:var(--badt);color:var(--bad)}
+  .opt:disabled{cursor:default}
+  .score{font-size:16px;font-weight:700;text-align:center;padding:10px}
+  .verdict{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;font-weight:700;font-size:15px}
+  .verdict.ok{background:var(--okt);color:var(--ok)}
+  .ref{font-size:12.5px;color:var(--sub);border-bottom:1px solid var(--line);padding:8px 0}
+  .ref b{color:var(--ink)}
+  @media(max-width:520px){ .card{padding:15px} .shell{padding:12px 12px 28px} .brand small{display:none} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+  <div class="top">
+    <div class="brand">
+      <span class="logo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
+      <div><b id="brand"></b><small id="brandsub"></small></div>
+    </div>
+    <div class="tools">
+      <a class="tbtn" id="home" href="../index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span id="homeTxt"></span></a>
+      <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+      <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+    </div>
+  </div>
+  <div class="prog"><i id="progbar"></i></div>
+  <div class="meta"><span id="mStep"></span><span id="mDur"></span></div>
+  </div>
+  <div class="card" id="card"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev"></button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="next"></button>
+  </div>
+</div>
+
+<script>
+/* ===================== CONFIG ===================== */
+var CONFIG = {
+  brand:   ["Lockout / Tagout (LOTO)","Bloqueo / Etiquetado (LOTO)"],
+  subtitle:["Control of hazardous energy · Safety","Control de energía peligrosa · Seguridad"],
+  duration:"≈ 15 min",
+  defaultLang:"en"
+};
+
+/* ===================== helpers ===================== */
+var params=new URLSearchParams(location.search);
+var LANG=params.get("lang")?(params.get("lang").toLowerCase().startsWith("es")?"es":"en"):CONFIG.defaultLang;
+function X(en,es){ return LANG==="es"?es:en; }
+function $(id){ return document.getElementById(id); }
+function tit(en,es){ return '<div class="step-ico">'+STEPS[cur].ico+'</div><h1>'+X(en,es)+'</h1>'; }
+var ICO={
+  lock:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
+  bolt:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+  warn:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.6 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+  people:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 6a3 3 0 0 1 0 6M21 20a6 6 0 0 0-4-5.6"/></svg>',
+  doc:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h6"/></svg>',
+  energy:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+  list:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
+  power:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.8 0"/></svg>',
+  tag:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 12 22l-9-9V3h10z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>',
+  test:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6l-5 9a2 2 0 0 0 1.8 3h12.4A2 2 0 0 0 20 18l-5-9V3"/><path d="M8 3h8"/></svg>',
+  box:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg>',
+  refresh:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>',
+  key:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.5 12.5 8-8M16 5l2 2M19 8l2-2"/></svg>',
+  quiz:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.1 9a3 3 0 1 1 4.2 2.7c-.8.4-1.3 1-1.3 2M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>',
+  check:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  book:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h9a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-1a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h2z"/></svg>',
+  sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+  img:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>'
+};
+function stepRow(n,en,es,den,des){ return '<div class="st"><span class="num">'+n+'</span><span class="txt"><b>'+X(en,es)+'</b><span>'+X(den,des)+'</span></span></div>'; }
+function bx(icon,tEn,tEs,dEn,dEs){ return '<div class="box"><h3>'+icon+X(tEn,tEs)+'</h3><p>'+X(dEn,dEs)+'</p></div>'; }
+
+/* ===================== STEPS ===================== */
+var STEPS = [
+  /* 1 */
+  { ico:ICO.lock, t:["Overview","Introducción"], b:function(){
+      return tit("Control of hazardous energy — Lockout/Tagout","Control de energía peligrosa — Bloqueo/Etiquetado")+
+        '<span class="pill">OSHA 29 CFR 1910.147</span>'+
+        '<p class="lead">'+X("LOTO protects workers from the unexpected energization, start-up, or release of stored energy in machines and equipment during servicing and maintenance.","LOTO protege a los trabajadores de la energización inesperada, el arranque o la liberación de energía almacenada en máquinas y equipos durante el servicio y mantenimiento.")+'</p>'+
+        '<div class="stat3"><div class="s"><b>1910.147</b><span>'+X("OSHA standard","norma OSHA")+'</span></div><div class="s"><b>6</b><span>'+X("energy types","tipos de energía")+'</span></div><div class="s"><b>1</b><span>'+X("lock per worker","candado por persona")+'</span></div></div>'+
+        '<p class="note">'+X("This talk covers the written procedure, the lockout sequence, verification, group lockout, and the electrical (NFPA 70E) steps. About 15 minutes.","Esta charla cubre el procedimiento escrito, la secuencia de bloqueo, la verificación, el LOTO grupal y los pasos eléctricos (NFPA 70E). Unos 15 minutos.")+'</p>';
+  }},
+  /* 2 */
+  { ico:ICO.warn, t:["Why it matters","Por qué importa"], b:function(){
+      return tit("Why LOTO saves lives","Por qué LOTO salva vidas")+
+        '<p class="lead">'+X("Failure to control hazardous energy during servicing is one of the most frequently cited OSHA violations. Injuries include electrocution, crushing, amputation, burns and fractures.","No controlar la energía peligrosa durante el servicio es una de las infracciones OSHA más citadas. Las lesiones incluyen electrocución, aplastamiento, amputación, quemaduras y fracturas.")+'</p>'+
+        '<div class="grid2">'+
+          bx(ICO.bolt,"Unexpected start-up","Arranque inesperado","A machine energizes while hands are inside.","La máquina se energiza con las manos adentro.")+
+          bx(ICO.energy,"Stored energy release","Liberación de energía","Springs, capacitors, pressure or gravity let go.","Resortes, capacitores, presión o gravedad se liberan.")+
+        '</div>'+
+        '<p class="note bad">'+X("“I only needed a second” is how most incidents start. Always lock out before reaching in.","“Solo era un segundo” es como empiezan casi todos los incidentes. Siempre bloquea antes de meter las manos.")+'</p>';
+  }},
+  /* 3 */
+  { ico:ICO.people, t:["Who is who","Quién es quién"], b:function(){
+      return tit("Roles: authorized, affected, other","Roles: autorizado, afectado, otro")+
+        '<div class="grid3">'+
+          bx(ICO.key,"Authorized","Autorizado","Performs the lockout and the servicing. Trained &amp; qualified.","Ejecuta el bloqueo y el servicio. Capacitado y calificado.")+
+          bx(ICO.people,"Affected","Afectado","Operates or works on/near the machine being serviced.","Opera o trabaja en/cerca de la máquina en servicio.")+
+          bx(ICO.people,"Other","Otro","Anyone else in the area; must know not to restart.","Cualquier otro en el área; debe saber no reactivar.")+
+        '</div>'+
+        '<p class="note">'+X("Only the authorized employee applies and removes their own lock. Affected employees must be notified before and after.","Solo el empleado autorizado coloca y retira su propio candado. A los afectados se les avisa antes y después.")+'</p>';
+  }},
+  /* 4 */
+  { ico:ICO.doc, t:["Written procedure","Procedimiento escrito"], b:function(){
+      return tit("The energy control procedure","El procedimiento de control de energía")+
+        '<p class="lead">'+X("OSHA requires a documented, machine-specific procedure. It must contain three things:","OSHA exige un procedimiento documentado y específico de la máquina. Debe contener tres cosas:")+'</p>'+
+        '<div class="steps">'+
+          stepRow(1,"Shutdown &amp; isolation steps","Pasos de apagado y aislamiento","How to shut down, isolate, block and secure the equipment.","Cómo apagar, aislar, bloquear y asegurar el equipo.")+
+          stepRow(2,"Placement / removal of devices","Colocación / retiro de dispositivos","Steps for applying, removing and transferring locks/tags, and who is responsible.","Pasos para colocar, retirar y transferir candados/etiquetas, y quién es responsable.")+
+          stepRow(3,"Testing &amp; verification","Prueba y verificación","How to test the equipment to verify isolation is effective.","Cómo probar el equipo para verificar que el aislamiento es efectivo.")+
+        '</div>'+
+        '<p class="note">'+X("Source: OSHA 1910.147(c)(4). Follow your site’s specific procedure — not memory.","Fuente: OSHA 1910.147(c)(4). Sigue el procedimiento específico del sitio — no la memoria.")+'</p>';
+  }},
+  /* 5 */
+  { ico:ICO.energy, t:["Energy types","Tipos de energía"], b:function(){
+      return tit("Know every energy source","Conoce cada fuente de energía")+
+        '<p class="lead">'+X("A machine can hold several energy types at once. Identify and control all of them.","Una máquina puede tener varios tipos de energía a la vez. Identifícalos y contrólalos todos.")+'</p>'+
+        '<div class="grid3">'+
+          bx(ICO.power,"Electrical","Eléctrica","Line power, control power, capacitors, batteries.","Alimentación, control, capacitores, baterías.")+
+          bx(ICO.refresh,"Mechanical","Mecánica","Rotating/moving parts, flywheels, springs.","Partes móviles, volantes, resortes.")+
+          bx(ICO.energy,"Hydraulic","Hidráulica","Pressurized fluid in cylinders and lines.","Fluido a presión en cilindros y líneas.")+
+          bx(ICO.energy,"Pneumatic","Neumática","Compressed air / gas pressure.","Aire comprimido / presión de gas.")+
+          bx(ICO.warn,"Thermal","Térmica","Hot surfaces, steam, cryogenic cold.","Superficies calientes, vapor, frío criogénico.")+
+          bx(ICO.energy,"Chemical / Gravity","Química / Gravedad","Reactive chemicals; raised loads &amp; parts.","Químicos reactivos; cargas y piezas elevadas.")+
+        '</div>';
+  }},
+  /* 6 */
+  { ico:ICO.list, t:["The sequence","La secuencia"], b:function(){
+      return tit("The lockout sequence — overview","La secuencia de bloqueo — resumen")+
+        '<p class="lead">'+X("Based on OSHA 1910.147 Appendix A. The next slides walk each step.","Basado en el Apéndice A de OSHA 1910.147. Los siguientes slides recorren cada paso.")+'</p>'+
+        '<div class="steps">'+
+          stepRow(1,"Prepare &amp; notify","Preparar y notificar","Identify energy; tell affected employees.","Identifica la energía; avisa a los afectados.")+
+          stepRow(2,"Shut down","Apagar","Normal stop procedure.","Procedimiento de apagado normal.")+
+          stepRow(3,"Isolate","Aislar","De-activate energy-isolating devices.","Desactiva los dispositivos de aislamiento.")+
+          stepRow(4,"Lock &amp; tag","Bloquear y etiquetar","Apply your assigned lock and tag.","Coloca tu candado y etiqueta asignados.")+
+          stepRow(5,"Release stored energy","Liberar energía almacenada","Bleed, block, discharge, ground.","Purga, bloquea, descarga, aterriza.")+
+          stepRow(6,"Verify zero energy","Verificar energía cero","Try-out / test that it cannot start.","Prueba que no pueda arrancar.")+
+        '</div>';
+  }},
+  /* 7 */
+  { ico:ICO.people, t:["1 · Prepare","1 · Preparar"], b:function(){
+      return tit("Step 1 — Prepare and notify","Paso 1 — Preparar y notificar")+
+        '<p class="lead">'+X("The authorized employee identifies the type and magnitude of energy, understands the hazards, and knows how to control it. Then notify all affected employees that the machine will be shut down and locked out.","El empleado autorizado identifica el tipo y magnitud de la energía, entiende los peligros y sabe cómo controlarla. Luego avisa a todos los afectados que la máquina se apagará y bloqueará.")+'</p>'+
+        '<p class="note">'+X("Source: OSHA 1910.147 App. A, Sequence steps (1)–(2).","Fuente: OSHA 1910.147 Apéndice A, secuencia pasos (1)–(2).")+'</p>';
+  }},
+  /* 8 */
+  { ico:ICO.power, t:["2 · Shut down","2 · Apagar"], b:function(){
+      return tit("Step 2 — Shut down normally","Paso 2 — Apagar normalmente")+
+        '<p class="lead">'+X("If the machine is running, shut it down using the normal stopping procedure (stop button, open switch, close valve). A controlled shutdown avoids creating new hazards.","Si la máquina está funcionando, apágala con el procedimiento de parada normal (botón de paro, abrir interruptor, cerrar válvula). Un apagado controlado evita crear nuevos peligros.")+'</p>'+
+        '<p class="note warn">'+X("Do not use the disconnect as an on/off switch — stop the load first, then isolate.","No uses el desconectador como interruptor de encendido/apagado — detén la carga primero, luego aísla.")+'</p>';
+  }},
+  /* 9 */
+  { ico:ICO.bolt, t:["3 · Isolate","3 · Aislar"], b:function(){
+      return tit("Step 3 — Isolate the energy","Paso 3 — Aislar la energía")+
+        '<p class="lead">'+X("De-activate the energy-isolating device(s) so the machine is fully isolated from every energy source: open the disconnect, close and secure valves, disconnect lines. Isolate every source you identified.","Desactiva los dispositivos de aislamiento para que la máquina quede totalmente aislada de cada fuente: abre el desconectador, cierra y asegura válvulas, desconecta líneas. Aísla cada fuente que identificaste.")+'</p>'+
+        '<p class="note">'+X("An energy-isolating device physically prevents energy transmission — e.g., a breaker, disconnect switch, line valve or blank. A push-button is NOT an isolating device.","Un dispositivo de aislamiento evita físicamente la transmisión de energía — p. ej. un breaker, desconectador, válvula de línea o brida ciega. Un botón NO es un dispositivo de aislamiento.")+'</p>';
+  }},
+  /* 10 */
+  { ico:ICO.lock, t:["4 · Lock & tag","4 · Bloquear"], b:function(){
+      var svg=''+
+      '<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">'+
+      '<defs><linearGradient id="mt" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#33604a"/><stop offset=".5" stop-color="#7fc79b"/><stop offset="1" stop-color="#33604a"/></linearGradient></defs>'+
+      '<rect width="320" height="200" fill="#0a160f"/>'+
+      '<rect x="96" y="26" width="128" height="150" rx="6" fill="#132a1e" stroke="#2f5a42" stroke-width="2"/>'+
+      '<rect x="112" y="44" width="96" height="26" rx="3" fill="#1c3a29"/><text x="160" y="61" fill="#8fd6ac" font-family="system-ui" font-size="11" text-anchor="middle">MAIN DISCONNECT</text>'+
+      '<rect x="146" y="86" width="28" height="52" rx="4" fill="url(#mt)"/>'+
+      '<rect x="150" y="120" width="20" height="12" rx="2" fill="#0f5c2c"/><text x="160" y="150" fill="#a6d63f" font-family="system-ui" font-size="10" text-anchor="middle">OFF</text>'+
+      '<rect x="140" y="132" width="40" height="10" rx="3" fill="#e11d48"/>'+
+      '<g transform="translate(160,150)"><rect x="-16" y="0" width="32" height="22" rx="4" fill="#e11d48"/><path d="M-9,0 v-6 a9 9 0 0 1 18 0 v6" fill="none" stroke="#e11d48" stroke-width="3"/><circle cx="0" cy="11" r="3" fill="#0a160f"/></g>'+
+      '<g transform="translate(228,120) rotate(8)"><rect x="0" y="0" width="52" height="34" rx="4" fill="#facc15"/><rect x="0" y="0" width="52" height="9" fill="#dc2626"/><text x="26" y="7.5" fill="#fff" font-family="system-ui" font-size="6.5" text-anchor="middle" font-weight="700">DANGER</text><text x="26" y="20" fill="#111" font-family="system-ui" font-size="6" text-anchor="middle">DO NOT</text><text x="26" y="28" fill="#111" font-family="system-ui" font-size="6" text-anchor="middle">OPERATE</text><line x1="26" y1="0" x2="26" y2="-14" stroke="#facc15" stroke-width="2"/></g>'+
+      '</svg>';
+      return tit("Step 4 — Apply your lock and tag","Paso 4 — Coloca tu candado y etiqueta")+
+        '<div class="illus" style="aspect-ratio:16/10">'+svg+'</div>'+
+        '<p class="lead" style="margin-top:12px">'+X("Lock the isolating device open with your own assigned lock, and attach a durable DANGER tag with your name. One worker = one lock = one key.","Bloquea el dispositivo de aislamiento en abierto con tu propio candado asignado, y coloca una etiqueta DANGER duradera con tu nombre. Un trabajador = un candado = una llave.")+'</p>'+
+        '<p class="note bad">'+X("A tag alone is only a warning — it provides no physical restraint. Use a lock whenever the device can be locked.","Una etiqueta sola es solo una advertencia — no da sujeción física. Usa candado siempre que el dispositivo se pueda bloquear.")+'</p>';
+  }},
+  /* 11 */
+  { ico:ICO.energy, t:["5 · Stored energy","5 · Energía almacenada"], b:function(){
+      return tit("Step 5 — Release stored energy","Paso 5 — Libera la energía almacenada")+
+        '<p class="lead">'+X("After locking out, relieve or restrain any residual/stored energy so it cannot cause harm:","Después de bloquear, libera o retén cualquier energía residual/almacenada para que no cause daño:")+'</p>'+
+        '<div class="grid2">'+
+          bx(ICO.power,"Electrical","Eléctrica","Discharge capacitors; ground where needed.","Descarga capacitores; aterriza donde aplique.")+
+          bx(ICO.energy,"Pressure","Presión","Bleed hydraulic/pneumatic lines to zero.","Purga líneas hidráulicas/neumáticas a cero.")+
+          bx(ICO.refresh,"Mechanical","Mecánica","Block raised parts; relax springs.","Bloquea piezas elevadas; relaja resortes.")+
+          bx(ICO.warn,"Thermal","Térmica","Let surfaces cool or drain hot fluids.","Deja enfriar superficies o drena fluidos calientes.")+
+        '</div>'+
+        '<p class="note">'+X("If stored energy can re-accumulate, verification must continue until servicing is complete. Source: OSHA 1910.147 App. A (6).","Si la energía puede reacumularse, la verificación debe continuar hasta terminar el servicio. Fuente: OSHA 1910.147 Apéndice A (6).")+'</p>';
+  }},
+  /* 12 */
+  { ico:ICO.test, t:["6 · Verify","6 · Verificar"], b:function(){
+      return tit("Step 6 — Verify zero energy","Paso 6 — Verifica energía cero")+
+        '<p class="lead">'+X("The most important step. First make sure no one is exposed, then try to start the machine using the normal controls — it must NOT operate. Return controls to off. For electrical work, test for absence of voltage (next section).","El paso más importante. Primero asegúrate de que nadie esté expuesto, luego intenta arrancar la máquina con los controles normales — NO debe operar. Regresa los controles a apagado. Para trabajo eléctrico, prueba la ausencia de voltaje (siguiente sección).")+'</p>'+
+        '<p class="note bad"><b>'+X("Try before you touch","Prueba antes de tocar")+'.</b> '+X("Verification is what actually confirms the lockout worked.","La verificación es lo que realmente confirma que el bloqueo funcionó.")+'</p>';
+  }},
+  /* 13 */
+  { ico:ICO.tag, t:["Locks & tags","Candados y etiquetas"], b:function(){
+      return tit("Lock and tag rules","Reglas de candados y etiquetas")+
+        '<ul>'+
+          '<li>'+X("Locks are <b>standardized</b>, durable, and used only for LOTO — not for anything else.","Los candados son <b>estandarizados</b>, duraderos y solo para LOTO — nada más.")+'</li>'+
+          '<li>'+X("Each authorized worker uses their <b>own lock and keeps the only key</b>.","Cada trabajador autorizado usa su <b>propio candado y guarda la única llave</b>.")+'</li>'+
+          '<li>'+X("Tags identify who applied them and warn <b>DO NOT OPERATE</b>; they must not be bypassed or ignored.","Las etiquetas identifican quién las puso y advierten <b>NO OPERAR</b>; no se deben ignorar ni quitar.")+'</li>'+
+          '<li>'+X("Tagout-only is allowed when a device cannot be locked, but requires extra measures and training (1910.147(c)(3)).","El etiquetado sin candado se permite cuando el dispositivo no se puede bloquear, pero requiere medidas y capacitación extra (1910.147(c)(3)).")+'</li>'+
+        '</ul>'+
+        '<p class="note warn">'+X("Never remove or bypass a lock or tag that is not yours.","Nunca retires ni evadas un candado o etiqueta que no es tuyo.")+'</p>';
+  }},
+  /* 14 */
+  { ico:ICO.box, t:["Group lockout","LOTO grupal"], b:function(){
+      return tit("Group lockout &amp; the lockbox","Bloqueo grupal y la caja de candados")+
+        '<p class="lead">'+X("When several workers service the same equipment, use a group lockout device (lockbox): the energy sources are locked out, the keys go into a group lockbox, and EVERY worker puts their personal lock on the box.","Cuando varios trabajadores dan servicio al mismo equipo, usa un dispositivo de bloqueo grupal (lockbox): las fuentes se bloquean, las llaves van a la caja grupal y CADA trabajador pone su candado personal en la caja.")+'</p>'+
+        '<p class="note good"><b>'+X("Your lock, your protection","Tu candado, tu protección")+'.</b> '+X("The equipment cannot be re-energized until the last personal lock is removed.","El equipo no se puede re-energizar hasta que se retire el último candado personal.")+'</p>';
+  }},
+  /* 15 */
+  { ico:ICO.refresh, t:["Shift change","Cambio de turno"], b:function(){
+      return tit("Shift &amp; personnel changes","Cambios de turno y de personal")+
+        '<p class="lead">'+X("Lockout must stay continuous across shift changes. Use an orderly transfer: the incoming authorized employee applies their lock before the outgoing employee removes theirs, so protection is never interrupted.","El bloqueo debe permanecer continuo en los cambios de turno. Usa una transferencia ordenada: el empleado autorizado entrante coloca su candado antes de que el saliente retire el suyo, para que la protección nunca se interrumpa.")+'</p>'+
+        '<p class="note">'+X("Source: OSHA 1910.147(f)(4).","Fuente: OSHA 1910.147(f)(4).")+'</p>';
+  }},
+  /* 16 */
+  { ico:ICO.key, t:["Removing a lock","Retirar un candado"], b:function(){
+      return tit("Removing another worker’s lock","Retirar el candado de otro")+
+        '<p class="lead">'+X("Normally only the person who applied a lock removes it. If that authorized employee is absent, the lock may be removed only under a strict documented procedure:","Normalmente solo quien colocó el candado lo retira. Si ese empleado autorizado está ausente, el candado solo puede retirarse bajo un procedimiento documentado estricto:")+'</p>'+
+        '<ul>'+
+          '<li>'+X("Verify the authorized employee is not at the facility.","Verificar que el empleado autorizado no está en la instalación.")+'</li>'+
+          '<li>'+X("Make all reasonable efforts to contact them.","Hacer todos los esfuerzos razonables por contactarlo.")+'</li>'+
+          '<li>'+X("Ensure they know the lock was removed before they resume work.","Asegurar que sepa que se retiró el candado antes de reanudar su trabajo.")+'</li>'+
+        '</ul>'+
+        '<p class="note warn">'+X("Only a trained, designated person may do this. Source: OSHA 1910.147(e)(3).","Solo una persona designada y capacitada puede hacerlo. Fuente: OSHA 1910.147(e)(3).")+'</p>';
+  }},
+  /* 17 */
+  { ico:ICO.refresh, t:["Restore service","Restaurar servicio"], b:function(){
+      return tit("Restoring equipment to service","Restaurar el equipo a servicio")+
+        '<p class="lead">'+X("When the work is done, follow the sequence from OSHA App. A:","Cuando termina el trabajo, sigue la secuencia del Apéndice A de OSHA:")+'</p>'+
+        '<div class="steps">'+
+          stepRow(1,"Inspect equipment &amp; area","Inspecciona equipo y área","Remove tools; ensure components are intact.","Retira herramientas; verifica que todo esté completo.")+
+          stepRow(2,"Clear personnel","Despeja al personal","Make sure everyone is safely positioned or removed.","Asegura que todos estén seguros o fuera.")+
+          stepRow(3,"Verify controls in neutral/off","Controles en neutro/apagado","Confirm operating controls are off.","Confirma que los controles estén apagados.")+
+          stepRow(4,"Remove locks &amp; re-energize","Retira candados y re-energiza","Each worker removes their own lock.","Cada trabajador retira su propio candado.")+
+          stepRow(5,"Notify affected employees","Avisa a los afectados","Tell them the machine is ready for use.","Avísales que la máquina está lista.")+
+        '</div>';
+  }},
+  /* 18 */
+  { ico:ICO.power, t:["Electrical (70E)","Eléctrica (70E)"], b:function(){
+      return tit("Electrically safe work condition","Condición eléctrica de trabajo segura")+
+        '<p class="lead">'+X("For electrical work, NFPA 70E defines a 6-step process to establish an electrically safe work condition (ESWC). It is not safe until all six steps are complete.","Para trabajo eléctrico, NFPA 70E define un proceso de 6 pasos para establecer una condición eléctrica de trabajo segura (ESWC). No es seguro hasta completar los seis pasos.")+'</p>'+
+        '<div class="steps">'+
+          stepRow(1,"Identify all sources","Identifica todas las fuentes","Use up-to-date drawings and tags.","Usa planos y etiquetas actualizados.")+
+          stepRow(2,"Open the disconnects","Abre los desconectadores","Interrupt load, then open each source.","Interrumpe la carga, luego abre cada fuente.")+
+          stepRow(3,"Visually verify open","Verifica visualmente","Blades open / breaker fully withdrawn.","Cuchillas abiertas / breaker retirado.")+
+          stepRow(4,"Apply LOTO","Aplica LOTO","Lock and tag per policy.","Bloquea y etiqueta según política.")+
+        '</div>';
+  }},
+  /* 19 */
+  { ico:ICO.test, t:["Live-dead-live","Vivo-muerto-vivo"], b:function(){
+      var svg=''+
+      '<svg id="ldl" viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">'+
+      '<rect width="320" height="180" fill="#0a160f"/>'+
+      '<rect x="112" y="30" width="96" height="120" rx="10" fill="#12261b" stroke="#2f5a42" stroke-width="2"/>'+
+      '<rect x="126" y="44" width="68" height="30" rx="4" fill="#04110a"/>'+
+      '<text id="ldlv" x="160" y="66" fill="#4ade80" font-family="ui-monospace,monospace" font-size="17" text-anchor="middle">0 V</text>'+
+      '<text id="ldls" x="160" y="96" fill="#8fd6ac" font-family="system-ui" font-size="12" text-anchor="middle">—</text>'+
+      '<line x1="132" y1="150" x2="120" y2="172" stroke="#e11d48" stroke-width="3"/><line x1="188" y1="150" x2="200" y2="172" stroke="#111" stroke-width="3"/>'+
+      '<circle cx="120" cy="172" r="4" fill="#e11d48"/><circle cx="200" cy="172" r="4" fill="#333"/>'+
+      '</svg>';
+      return tit("Step 5–6: verify absence of voltage","Paso 5–6: verifica ausencia de voltaje")+
+        '<p class="lead">'+X("Prove the circuit dead with an adequately rated meter, testing phase-to-phase and phase-to-ground at each point of work. Confirm the tester on a known live source BEFORE and AFTER (live-dead-live). Where induced voltage or stored energy exists, ground before touching.","Comprueba el circuito muerto con un instrumento de capacidad adecuada, probando fase-fase y fase-tierra en cada punto de trabajo. Confirma el probador en una fuente viva conocida ANTES y DESPUÉS (vivo-muerto-vivo). Donde haya voltaje inducido o energía almacenada, aterriza antes de tocar.")+'</p>'+
+        '<div class="illus" style="aspect-ratio:16/9">'+svg+'</div>'+
+        '<div class="row"><button class="btn" id="ldlBtn"></button><span class="lead" id="ldlHint" style="margin:0"></span></div>'+
+        '<p class="note">'+X("2021 NFPA 70E also permits a permanently mounted absence-of-voltage tester listed to UL 1436. Source: NFPA 70E Art. 120.5.","La edición 2021 de NFPA 70E también permite un probador de ausencia de voltaje montado permanentemente y listado UL 1436. Fuente: NFPA 70E Art. 120.5.")+'</p>';
+    }, i:function(){ var seq=[["LIVE","VIVO","480 V","#f87171"],["DEAD","MUERTO","0 V","#4ade80"],["LIVE","VIVO","480 V","#f87171"]]; var k=-1; var v=$("ldlv"),s=$("ldls"),btn=$("ldlBtn"),hint=$("ldlHint");
+        var labs=[X("Test on known source","Prueba en fuente conocida"),X("Test the circuit","Prueba el circuito"),X("Re-test on known source","Re-prueba en fuente conocida"),X("Verified dead ✓","Verificado muerto ✓")];
+        function upd(){ btn.textContent=(k>=2)?X("Restart","Reiniciar"):X("Next test","Siguiente prueba"); if(k<0){ v.textContent="0 V"; v.setAttribute("fill","#4ade80"); s.textContent="—"; hint.textContent=labs[0]; } else { var it=seq[k]; v.textContent=it[2]; v.setAttribute("fill",it[3]); s.textContent=X(it[0]==="LIVE"?"LIVE":"DEAD", it[1]); hint.textContent=labs[Math.min(k+1,3)]; } }
+        btn.onclick=function(){ if(k>=2){k=-1;} else {k++;} upd(); }; upd();
+    }
+  },
+  /* 20 */
+  { ico:ICO.warn, t:["Energized work","Trabajo energizado"], b:function(){
+      return tit("When energized work is allowed","Cuándo se permite trabajo energizado")+
+        '<p class="lead">'+X("De-energizing is always the goal. Energized work is only permitted when de-energizing introduces a greater hazard or is infeasible — for example testing/troubleshooting, or life-support, alarm and critical ventilation systems.","Desenergizar es siempre la meta. El trabajo energizado solo se permite cuando desenergizar crea un peligro mayor o es inviable — por ejemplo pruebas/diagnóstico, o sistemas de soporte vital, alarmas y ventilación crítica.")+'</p>'+
+        '<p class="note bad">'+X("Inconvenience or production schedules are NOT “infeasible.” Energized work needs an energized work permit, a qualified worker, and proper arc-flash/shock PPE. Sources: OSHA 1910.333(a); NFPA 70E.","Molestia o metas de producción NO son “inviabilidad.” El trabajo energizado requiere permiso de trabajo energizado, trabajador calificado y EPP de arco/choque. Fuentes: OSHA 1910.333(a); NFPA 70E.")+'</p>';
+  }},
+  /* 21 */
+  { ico:ICO.warn, t:["Common mistakes","Errores comunes"], b:function(){
+      return tit("Common LOTO mistakes","Errores comunes de LOTO")+
+        '<ul>'+
+          '<li>'+X("Skipping verification (“try-out”) — assuming it’s dead.","Saltarse la verificación — suponer que está muerto.")+'</li>'+
+          '<li>'+X("Missing a second energy source (stored pressure, second feed).","Olvidar una segunda fuente (presión almacenada, segunda alimentación).")+'</li>'+
+          '<li>'+X("Using a tag where a lock was possible.","Usar etiqueta donde se podía usar candado.")+'</li>'+
+          '<li>'+X("No group lockbox when several people work on it.","Sin lockbox grupal cuando trabajan varios.")+'</li>'+
+          '<li>'+X("Removing someone else’s lock without the procedure.","Retirar el candado de otro sin el procedimiento.")+'</li>'+
+        '</ul>'+
+        '<p class="note warn">'+X("1910.147 is consistently among OSHA’s most-cited standards — most incidents trace back to these basics.","1910.147 está constantemente entre las normas más citadas de OSHA — casi todo se remonta a estos básicos.")+'</p>';
+  }},
+  /* 22 */
+  { ico:ICO.check, t:["Checklist","Lista"], b:function(){
+      var items=[
+        ["Machine-specific written procedure in hand","Procedimiento escrito específico en mano"],
+        ["All energy sources identified (incl. stored)","Todas las fuentes identificadas (incl. almacenada)"],
+        ["Affected employees notified","Afectados notificados"],
+        ["Each source isolated, locked and tagged","Cada fuente aislada, bloqueada y etiquetada"],
+        ["Stored energy released or restrained","Energía almacenada liberada o retenida"],
+        ["Zero-energy verified (try-out / test dead)","Energía cero verificada (prueba / muerto)"]
+      ];
+      return tit("Before you service — checklist","Antes de dar servicio — lista")+'<p class="lead">'+X("Tap each item you have confirmed.","Toca cada punto que confirmaste.")+'</p>'+
+        items.map(function(it){return '<div class="chk"><span class="bx">'+ICO.check+'</span><span class="txt"><b>'+X(it[0],it[1])+'</b></span></div>';}).join("")+
+        '<p class="note good" id="ckMsg"></p>';
+    }, i:function(){ var t=document.querySelectorAll(".chk").length; function u(){var d=document.querySelectorAll(".chk.done").length;$("ckMsg").textContent=X("Confirmed: ","Confirmado: ")+d+"/"+t+(d===t?X(" — cleared to work ✓"," — autorizado a trabajar ✓"):"");} document.querySelectorAll(".chk").forEach(function(c){c.onclick=function(){c.classList.toggle("done");u();};}); u(); }
+  },
+  /* 23 */
+  { ico:ICO.quiz, t:["Quiz","Evaluación"], b:function(){
+      var QUIZ=[
+        {en:"What confirms a lockout actually worked?",es:"¿Qué confirma que el bloqueo realmente funcionó?",
+         o_en:["Applying the lock","Verifying zero energy (try-out / test dead)","Notifying employees"],o_es:["Colocar el candado","Verificar energía cero (prueba / muerto)","Avisar a los empleados"],a:1},
+        {en:"Who keeps the key to a personal LOTO lock?",es:"¿Quién guarda la llave de un candado LOTO personal?",
+         o_en:["The supervisor","Anyone on the crew","The authorized worker who applied it"],o_es:["El supervisor","Cualquiera del equipo","El trabajador autorizado que lo colocó"],a:2},
+        {en:"A push-button stop is an energy-isolating device.",es:"Un botón de paro es un dispositivo de aislamiento de energía.",
+         o_en:["True","False"],o_es:["Verdadero","Falso"],a:1},
+        {en:"In live-dead-live testing you must…",es:"En la prueba vivo-muerto-vivo debes…",
+         o_en:["Test the circuit only","Verify the tester on a known source before and after","Trust a non-contact pen"],o_es:["Probar solo el circuito","Verificar el probador en una fuente conocida antes y después","Confiar en una pluma sin contacto"],a:1},
+        {en:"Energized work is acceptable because de-energizing is inconvenient.",es:"El trabajo energizado se acepta porque desenergizar es molesto.",
+         o_en:["True","False — only if infeasible or a greater hazard"],o_es:["Verdadero","Falso — solo si es inviable o mayor peligro"],a:1}
+      ];
+      window._QZ=QUIZ;
+      var qs=QUIZ.map(function(q,i){var o=(LANG==="es"?q.o_es:q.o_en).map(function(x,j){return '<button class="opt" data-q="'+i+'" data-o="'+j+'">'+x+'</button>';}).join("");return '<div class="q"><h3>'+(i+1)+'. '+X(q.en,q.es)+'</h3>'+o+'</div>';}).join("");
+      return tit("Quick check","Evaluación rápida")+qs+'<div class="score" id="score"></div>';
+    }, i:function(){ var QUIZ=window._QZ,ans={},ok=0; document.querySelectorAll(".opt").forEach(function(b){b.onclick=function(){var qi=+b.dataset.q;if(ans[qi])return;ans[qi]=1;var a=QUIZ[qi].a;document.querySelectorAll('.opt[data-q="'+qi+'"]').forEach(function(x){x.disabled=true;if(+x.dataset.o===a)x.classList.add("correct");});if(+b.dataset.o===a)ok++;else b.classList.add("wrong");if(Object.keys(ans).length===QUIZ.length)$("score").textContent=X("Score: ","Puntaje: ")+ok+"/"+QUIZ.length;};}); }
+  },
+  /* 24 */
+  { ico:ICO.book, t:["Sources","Fuentes"], b:function(){
+      return tit("Key takeaways &amp; references","Ideas clave y referencias")+
+        '<ul><li>'+X("Isolate every source, lock &amp; tag with your own lock, release stored energy, and verify zero energy before you touch.","Aísla cada fuente, bloquea y etiqueta con tu candado, libera energía almacenada y verifica energía cero antes de tocar.")+'</li>'+
+        '<li>'+X("For electrical work, complete all 6 NFPA 70E steps and prove dead (live-dead-live).","Para trabajo eléctrico, completa los 6 pasos de NFPA 70E y comprueba muerto (vivo-muerto-vivo).")+'</li></ul>'+
+        '<h2>'+X("References","Referencias")+'</h2>'+
+        '<div class="ref"><b>OSHA 29 CFR 1910.147</b> — The Control of Hazardous Energy (Lockout/Tagout), incl. Appendix A (Typical Minimal Lockout Procedure).</div>'+
+        '<div class="ref"><b>OSHA 29 CFR 1910.333</b> — Selection and use of work practices (electrical).</div>'+
+        '<div class="ref"><b>NFPA 70E</b> — Standard for Electrical Safety in the Workplace, Article 120.5 (process for establishing an electrically safe work condition).</div>'+
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px"><span class="verdict ok">'+ICO.check+' '+X("Talk complete","Charla completa")+'</span><a class="btn ghost" href="../index.html" target="_top">'+X("Back to portal","Volver al portal")+'</a></div>'+
+        '<p class="note">'+X("Training overview only. Always follow your employer’s specific written energy-control procedures.","Solo es un resumen de entrenamiento. Sigue siempre los procedimientos escritos específicos de tu empleador.")+'</p>';
+  }}
+];
+var cur=0;
+
+/* ===================== engine ===================== */
+function pintarChrome(){
+  document.documentElement.lang=LANG;
+  $("brand").textContent=X(CONFIG.brand[0],CONFIG.brand[1]);
+  $("brandsub").textContent=X(CONFIG.subtitle[0],CONFIG.subtitle[1]);
+  $("homeTxt").textContent=X("Home","Inicio");
+  document.querySelectorAll("#lang button").forEach(function(b){ b.classList.toggle("on", b.dataset.l===LANG); });
+  var dark=document.documentElement.getAttribute("data-theme")==="dark";
+  $("temaIco").innerHTML=dark?ICO.sun:ICO.moon; $("temaTxt").textContent=dark?X("Light","Claro"):X("Dark","Oscuro");
+  $("prev").innerHTML="‹ "+X("Back","Anterior");
+  $("next").innerHTML=(cur>=STEPS.length-1?X("Restart","Reiniciar"):X("Next","Siguiente")+" ›");
+}
+function render(){
+  pintarChrome();
+  var s=STEPS[cur];
+  $("card").innerHTML=s.b();
+  if(s.i) s.i();
+  $("progbar").style.width=((cur+1)/STEPS.length*100)+"%";
+  $("mStep").textContent=X("Step ","Paso ")+(cur+1)+" / "+STEPS.length+" · "+X(s.t[0],s.t[1]);
+  $("mDur").textContent=CONFIG.duration;
+  $("prev").disabled=(cur===0);
+  $("dots").innerHTML=STEPS.map(function(_,i){return '<button class="dot'+(i===cur?' on':'')+'" data-i="'+i+'" aria-label="'+(i+1)+'"></button>';}).join("");
+  document.querySelectorAll(".dot").forEach(function(d){ d.onclick=function(){ cur=+d.dataset.i; render(); }; });
+  window.scrollTo(0,0);
+}
+$("prev").onclick=function(){ if(cur>0){cur--;render();} };
+$("next").onclick=function(){ cur=(cur>=STEPS.length-1)?0:cur+1; render(); };
+document.querySelectorAll("#lang button").forEach(function(b){ b.onclick=function(){ LANG=b.dataset.l; render(); }; });
+$("tema").onclick=function(){ var d=document.documentElement.getAttribute("data-theme")==="dark"; document.documentElement.setAttribute("data-theme", d?"light":"dark"); pintarChrome(); };
+document.addEventListener("keydown",function(e){ if(e.key==="ArrowRight")$("next").click(); if(e.key==="ArrowLeft")$("prev").click(); });
+render();
+</script>
+</body>
+</html>
