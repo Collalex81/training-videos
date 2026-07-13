@@ -289,6 +289,46 @@ function drawLoad(cv,workers,tools,mat){
   ctx.font="bold 13px system-ui";ctx.fillText(over?X("OVER CAPACITY ✗","SOBRECARGA ✗"):X("within limit ✓","dentro del límite ✓"),x1,y+bh+70);
 }
 
+/* interactive lift scene: lift + harnessed worker + tethered tools + one falling tool with live speed */
+function liftDraw(cv, ft, p){
+  var g=fitCanvas(cv),ctx=g.ctx,w=g.w,h=g.h; bg(ctx,w,h);
+  var ground=h-16, top=30, cx=w*0.32;
+  var frac=Math.min(1,ft/50), by=ground-(ground-top)*frac;
+  // ground
+  ctx.strokeStyle="#3f7a58";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,ground);ctx.lineTo(w,ground);ctx.stroke();
+  // mast + base
+  ctx.strokeStyle="#5fae7d";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(cx,ground);ctx.lineTo(cx,by+16);ctx.stroke();
+  ctx.fillStyle="#2f5a42";ctx.fillRect(cx-24,ground-6,48,7);
+  // basket
+  var bx=cx-30, bw=60, bh=30, btop=by-14;
+  ctx.strokeStyle="#4ade80";ctx.lineWidth=2.5;ctx.strokeRect(bx,btop,bw,bh);
+  ctx.beginPath();ctx.moveTo(bx,btop);ctx.lineTo(bx,btop-16);ctx.moveTo(bx+bw,btop);ctx.lineTo(bx+bw,btop-16);ctx.moveTo(bx,btop-16);ctx.lineTo(bx+bw,btop-16);ctx.stroke();
+  // anchor point (orange)
+  var ax=bx+bw-9, ay=btop+3; ctx.fillStyle="#f59e0b";ctx.beginPath();ctx.arc(ax,ay,3,0,Math.PI*2);ctx.fill();
+  // worker: harness lanyard to anchor, hardhat, hi-vis
+  var wx=bx+20, wh=btop-10;
+  ctx.strokeStyle="#f59e0b";ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(wx+2,wh+10);ctx.lineTo(ax,ay);ctx.stroke();
+  ctx.fillStyle="#e9f6ee";ctx.beginPath();ctx.arc(wx,wh+2,3.5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#eab308";ctx.beginPath();ctx.arc(wx,wh,5.2,Math.PI,0);ctx.fill();
+  ctx.fillStyle="#4ade80";ctx.fillRect(wx-4,wh+5,8,12);
+  ctx.strokeStyle="#cfe8d8";ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(wx,wh+17);ctx.lineTo(wx-4,btop+bh-2);ctx.moveTo(wx,wh+17);ctx.lineTo(wx+4,btop+bh-2);ctx.stroke();
+  // one tethered tool (short lanyard)
+  ctx.strokeStyle="#f59e0b";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(bx+8,btop);ctx.lineTo(bx+8,btop-9);ctx.stroke();
+  wrench(ctx,bx+8,btop-13,12,0.4);
+  // loose tool: rests on rail (p null) or falls
+  var tx=bx+bw+2, restY=btop-6;
+  if(p===null){ wrench(ctx,tx,restY,20,0.3); ctx.fillStyle="#f8b4b4";ctx.font="11px system-ui";ctx.textAlign="left";ctx.fillText(X("loose ⚠","suelta ⚠"),tx+12,restY); }
+  else{
+    var span=ground-restY;
+    for(var k=1;k<=5;k++){var pp=Math.max(0,p-k*0.05);var yy=restY+span*pp*pp;ctx.globalAlpha=0.12*(5-k)/5;wrench(ctx,tx,yy,20,0.3+pp*6);}
+    ctx.globalAlpha=1; var ty=restY+span*p*p; wrench(ctx,tx,ty,20,0.3+p*6);
+    var spd=Math.sqrt(2*9.81*ft*0.3048)*2.23694*p;
+    ctx.fillStyle="#f8b4b4";ctx.font="bold 12px system-ui";ctx.textAlign="left";ctx.fillText(spd.toFixed(0)+" mph",tx+12,Math.max(restY,ty-4));
+    if(p>=1){ ctx.strokeStyle="#f87171";ctx.lineWidth=2;for(var a=0;a<7;a++){var an=(a/7)*Math.PI-Math.PI;ctx.beginPath();ctx.moveTo(tx,ground-2);ctx.lineTo(tx+Math.cos(an)*20,ground-2+Math.sin(an)*13);ctx.stroke();} }
+  }
+  ctx.fillStyle="#9fd8b4";ctx.font="11px system-ui";ctx.textAlign="right";ctx.fillText(ft+" ft",w-8,by);
+}
+
 function initCanvases(){
   document.querySelectorAll("#card canvas.cv").forEach(function(cv){
     var k=cv.dataset.cv;
@@ -350,14 +390,27 @@ var STEPS = [
         '<p class="lead">'+X("This one rule covers everything: tools, materials, hardware, radios, phones, water bottles. Anything loose at height is a hazard.","Esta sola regla lo cubre todo: herramientas, materiales, tornillería, radios, teléfonos, botellas de agua. Cualquier cosa suelta en altura es un peligro.")+'</p>'+
         '<div class="stat3"><div class="s"><b>✓</b><span>'+X("Tethered","Amarrado")+'</span></div><div class="s"><b>✓</b><span>'+X("In a pouch","En bolsa")+'</span></div><div class="s"><b>✓</b><span>'+X("Or on the ground","O en el piso")+'</span></div></div>';
   }},
-  /* 7 impact interactive */
-  { ico:ICO.gauge, t:["Impact energy","Energía de impacto"], b:function(){
-      return tit("How hard does it hit?","¿Con cuánta fuerza golpea?")+
-        '<p class="lead">'+X("Drag the height. See how fast a 1.5 kg (≈3 lb) tool is moving — and how much energy it carries — when it lands.","Mueve la altura. Observa a qué velocidad va una herramienta de 1.5 kg (≈3 lb) — y cuánta energía lleva — al impactar.")+'</p>'+
-        '<div class="illus"><canvas id="impactCv"></canvas></div>'+
-        '<div class="row"><span class="lbl">'+X("Drop height","Altura de caída")+'</span><input type="range" id="hSld" min="5" max="50" value="20"><span class="val" id="hVal"></span></div>'+
-        '<p class="note warn">'+X("Even a 3 lb tool from 20 ft hits at roughly highway speed. PPE below cannot reliably stop it.","Incluso una herramienta de 3 lb desde 20 ft golpea casi a velocidad de carretera. El EPP de abajo no la detiene con seguridad.")+'</p>';
-    }, i:function(){ var s=$("hSld"),cv=$("impactCv"); function u(){ $("hVal").textContent=s.value+" ft"; if(cv)drawImpact(cv,+s.value);} s.oninput=u; if(cv)u(); }
+  /* 7 interactive drop test — lift + harnessed worker + tools + live speed */
+  { ico:ICO.gauge, t:["Drop test","Prueba de caída"], b:function(){
+      return tit("Drop a tool from the lift","Suelta una herramienta desde la plataforma")+
+        '<p class="lead">'+X("Set the working height, then press Drop. Watch the loose tool’s speed build and the impact when it lands. The worker stays harnessed — only the untethered tool falls.","Ajusta la altura de trabajo y toca Soltar. Observa cómo sube la velocidad de la herramienta suelta y el impacto al caer. El trabajador permanece con arnés — solo cae la herramienta sin amarre.")+'</p>'+
+        '<div class="illus" style="aspect-ratio:16/11"><canvas id="sceneCv"></canvas></div>'+
+        '<div class="row"><span class="lbl">'+X("Working height","Altura de trabajo")+'</span><input type="range" id="hSld" min="10" max="50" value="20"><span class="val" id="hVal"></span></div>'+
+        '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0"><button class="btn" id="dropBtn"></button>'+
+          '<div class="stat"><b id="spd">0 mph</b><span>'+X("impact speed","velocidad de impacto")+'</span></div>'+
+          '<div class="stat"><b id="eng">0 J</b><span>'+X("impact energy","energía de impacto")+'</span></div></div>'+
+        '<p class="note warn">'+X("A 3 lb tool from 20 ft reaches ≈24 mph. Tether it and keep everyone out of the line of fire.","Una herramienta de 3 lb desde 20 ft llega a ≈24 mph. Amárrala y mantén a todos fuera de la línea de fuego.")+'</p>';
+    }, i:function(){ var cv=$("sceneCv"),hs=$("hSld"),btn=$("dropBtn"),gen=_gen; var ft=+hs.value,p=null,state="idle",dropStart=0,dur=1600;
+        function lab(){ $("hVal").textContent=ft+" ft"; }
+        btn.textContent=X("Drop tool","Soltar herramienta");
+        hs.oninput=function(){ ft=+hs.value; lab(); };
+        btn.onclick=function(){ if(state==="idle"){state="falling";p=0;dropStart=performance.now();btn.textContent=X("Reset","Reiniciar");} else {state="idle";p=null;btn.textContent=X("Drop tool","Soltar herramienta");} };
+        function frame(now){ if(gen!==_gen)return; if(state==="falling"){ p=(now-dropStart)/dur; if(p>=1){p=1;state="impact";} } liftDraw(cv,ft,p);
+          var vms=Math.sqrt(2*9.81*ft*0.3048),spd=(p===null?0:vms*2.23694*p),eng=0.5*1.5*vms*vms;
+          if($("spd"))$("spd").textContent=spd.toFixed(0)+" mph"; if($("eng"))$("eng").textContent=eng.toFixed(0)+" J";
+          requestAnimationFrame(frame); }
+        lab(); requestAnimationFrame(frame);
+    }
   },
   /* 8 tethering best practices intro */
   { ico:ICO.rope, t:["Tethering","Amarre"], b:function(){
