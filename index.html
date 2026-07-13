@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Centro de Capacitación / Training Center</title>
+<meta name="description" content="Bilingual (ES/EN) interactive safety & technical training modules. Built and designed by Luis Estevez.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%231f6feb'/><text x='32' y='44' font-family='Segoe UI,Arial,sans-serif' font-size='30' font-weight='700' fill='white' text-anchor='middle'>LE</text></svg>">
+<meta property="og:title" content="Training Center · by Luis Estevez">
+<meta property="og:description" content="Bilingual interactive safety & technical training modules.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/poster-tool-tethering.jpg">
+<meta name="twitter:card" content="summary_large_image">
 <script>try{var _t=localStorage.getItem("tema");document.documentElement.setAttribute("data-theme",_t==="dark"?"dark":"light");}catch(e){}</script>
 <style>
   :root{
@@ -24,14 +31,18 @@
   svg{display:block}
   a{color:var(--brand)}
   /* Top bar */
-  .topbar{position:sticky;top:0;z-index:40;background:var(--bar);color:var(--barink);
+  .topbar{position:sticky;top:0;z-index:40;background:linear-gradient(100deg,var(--bar),#124a86);color:var(--barink);
     display:flex;align-items:center;justify-content:space-between;gap:12px;
-    padding:12px 20px;flex-wrap:wrap}
+    padding:12px 20px;flex-wrap:wrap;box-shadow:0 2px 14px rgba(0,0,0,.18)}
   .brand{display:flex;align-items:center;gap:11px;min-width:0}
-  .logo{width:36px;height:36px;border-radius:9px;background:var(--brand);
-    display:flex;align-items:center;justify-content:center;flex:none;color:#fff}
+  .logo{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#4f46e5);
+    display:flex;align-items:center;justify-content:center;flex:none;color:#fff;
+    font-weight:800;font-size:15px;letter-spacing:.5px}
   .brand b{font-size:15px;font-weight:600;display:block;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .brand small{font-size:10.5px;opacity:.7;letter-spacing:.06em}
+  .tb-left{display:flex;align-items:center;gap:14px;min-width:0}
+  .credit{font-size:12px;color:rgba(255,255,255,.74);border-left:1px solid rgba(255,255,255,.22);
+    padding-left:14px;white-space:nowrap;font-weight:500;letter-spacing:.02em}
   .tb-actions{display:flex;align-items:center;gap:8px}
   .btn-ico{border:1px solid rgba(255,255,255,.25);background:transparent;color:var(--barink);
     cursor:pointer;padding:0 12px;height:36px;border-radius:9px;font-size:12.5px;
@@ -62,7 +73,7 @@
   .acard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
     overflow:hidden;cursor:pointer;text-align:left;font-family:inherit;color:inherit;padding:0;
     box-shadow:var(--shadow);transition:transform .16s,box-shadow .16s;display:flex;flex-direction:column}
-  .acard:hover{transform:translateY(-3px)}
+  .acard:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(16,37,68,.14)}
   .acard .top{height:4px}
   .acard .in{padding:16px 16px 15px;display:flex;flex-direction:column;flex:1}
   .aico{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
@@ -109,12 +120,18 @@
     font-size:17px;line-height:1;cursor:pointer;display:none;align-items:center;justify-content:center;font-family:inherit}
   .hsearch .hs-clear.show{display:flex}
   .hsearch .hs-clear:hover{background:var(--brand);color:#fff}
+  .hsearch .hs-kbd{position:absolute;right:14px;top:50%;transform:translateY(-50%);
+    font-family:inherit;font-size:11px;color:var(--sub);border:1px solid var(--line);
+    border-radius:6px;padding:3px 7px;background:var(--pg);letter-spacing:.04em;pointer-events:none}
+  .hsearch .hs-kbd.hide{display:none}
+  .rescount{max-width:640px;margin:12px auto 0;color:var(--sub);font-size:13px;text-align:center}
+  mark{background:var(--tint);color:var(--brand);padding:0 2px;border-radius:3px;font-weight:600}
   /* Video grid */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr));
     gap:20px;padding:22px 0 40px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
     overflow:hidden;cursor:pointer;box-shadow:var(--shadow);transition:transform .16s;text-align:left}
-  .card:hover{transform:translateY(-3px)}
+  .card:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(16,37,68,.14)}
   .thumb{position:relative;aspect-ratio:16/9;background:var(--pg);
     display:flex;align-items:center;justify-content:center;overflow:hidden}
   .thumb img{width:100%;height:100%;object-fit:cover}
@@ -151,6 +168,7 @@
     .topbar{padding:10px 14px}
     .wrap{padding:0 14px}
     .brand small{display:none}
+    .credit{display:none}
     .ahead .aico{width:44px;height:44px}
   }
 </style>
@@ -158,9 +176,12 @@
 <body>
 
 <div class="topbar">
-  <div class="brand">
-    <span class="logo" id="logo"></span>
-    <div><b id="brand"></b><small id="brandsub"></small></div>
+  <div class="tb-left">
+    <div class="brand">
+      <span class="logo" id="logo"></span>
+      <div><b id="brand"></b><small id="brandsub"></small></div>
+    </div>
+    <span class="credit" id="credit"></span>
   </div>
   <div class="tb-actions">
     <button class="btn-ico" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
@@ -221,7 +242,7 @@ const UI = {
       stArea:"Áreas", stVid:"Módulos", stIdi:"Idiomas",
       vacio:"Aún no hay módulos en esta área.",
       error:"No se pudo cargar videos.json. Abre el sitio con un servidor local o en GitHub Pages.",
-      footer:'Construido y diseñado por Luis Estevez.'},
+      credit:"Construido y diseñado por Luis Estevez", footer:''},
   en:{brand:"Training Center", brandsub:"CORPORATE TRAINING",
       badge:"Training Portal", titulo:"Training by work area",
       intro:"Select your area to see the training modules, or search across all of them. Content available in Spanish and English.",
@@ -231,7 +252,7 @@ const UI = {
       stArea:"Areas", stVid:"Modules", stIdi:"Languages",
       vacio:"No modules in this area yet.",
       error:"Could not load videos.json. Open the site with a local server or on GitHub Pages.",
-      footer:'Built and designed by Luis Estevez.'}
+      credit:"Built and designed by Luis Estevez", footer:''}
 };
 
 /* ---------- Estado ---------- */
@@ -264,14 +285,16 @@ async function cargar(){
 function pintarChrome(){
   const u = UI[LANG];
   document.documentElement.lang = LANG;
-  $("logo").innerHTML = IC.play2;
+  $("logo").textContent = "LE";
   $("brand").textContent = u.brand;
   $("brandsub").textContent = u.brandsub;
   $("temaTxt").textContent = u.tema;
   const dark = document.documentElement.getAttribute("data-theme")==="dark";
   $("temaIco").innerHTML = dark ? IC.sun : IC.moon;
   $("temaTxt").textContent = dark ? (LANG==="es"?"Claro":"Light") : u.tema;
-  $("footer").innerHTML = u.footer;
+  var _c=$("credit"); if(_c) _c.textContent = u.credit || "";
+  $("footer").innerHTML = u.footer || "";
+  $("footer").style.display = u.footer ? "" : "none";
   document.querySelectorAll("#lang button").forEach(b=>b.classList.toggle("on", b.dataset.l===LANG));
   document.title = u.brand + " / Training Center";
 }
@@ -308,7 +331,8 @@ function renderInicio(){
       '</div>'+
     '</section>'+
     '<div class="wrap">'+
-      '<div class="hsearch"><span class="hs-ico">'+IC.search+'</span><input id="buscarHome" type="search" placeholder="'+u.buscarHome+'" autocomplete="off"><button class="hs-clear" id="hsClear" aria-label="clear">&times;</button></div>'+
+      '<div class="hsearch"><span class="hs-ico">'+IC.search+'</span><input id="buscarHome" type="search" placeholder="'+u.buscarHome+'" autocomplete="off"><kbd class="hs-kbd" id="hsKbd"></kbd><button class="hs-clear" id="hsClear" aria-label="clear">&times;</button></div>'+
+      '<div class="rescount" id="resCount" style="display:none"></div>'+
       '<div id="homeAreasWrap"><div class="shead"><h2>'+u.areas+'</h2></div>'+
       '<div class="areas">'+cards+'</div></div>'+
       '<div class="grid" id="homeGrid" style="display:none"></div>'+
@@ -316,21 +340,25 @@ function renderInicio(){
   document.querySelectorAll(".acard").forEach(b=>b.onclick=()=>{ irA(b.dataset.area); });
   var _bh=$("buscarHome"); if(_bh) _bh.addEventListener("input", homeSearch);
   var _hc=$("hsClear"); if(_hc) _hc.onclick=()=>{ var b=$("buscarHome"); if(b){ b.value=""; b.focus(); } homeSearch(); };
+  var _hk=$("hsKbd"); if(_hk) _hk.textContent = (navigator.platform&&/Mac|iPhone|iPad/.test(navigator.platform))?"⌘K":"Ctrl K";
 }
 
 function homeSearch(){
   const u = UI[LANG];
   const q = ($("buscarHome")?$("buscarHome").value:"").trim().toLowerCase();
   const clr = $("hsClear"); if(clr) clr.classList.toggle("show", !!q);
+  const kb = $("hsKbd"); if(kb) kb.classList.toggle("hide", !!q);
+  const rc = $("resCount");
   const wrap = $("homeAreasWrap"), grid = $("homeGrid");
   if(!wrap || !grid) return;
-  if(!q){ wrap.style.display=""; grid.style.display="none"; grid.innerHTML=""; return; }
+  if(!q){ wrap.style.display=""; grid.style.display="none"; grid.innerHTML=""; if(rc) rc.style.display="none"; return; }
   wrap.style.display="none"; grid.style.display="";
   const lista = VIDEOS.filter(v=>{
     const a = AMAP[v.area];
     const hay = (t(v.titulo)+" "+t(v.descripcion)+" "+t(v.categoria)+" "+(a?t(a.nombre):"")).toLowerCase();
     return hay.includes(q);
   });
+  if(rc){ rc.style.display=""; rc.textContent = lista.length+" "+(lista.length===1?u.modulo:u.modulos); }
   if(!lista.length){ grid.innerHTML='<div class="vacio">'+u.vacioSearch+'</div>'; return; }
   grid.innerHTML = lista.map(v=>{
     const i = VIDEOS.indexOf(v);
@@ -340,7 +368,7 @@ function homeSearch(){
       (v.categoria?'<span class="tag" style="background:'+a.color+'">'+t(v.categoria)+'</span>':'')+
       '<span class="play">'+IC.play+'</span>'+
       (v.duracion?'<span class="dur">'+v.duracion+'</span>':'')+
-    '</div><div class="cbody"><h3>'+t(v.titulo)+'</h3><p>'+t(v.descripcion)+'</p></div></button>';
+    '</div><div class="cbody"><h3>'+hl(t(v.titulo),q)+'</h3><p>'+hl(t(v.descripcion),q)+'</p></div></button>';
   }).join("");
   grid.querySelectorAll(".card").forEach(c=>c.onclick=()=>abrir(VIDEOS[c.dataset.i]));
 }
@@ -414,6 +442,7 @@ function cerrar(){ $("modal").classList.remove("on"); $("media").innerHTML=""; }
 $("cerrar").onclick=cerrar;
 $("modal").onclick=e=>{ if(e.target.id==="modal") cerrar(); };
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") cerrar(); });
+document.addEventListener("keydown",e=>{ if((e.ctrlKey||e.metaKey) && (e.key==="k"||e.key==="K")){ const b=$("buscarHome"); if(b){ e.preventDefault(); b.focus(); b.select(); } } });
 
 /* ---------- Idioma + tema ---------- */
 document.querySelectorAll("#lang button").forEach(b=>b.onclick=()=>{
@@ -430,6 +459,7 @@ $("tema").onclick=()=>{
 /* ---------- Utilidades ---------- */
 function hex(c,a){ const n=parseInt(c.slice(1),16); return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'; }
 function esc(s){ return String(s).replace(/"/g,'&quot;'); }
+function hl(s,q){ s=String(s); if(!q) return s; const i=s.toLowerCase().indexOf(q); if(i<0) return s; return s.slice(0,i)+'<mark>'+s.slice(i,i+q.length)+'</mark>'+s.slice(i+q.length); }
 
 cargar();
 </script>
