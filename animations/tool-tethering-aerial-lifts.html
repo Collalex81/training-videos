@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tool Tethering in Aerial Lifts / Amarre de herramientas en plataformas</title>
+<!--
+  SEGURIDAD (verde) — Toolbox Talk: amarre de herramientas y equipo en plataformas elevadoras.
+  SAFETY (green) — Toolbox Talk: tying off tools & equipment in aerial lifts.
+  Motor basado en Starter-Kit/animations/module-template.html. Bilingüe EN/ES (EN por defecto).
+  Referencias: OSHA 1926.501/1926.453, ANSI/ISEA 121-2018 (dropped object prevention), ANSI A92.
+-->
+<style>
+  :root{
+    --pg:#f2f7f3; --card:#ffffff; --ink:#0c2417; --sub:#4f6a5b; --line:#dfeae3;
+    --bar:#0b3a22; --accent:#15803D; --tint:rgba(21,128,61,.10);
+    --ok:#15803D; --okt:rgba(21,128,61,.10); --bad:#dc2626; --badt:rgba(220,38,38,.10);
+    --amber:#b45309; --ambt:rgba(180,83,9,.12); --radius:14px;
+    --shadow:0 1px 2px rgba(12,36,23,.05),0 10px 26px rgba(12,36,23,.08);
+  }
+  html[data-theme="dark"]{
+    --pg:#0a1310; --card:#12201a; --ink:#e9f6ee; --sub:#a3c2b1; --line:#22352b;
+    --bar:#07130c; --accent:#4ade80; --tint:rgba(74,222,128,.14);
+    --ok:#4ade80; --okt:rgba(74,222,128,.14); --bad:#f87171; --badt:rgba(248,113,113,.14);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  .shell{max-width:940px;margin:0 auto;padding:14px 16px 34px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0 8px;box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:600;display:block;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+  .prog{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:6px 0 4px}
+  .prog>i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);gap:8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;min-height:360px}
+  .step-ico{width:44px;height:44px;border-radius:12px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+  h1{font-size:clamp(20px,3.3vw,26px);margin:0 0 8px;font-weight:700;line-height:1.2}
+  h2{font-size:15.5px;margin:18px 0 8px;font-weight:600}
+  p{margin:0 0 12px}
+  .lead{color:var(--sub);font-size:15px}
+  ul,ol{margin:6px 0 12px;padding-left:20px}
+  li{margin:6px 0}
+  .pill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:var(--tint);padding:5px 11px;border-radius:999px;margin-bottom:10px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:8px 0}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin:8px 0}
+  .box{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:13px}
+  .box h3{margin:0 0 6px;font-size:14.5px;font-weight:600}
+  .box p{margin:0;font-size:13px;color:var(--sub)}
+  .stat3{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
+  .stat3 .s{flex:1;min-width:120px;background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center}
+  .stat3 .s b{display:block;font-size:26px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+  .stat3 .s span{font-size:12px;color:var(--sub)}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;min-height:42px;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;flex:1}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line);border:0;cursor:pointer;padding:0}
+  .dot.on{background:var(--accent);transform:scale(1.3)}
+  .note{font-size:13px;color:var(--sub);border-left:3px solid var(--accent);background:var(--tint);padding:9px 12px;margin:12px 0;border-radius:0 8px 8px 0}
+  .warn{border-left-color:var(--amber);color:var(--amber);background:var(--ambt)}
+  .bad{border-left-color:var(--bad);color:var(--bad);background:var(--badt)}
+  .good{border-left-color:var(--ok);color:var(--ink);background:var(--okt)}
+  .good b{color:var(--ok)}
+  .illus{position:relative;aspect-ratio:16/9;background:#08140d;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .illus canvas{width:100%;height:100%;display:block}
+  .mcap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);margin:6px 2px 2px}
+  .row{display:flex;align-items:center;gap:12px;margin:10px 0}
+  .row span.lbl{min-width:96px;font-size:13px;color:var(--sub)}
+  input[type=range]{flex:1;accent-color:var(--accent)}
+  .val{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;min-width:74px;text-align:right}
+  .readout{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+  .stat{background:var(--pg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;flex:1;min-width:100px}
+  .stat b{display:block;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+  .stat span{font-size:11px;color:var(--sub)}
+  .chk{display:flex;gap:11px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:8px 0;cursor:pointer}
+  .chk .bx{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;margin-top:1px}
+  .chk.done .bx{background:var(--ok);border-color:var(--ok)}
+  .chk.done .txt b{text-decoration:line-through;opacity:.7}
+  .chk .txt b{font-size:13.5px}.chk .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .q{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:12px}
+  .q h3{margin:0 0 10px;font-size:14px}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:11px 14px;border-radius:10px;margin:7px 0;cursor:pointer;font-size:14px;font-family:inherit}
+  .opt.correct{border-color:var(--ok);background:var(--okt);color:var(--ok);font-weight:600}
+  .opt.wrong{border-color:var(--bad);background:var(--badt);color:var(--bad)}
+  .opt:disabled{cursor:default}
+  .score{font-size:16px;font-weight:700;text-align:center;padding:10px}
+  .verdict{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;font-weight:700;font-size:15px}
+  .verdict.ok{background:var(--okt);color:var(--ok)}
+  @media(max-width:520px){ .card{padding:15px} .shell{padding:12px 12px 28px} .brand small{display:none} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+  <div class="top">
+    <div class="brand">
+      <span class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span>
+      <div><b id="brand"></b><small id="brandsub"></small></div>
+    </div>
+    <div class="tools">
+      <a class="tbtn" id="home" href="../index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span id="homeTxt"></span></a>
+      <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+      <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+    </div>
+  </div>
+  <div class="prog"><i id="progbar"></i></div>
+  <div class="meta"><span id="mStep"></span><span id="mDur"></span></div>
+  </div>
+  <div class="card" id="card"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev"></button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="next"></button>
+  </div>
+</div>
+
+<script>
+/* ===================== CONFIG ===================== */
+var CONFIG = {
+  brand:   ["Tying off tools in aerial lifts","Amarre de herramientas en plataformas"],
+  subtitle:["Toolbox Talk · Safety","Charla de seguridad · Seguridad"],
+  duration:"≈ 12 min",
+  defaultLang:"en"
+};
+
+/* ===================== helpers ===================== */
+var params=new URLSearchParams(location.search);
+var LANG=params.get("lang")?(params.get("lang").toLowerCase().startsWith("es")?"es":"en"):CONFIG.defaultLang;
+function X(en,es){ return LANG==="es"?es:en; }
+function $(id){ return document.getElementById(id); }
+function tit(en,es){ return '<div class="step-ico">'+STEPS[cur].ico+'</div><h1>'+X(en,es)+'</h1>'; }
+var ICO={
+  play:'<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  warn:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.6 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+  norail:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5 5l14 14"/></svg>',
+  shield:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg>',
+  check:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  gauge:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 13a4 4 0 0 1 4-4"/><path d="M4 20a8 8 0 1 1 16 0z"/></svg>',
+  rope:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="6" r="3"/><circle cx="17" cy="18" r="3"/><path d="M9 8c3 2 3 6 6 8"/></svg>',
+  ban:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.5 5.5l13 13"/></svg>',
+  anchor:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.5"/><path d="M12 7.5V21M5 13a7 7 0 0 0 14 0M4 13h2M18 13h2"/></svg>',
+  wrist:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="8" rx="4"/><path d="M9 8V6M15 8V6M9 16v2M15 16v2"/></svg>',
+  weight:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 8h8l2 12H6z"/><circle cx="12" cy="6" r="2.5"/></svg>',
+  broom:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 4 9 14"/><path d="M5 21c0-3 1-5 4-6l1 1 2 2 1 1c-1 3-3 4-6 4H5z"/></svg>',
+  pipe:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h12a3 3 0 0 1 3 3v10"/><path d="M3 5v6M18 15h3"/></svg>',
+  cone:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4h4l4 16H6z"/><path d="M8.5 13h7M4 20h16"/></svg>',
+  people:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 6a3 3 0 0 1 0 6M21 20a6 6 0 0 0-4-5.6"/></svg>',
+  list:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
+  quiz:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.1 9a3 3 0 1 1 4.2 2.7c-.8.4-1.3 1-1.3 2M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>',
+  trophy:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/></svg>',
+  sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+  img:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>'
+};
+
+/* ===================== canvas engine ===================== */
+var _gen=0;
+function stopAnim(){ _gen++; }
+function fitCanvas(cv){ var r=cv.getBoundingClientRect(); var dpr=window.devicePixelRatio||1; cv.width=Math.max(1,Math.round(r.width*dpr)); cv.height=Math.max(1,Math.round(r.height*dpr)); var ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx:ctx,w:r.width,h:r.height}; }
+function screen(type, capEn, capEs){ return '<div class="illus"><canvas class="cv" data-cv="'+type+'"></canvas></div><div class="mcap">'+ICO.img+' '+X(capEn,capEs)+'</div>'; }
+function bg(ctx,w,h){ ctx.fillStyle="#08140d"; ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle="rgba(90,160,110,.14)"; ctx.lineWidth=1; var i;
+  for(i=0;i<=8;i++){var x=w*i/8+.5;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
+  for(i=0;i<=5;i++){var y=h*i/5+.5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+}
+function wrench(ctx,x,y,s,rot){ ctx.save();ctx.translate(x,y);ctx.rotate(rot||0);ctx.fillStyle="#cfe8d8";ctx.strokeStyle="#8fc7a5";ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.roundRect(-s*0.12,-s*0.5,s*0.24,s,3);ctx.fill();
+  ctx.beginPath();ctx.arc(0,-s*0.5,s*0.22,0,Math.PI*2);ctx.fillStyle="#aed7bd";ctx.fill();
+  ctx.beginPath();ctx.arc(0,-s*0.5,s*0.1,0,Math.PI*2);ctx.fillStyle="#08140d";ctx.fill();
+  ctx.restore(); }
+
+/* falling tool (loops) */
+function animFall(cv){
+  var g=fitCanvas(cv),ctx=g.ctx,w=g.w,h=g.h,gen=_gen,start=performance.now();
+  function frame(now){ if(gen!==_gen)return; var t=((now-start)/1600)%1; bg(ctx,w,h);
+    // platform at top
+    ctx.strokeStyle="#5fae7d";ctx.lineWidth=3;ctx.strokeRect(w*0.12,14,w*0.30,10);
+    ctx.fillStyle="#9fd8b4";ctx.font="11px system-ui";ctx.textAlign="left";ctx.fillText(X("20 ft ≈ 6 m","20 ft ≈ 6 m"),w*0.12,44);
+    // trajectory (accelerating)
+    var top=28, bot=h-24, x=w*0.27, y=top+(bot-top)*t*t;
+    // motion trail
+    for(var k=1;k<=6;k++){var tt=Math.max(0,t-k*0.03);var yy=top+(bot-top)*tt*tt;ctx.globalAlpha=0.12*(6-k)/6;wrench(ctx,x,yy,26,0.5+tt*5);}
+    ctx.globalAlpha=1; wrench(ctx,x,y,26,0.5+t*5);
+    // ground + impact
+    ctx.strokeStyle="#3f7a58";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,bot+8);ctx.lineTo(w,bot+8);ctx.stroke();
+    if(t>0.92){var f=(t-0.92)/0.08;ctx.strokeStyle="rgba(248,113,113,"+(1-f)+")";ctx.lineWidth=2;for(var a=0;a<7;a++){var an=(a/7)*Math.PI-Math.PI;ctx.beginPath();ctx.moveTo(x,bot+6);ctx.lineTo(x+Math.cos(an)*22*f,bot+6+Math.sin(an)*14*f);ctx.stroke();}}
+    // speed readout
+    var vmph=(Math.sqrt(2*9.81*6*t*t)*2.237).toFixed(0);
+    ctx.fillStyle="#f8b4b4";ctx.textAlign="right";ctx.font="bold 13px system-ui";ctx.fillText(vmph+" mph",w-10,h-10);
+    requestAnimationFrame(frame); }
+  requestAnimationFrame(frame);
+}
+
+/* tethered tool: falls then lanyard catches (loops) */
+function animTether(cv){
+  var g=fitCanvas(cv),ctx=g.ctx,w=g.w,h=g.h,gen=_gen,start=performance.now();
+  var ax=w*0.5, ay=26, L=h*0.55;
+  function frame(now){ if(gen!==_gen)return; var t=((now-start)/2600)%1; bg(ctx,w,h);
+    // anchor point / basket rail
+    ctx.strokeStyle="#5fae7d";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(w*0.2,ay);ctx.lineTo(w*0.8,ay);ctx.stroke();
+    ctx.fillStyle="#4ade80";ctx.beginPath();ctx.arc(ax,ay,4,0,Math.PI*2);ctx.fill();
+    // fall then damped catch
+    var drop; if(t<0.32){ drop=L*(t/0.32)*(t/0.32); }
+    else { var td=(t-0.32)/0.68; drop=L*(1+0.12*Math.exp(-6*td)*Math.cos(14*td)); }
+    var ty=ay+drop;
+    // lanyard
+    ctx.strokeStyle=(t<0.32?"#9fd8b4":"#4ade80");ctx.lineWidth=t<0.32?1.5:2.5;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ax,ty);ctx.stroke();
+    wrench(ctx,ax,ty+13,26,0.2);
+    ctx.fillStyle="#cfe8d8";ctx.font="12px system-ui";ctx.textAlign="center";
+    ctx.fillText(X(t<0.32?"tool slips…":"lanyard holds ✓", t<0.32?"la herramienta cae…":"el cordón la sostiene ✓"), ax, h-12);
+    requestAnimationFrame(frame); }
+  requestAnimationFrame(frame);
+}
+
+/* top-down drop zone (loops with pulse) */
+function animDropZone(cv){
+  var g=fitCanvas(cv),ctx=g.ctx,w=g.w,h=g.h,gen=_gen,start=performance.now();
+  function cone(x,y){ ctx.fillStyle="#f59e0b";ctx.beginPath();ctx.moveTo(x,y-8);ctx.lineTo(x-6,y+6);ctx.lineTo(x+6,y+6);ctx.closePath();ctx.fill();ctx.fillStyle="#fff";ctx.fillRect(x-3.5,y-1,7,2.5); }
+  function frame(now){ if(gen!==_gen)return; var t=(now-start)/1000; bg(ctx,w,h);
+    var cx=w*0.5, cy=h*0.5, rw=w*0.30, rh=h*0.34;
+    // exclusion zone shading (pulse)
+    var p=0.10+0.06*(0.5+0.5*Math.sin(t*2));
+    ctx.fillStyle="rgba(245,158,11,"+p+")";ctx.fillRect(cx-rw,cy-rh,rw*2,rh*2);
+    // danger tape (dashed)
+    ctx.setLineDash([10,7]);ctx.lineDashOffset=-(t*30)%17;ctx.strokeStyle="#f59e0b";ctx.lineWidth=2.5;ctx.strokeRect(cx-rw,cy-rh,rw*2,rh*2);ctx.setLineDash([]);
+    // cones at corners
+    cone(cx-rw,cy-rh);cone(cx+rw,cy-rh);cone(cx-rw,cy+rh);cone(cx+rw,cy+rh);
+    // lift basket (center)
+    ctx.strokeStyle="#4ade80";ctx.lineWidth=2.5;ctx.strokeRect(cx-22,cy-16,44,32);
+    ctx.fillStyle="#cfe8d8";ctx.font="10px system-ui";ctx.textAlign="center";ctx.fillText("LIFT",cx,cy+3);
+    // person kept out
+    ctx.strokeStyle="#f8b4b4";ctx.lineWidth=2;var px=cx+rw+26,py=cy;ctx.beginPath();ctx.arc(px,py-8,4,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(px,py-4);ctx.lineTo(px,py+8);ctx.moveTo(px,py+8);ctx.lineTo(px-5,py+16);ctx.moveTo(px,py+8);ctx.lineTo(px+5,py+16);ctx.moveTo(px,py);ctx.lineTo(px-6,py+4);ctx.moveTo(px,py);ctx.lineTo(px+6,py+4);ctx.stroke();
+    ctx.fillStyle="#f59e0b";ctx.font="bold 11px system-ui";ctx.fillText(X("DROP ZONE — NO ENTRY","ZONA DE CAÍDA — NO PASAR"),cx,cy-rh-8);
+    requestAnimationFrame(frame); }
+  requestAnimationFrame(frame);
+}
+
+/* impact interactive (static redraw) */
+function drawImpact(cv,ft){
+  var g=fitCanvas(cv),ctx=g.ctx,w=g.w,h=g.h; bg(ctx,w,h);
+  var top=20, bot=h-22, x=w*0.30;
+  ctx.strokeStyle="#3f7a58";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,bot+6);ctx.lineTo(w,bot+6);ctx.stroke();
+  // height column
+  var frac=Math.min(1,ft/50);
+  var ty=bot-(bot-top)*frac;
+  ctx.setLineDash([4,4]);ctx.strokeStyle="rgba(159,216,180,.5)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,ty);ctx.lineTo(x,bot+6);ctx.stroke();ctx.setLineDash([]);
+  wrench(ctx,x,ty+12,26,0.3);
+  var vms=Math.sqrt(2*9.81*ft*0.3048), vmph=vms*2.23694, ke=0.5*1.5*vms*vms;
+  var col = ft<10?"#4ade80":(ft<25?"#f59e0b":"#f87171");
+  ctx.fillStyle=col;ctx.font="bold 22px system-ui";ctx.textAlign="left";ctx.fillText(vmph.toFixed(0)+" mph",w*0.5,h*0.44);
+  ctx.fillStyle="#cfe8d8";ctx.font="13px system-ui";ctx.fillText(X("impact speed","velocidad de impacto"),w*0.5,h*0.44+18);
+  ctx.fillStyle=col;ctx.font="bold 18px system-ui";ctx.fillText(ke.toFixed(0)+" J",w*0.5,h*0.72);
+  ctx.fillStyle="#cfe8d8";ctx.font="13px system-ui";ctx.fillText(X("impact energy (1.5 kg tool)","energía de impacto (herramienta 1.5 kg)"),w*0.5,h*0.72+18);
+}
+
+/* load interactive (static redraw) */
+function drawLoad(cv,workers,tools,mat){
+  var g=fitCanvas(cv),ctx=g.ctx,w=g.w,h=g.h; bg(ctx,w,h);
+  var cap=1000, ppl=workers*200, total=ppl+tools+mat;
+  var x0=20,x1=w-20,y=h*0.42,bh=26;
+  // capacity track
+  ctx.fillStyle="#12281b";ctx.fillRect(x0,y,x1-x0,bh);
+  function seg(start,val,color){ var sx=x0+(x1-x0)*Math.min(1,start/cap); var sw=(x1-x0)*Math.min(1-start/cap,val/cap); if(sw<0)sw=0; ctx.fillStyle=color;ctx.fillRect(sx,y,sw,bh); return start+val; }
+  var acc=0; acc=seg(0,ppl,"#4ade80"); acc=seg(acc,tools,"#38bdf8"); acc=seg(acc,mat,"#a78bfa");
+  // capacity line
+  ctx.strokeStyle="#f87171";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x1,y-8);ctx.lineTo(x1,y+bh+8);ctx.stroke();
+  ctx.fillStyle="#f87171";ctx.font="11px system-ui";ctx.textAlign="right";ctx.fillText(cap+" lb",x1,y-12);
+  // legend + total
+  ctx.textAlign="left";ctx.font="12px system-ui";
+  ctx.fillStyle="#4ade80";ctx.fillText("■",x0,y+bh+26);ctx.fillStyle="#cfe8d8";ctx.fillText(X(" workers "+ppl+" lb"," trabajadores "+ppl+" lb"),x0+10,y+bh+26);
+  ctx.fillStyle="#38bdf8";ctx.fillText("■",x0,y+bh+44);ctx.fillStyle="#cfe8d8";ctx.fillText(X(" tools "+tools+" lb"," herramientas "+tools+" lb"),x0+10,y+bh+44);
+  ctx.fillStyle="#a78bfa";ctx.fillText("■",x0,y+bh+62);ctx.fillStyle="#cfe8d8";ctx.fillText(X(" materials "+mat+" lb"," materiales "+mat+" lb"),x0+10,y+bh+62);
+  var over=total>cap;
+  ctx.textAlign="right";ctx.font="bold 20px system-ui";ctx.fillStyle=over?"#f87171":"#4ade80";
+  ctx.fillText(total+" / "+cap+" lb",x1,y+bh+52);
+  ctx.font="bold 13px system-ui";ctx.fillText(over?X("OVER CAPACITY ✗","SOBRECARGA ✗"):X("within limit ✓","dentro del límite ✓"),x1,y+bh+70);
+}
+
+function initCanvases(){
+  document.querySelectorAll("#card canvas.cv").forEach(function(cv){
+    var k=cv.dataset.cv;
+    if(k==="fall") animFall(cv);
+    else if(k==="tether") animTether(cv);
+    else if(k==="dropzone") animDropZone(cv);
+  });
+}
+
+/* ===================== STEPS ===================== */
+var STEPS = [
+  /* 1 intro */
+  { ico:ICO.play, t:["Overview","Introducción"], b:function(){
+      return tit("Tying off tools &amp; equipment in aerial lifts","Amarre de herramientas y equipo en plataformas elevadoras")+
+        '<span class="pill">Toolbox Talk · '+X("Safety","Seguridad")+'</span>'+
+        '<p class="lead">'+X("Every tool you take into an aerial lift can become a deadly hazard if it falls. A few extra seconds to tether tools, keep good housekeeping, and protect the area below can prevent life-changing accidents.","Cada herramienta que lleva a una plataforma elevadora puede convertirse en un peligro mortal si se cae. Unos segundos extra para amarrar las herramientas, mantener el orden y proteger la zona inferior pueden prevenir accidentes que cambian vidas.")+'</p>'+
+        '<div class="stat3">'+
+          '<div class="s"><b>20 ft</b><span>'+X("≈ 6 m fall","caída ≈ 6 m")+'</span></div>'+
+          '<div class="s"><b>100%</b><span>'+X("tie-off rule","regla de amarre")+'</span></div>'+
+          '<div class="s"><b>0</b><span>'+X("dropped objects","objetos caídos")+'</span></div>'+
+        '</div>'+
+        '<p class="note">'+X("Use Next / the arrow keys to move through the talk. It takes about 12 minutes.","Usa Siguiente / las flechas para avanzar. Toma unos 12 minutos.")+'</p>';
+  }},
+  /* 2 why it matters */
+  { ico:ICO.warn, t:["Why it matters","Por qué importa"], b:function(){
+      return tit("A dropped tool can kill","Una herramienta que cae puede matar")+
+        '<p class="lead">'+X("A dropped wrench, drill, or tape measure from just 20 feet can strike someone below with enough force to cause a serious injury or fatality.","Una llave, un taladro o una cinta métrica que cae desde solo 20 pies (6 m) puede golpear a un trabajador con fuerza suficiente para causar una lesión grave o la muerte.")+'</p>'+
+        '<div class="grid3">'+
+          '<div class="box"><h3>'+X("Tether","Amarra")+'</h3><p>'+X("Secure every tool.","Asegura cada herramienta.")+'</p></div>'+
+          '<div class="box"><h3>'+X("Housekeeping","Orden")+'</h3><p>'+X("Keep the platform clear.","Mantén la plataforma despejada.")+'</p></div>'+
+          '<div class="box"><h3>'+X("Protect below","Protege abajo")+'</h3><p>'+X("Barricade the drop zone.","Delimita la zona de caída.")+'</p></div>'+
+        '</div>'+
+        '<p class="note">'+X("Reference example: Dolphins Training Facility jobsite.","Ejemplo de referencia: obra en el Dolphins Training Facility.")+'</p>';
+  }},
+  /* 3 the hazard + fall animation */
+  { ico:ICO.warn, t:["The hazard","El peligro"], b:function(){
+      return tit("Struck-by / dropped objects","Objetos que caen / golpes por caída")+
+        '<p class="lead">'+X("A falling tool can become a lethal projectile, even from relatively low heights. Speed builds fast as it falls.","Una herramienta que cae puede convertirse en un proyectil mortal, incluso desde alturas bajas. La velocidad aumenta rápido al caer.")+'</p>'+
+        screen("fall","Falling tool — impact speed builds with height.","Herramienta cayendo — la velocidad de impacto crece con la altura.")+
+        '<p class="note bad">'+X("If it can fall, it must be secured.","Si puede caerse, debe estar asegurado.")+'</p>';
+  }},
+  /* 4 never on rails */
+  { ico:ICO.norail, t:["Not on the rails","No en las barandas"], b:function(){
+      return tit("Never place tools on the rails","Nunca coloques herramientas en las barandas")+
+        '<p class="lead">'+X("Never place tools on the top rail or guardrails of an aerial lift — a slight bump sends them over the edge.","Nunca coloques herramientas sobre el pasamanos o la baranda de la plataforma — un pequeño golpe las lanza al vacío.")+'</p>'+
+        '<div class="grid2"><div class="box"><h3>✗ '+X("Wrong","Incorrecto")+'</h3><p>'+X("Tools resting on the top rail or guardrail.","Herramientas apoyadas en el pasamanos o baranda.")+'</p></div>'+
+        '<div class="box"><h3>✓ '+X("Right","Correcto")+'</h3><p>'+X("Tools tethered or in a closed pouch.","Herramientas amarradas o en una bolsa cerrada.")+'</p></div></div>'+
+        '<p class="note warn">'+X("A tool on a rail is a tool waiting to fall.","Una herramienta en la baranda es una herramienta a punto de caer.")+'</p>';
+  }},
+  /* 5 guardrails not a substitute */
+  { ico:ICO.shield, t:["Rails ≠ tethering","Barandas ≠ amarre"], b:function(){
+      return tit("Guardrails are not a substitute","Las barandas no sustituyen el amarre")+
+        '<p class="lead">'+X("Guardrails and kick-plates help contain equipment, but they are not a substitute for properly tethering every tool used at height.","Las barandas y los rodapiés ayudan a contener el equipo, pero no sustituyen el uso de amarres adecuados para todas las herramientas que se usan en altura.")+'</p>'+
+        '<p class="note">'+X("Think of kick-plates as a backup, not the plan. The plan is tethering.","Piensa en los rodapiés como respaldo, no como el plan. El plan es amarrar.")+'</p>';
+  }},
+  /* 6 key rule */
+  { ico:ICO.check, t:["Key rule","Regla clave"], b:function(){
+      return tit("If it can fall, it must be secured","Si puede caerse, debe estar asegurado")+
+        '<p class="lead">'+X("This one rule covers everything: tools, materials, hardware, radios, phones, water bottles. Anything loose at height is a hazard.","Esta sola regla lo cubre todo: herramientas, materiales, tornillería, radios, teléfonos, botellas de agua. Cualquier cosa suelta en altura es un peligro.")+'</p>'+
+        '<div class="stat3"><div class="s"><b>✓</b><span>'+X("Tethered","Amarrado")+'</span></div><div class="s"><b>✓</b><span>'+X("In a pouch","En bolsa")+'</span></div><div class="s"><b>✓</b><span>'+X("Or on the ground","O en el piso")+'</span></div></div>';
+  }},
+  /* 7 impact interactive */
+  { ico:ICO.gauge, t:["Impact energy","Energía de impacto"], b:function(){
+      return tit("How hard does it hit?","¿Con cuánta fuerza golpea?")+
+        '<p class="lead">'+X("Drag the height. See how fast a 1.5 kg (≈3 lb) tool is moving — and how much energy it carries — when it lands.","Mueve la altura. Observa a qué velocidad va una herramienta de 1.5 kg (≈3 lb) — y cuánta energía lleva — al impactar.")+'</p>'+
+        '<div class="illus"><canvas id="impactCv"></canvas></div>'+
+        '<div class="row"><span class="lbl">'+X("Drop height","Altura de caída")+'</span><input type="range" id="hSld" min="5" max="50" value="20"><span class="val" id="hVal"></span></div>'+
+        '<p class="note warn">'+X("Even a 3 lb tool from 20 ft hits at roughly highway speed. PPE below cannot reliably stop it.","Incluso una herramienta de 3 lb desde 20 ft golpea casi a velocidad de carretera. El EPP de abajo no la detiene con seguridad.")+'</p>';
+    }, i:function(){ var s=$("hSld"),cv=$("impactCv"); function u(){ $("hVal").textContent=s.value+" ft"; if(cv)drawImpact(cv,+s.value);} s.oninput=u; if(cv)u(); }
+  },
+  /* 8 tethering best practices intro */
+  { ico:ICO.rope, t:["Tethering","Amarre"], b:function(){
+      return tit("Best practices for tool tethering","Mejores prácticas para amarrar herramientas")+
+        '<p class="lead">'+X("Tethering keeps a tool connected to the lift the moment it leaves your hand. The next slides cover how to do it right.","El amarre mantiene la herramienta conectada a la plataforma en el momento en que sale de tu mano. Los siguientes slides cubren cómo hacerlo bien.")+'</p>'+
+        '<div class="grid2"><div class="box"><h3>'+X("Rated gear","Equipo certificado")+'</h3><p>'+X("Load-rated lanyards, ANSI attachments.","Cordones con carga certificada, accesorios ANSI.")+'</p></div><div class="box"><h3>'+X("Right anchor","Anclaje correcto")+'</h3><p>'+X("To the lift basket — not your harness.","A la canastilla — no a tu arnés.")+'</p></div></div>';
+  }},
+  /* 9 rated lanyards */
+  { ico:ICO.rope, t:["Rated lanyards","Cordones certificados"], b:function(){
+      return tit("Use only rated, compliant gear","Usa solo equipo certificado")+
+        '<p class="lead">'+X("Use only OSHA-compliant, commercial-grade, load-rated tool lanyards and ANSI-rated tethering attachments.","Utiliza únicamente cordones (lanyards) comerciales con capacidad de carga certificada y accesorios de anclaje con clasificación ANSI.")+'</p>'+
+        '<p class="note good"><b>'+X("Check the rating","Verifica la clasificación")+'</b> — '+X("every lanyard and attachment point should show its rated capacity for the tool weight.","cada cordón y punto de anclaje debe mostrar su capacidad para el peso de la herramienta.")+'</p>';
+  }},
+  /* 10 never substitute */
+  { ico:ICO.ban, t:["No substitutes","Sin sustitutos"], b:function(){
+      return tit("Never substitute makeshift ties","Nunca improvises los amarres")+
+        '<p class="lead">'+X("Never substitute rope, wire, tape, or zip ties. They are not designed for fall protection and can fail unexpectedly.","Nunca sustituyas los cordones por cuerdas, alambre, cinta adhesiva o cinchos plásticos (zip ties). No están diseñados para este propósito y pueden fallar sin aviso.")+'</p>'+
+        '<div class="grid3"><div class="box"><h3>✗ '+X("Rope / wire","Cuerda / alambre")+'</h3><p>'+X("Unrated, frays.","Sin clasificación, se deshilacha.")+'</p></div><div class="box"><h3>✗ '+X("Tape","Cinta")+'</h3><p>'+X("Loses grip.","Pierde adherencia.")+'</p></div><div class="box"><h3>✗ '+X("Zip ties","Cinchos")+'</h3><p>'+X("Snap under load.","Se rompen con carga.")+'</p></div></div>';
+  }},
+  /* 11 anchor to basket */
+  { ico:ICO.anchor, t:["Anchor point","Punto de anclaje"], b:function(){
+      return tit("Anchor to the basket — not your harness","Ancla a la canastilla — no a tu arnés")+
+        '<p class="lead">'+X("Attach tools to designated anchor points inside the lift basket, not to your personal fall protection harness.","Sujeta las herramientas a los puntos de anclaje designados dentro de la canastilla de la plataforma, nunca a tu arnés personal de protección contra caídas.")+'</p>'+
+        '<p class="note bad">'+X("A tool tethered to your harness can pull you off balance or interfere with your own fall protection.","Una herramienta amarrada a tu arnés puede desequilibrarte o interferir con tu propia protección contra caídas.")+'</p>';
+  }},
+  /* 12 approved attachments */
+  { ico:ICO.wrist, t:["Attachments","Accesorios"], b:function(){
+      return tit("Use approved attachment methods","Usa métodos de sujeción aprobados")+
+        '<p class="lead">'+X("Secure tools using approved wrist attachments, heavy-duty tool belts, or lift-approved tethering systems.","Asegura las herramientas mediante correas para la muñeca, cinturones portaherramientas de servicio pesado o sistemas de anclaje aprobados para plataformas.")+'</p>'+
+        '<div class="grid3"><div class="box"><h3>'+X("Wrist strap","Correa de muñeca")+'</h3><p>'+X("For light hand tools.","Para herramientas ligeras.")+'</p></div><div class="box"><h3>'+X("Tool belt","Cinturón")+'</h3><p>'+X("Heavy-duty, closed holsters.","Servicio pesado, fundas cerradas.")+'</p></div><div class="box"><h3>'+X("Lift system","Sistema de plataforma")+'</h3><p>'+X("Manufacturer-approved.","Aprobado por el fabricante.")+'</p></div></div>';
+  }},
+  /* 13 100% tie-off + tether animation */
+  { ico:ICO.check, t:["100% tie-off","100% amarre"], b:function(){
+      return tit("The 100% tie-off rule","La regla del 100% de amarre")+
+        '<p class="lead">'+X("If a tool leaves your hand, it should still be connected to the lift.","Si una herramienta sale de tu mano, debe seguir conectada a la plataforma.")+'</p>'+
+        screen("tether","A dropped tool stays connected — the lanyard catches it.","La herramienta cae pero sigue conectada — el cordón la sostiene.")+
+        '<p class="note good"><b>'+X("Hand to hand","De mano a mano")+'</b> — '+X("stay tethered even while passing a tool to a coworker.","permanece amarrado incluso al pasar una herramienta a un compañero.")+'</p>';
+  }},
+  /* 14 load limits intro */
+  { ico:ICO.weight, t:["Load & order","Carga y orden"], b:function(){
+      return tit("Load limits &amp; good housekeeping","Límites de carga y orden en la plataforma")+
+        '<p class="lead">'+X("Overloading and clutter both cause dropped objects and tip-overs. Know your limit and keep the floor clear.","La sobrecarga y el desorden causan objetos caídos y volcaduras. Conoce tu límite y mantén el piso despejado.")+'</p>'+
+        '<p class="note">'+X("The next slide lets you add up a real load against a rated capacity.","El siguiente slide te deja sumar una carga real contra la capacidad nominal.")+'</p>';
+  }},
+  /* 15 capacity interactive */
+  { ico:ICO.weight, t:["Capacity","Capacidad"], b:function(){
+      return tit("Never exceed rated capacity","Nunca excedas la capacidad nominal")+
+        '<p class="lead">'+X("Total weight includes workers, tools, materials and equipment. Add them up against the platform rating.","El peso total incluye trabajadores, herramientas, materiales y equipos. Súmalos contra la capacidad de la plataforma.")+'</p>'+
+        '<div class="illus" style="aspect-ratio:16/10"><canvas id="loadCv"></canvas></div>'+
+        '<div class="row"><span class="lbl">'+X("Workers","Trabajadores")+'</span><input type="range" id="wSld" min="1" max="3" value="2"><span class="val" id="wVal"></span></div>'+
+        '<div class="row"><span class="lbl">'+X("Tools (lb)","Herramientas (lb)")+'</span><input type="range" id="tSld" min="0" max="150" step="5" value="60"><span class="val" id="tVal"></span></div>'+
+        '<div class="row"><span class="lbl">'+X("Materials (lb)","Materiales (lb)")+'</span><input type="range" id="mSld" min="0" max="700" step="10" value="200"><span class="val" id="mVal"></span></div>'+
+        '<p class="note warn">'+X("Example capacity 1000 lb; workers estimated at 200 lb each. Always use your lift’s data plate.","Capacidad de ejemplo 1000 lb; trabajadores estimados en 200 lb c/u. Usa siempre la placa de datos de tu plataforma.")+'</p>';
+    }, i:function(){ var wsl=$("wSld"),tsl=$("tSld"),msl=$("mSld"),cv=$("loadCv"); function u(){ $("wVal").textContent=wsl.value; $("tVal").textContent=tsl.value+" lb"; $("mVal").textContent=msl.value+" lb"; if(cv)drawLoad(cv,+wsl.value,+tsl.value,+msl.value);} wsl.oninput=u;tsl.oninput=u;msl.oninput=u; if(cv)u(); }
+  },
+  /* 16 housekeeping */
+  { ico:ICO.broom, t:["Housekeeping","Orden"], b:function(){
+      return tit("Keep the platform clean","Mantén la plataforma limpia")+
+        '<p class="lead">'+X("Keep the lift floor clean and organized to reduce trip hazards and improve tool control.","Mantén el piso de la plataforma limpio y organizado para reducir riesgos de tropiezos y mejorar el control de las herramientas.")+'</p>'+
+        '<div class="grid2"><div class="box"><h3>'+X("Stow it","Guárdalo")+'</h3><p>'+X("Unused tools in pouches or bags.","Herramientas sin uso en bolsas.")+'</p></div><div class="box"><h3>'+X("Clear the floor","Despeja el piso")+'</h3><p>'+X("No loose offcuts or debris.","Sin recortes ni residuos sueltos.")+'</p></div></div>';
+  }},
+  /* 17 materials above guardrails */
+  { ico:ICO.pipe, t:["Long materials","Materiales largos"], b:function(){
+      return tit("Materials above the guardrails","Materiales por encima de las barandas")+
+        '<p class="lead">'+X("If materials such as conduit, pipe, or panels must extend above the guardrails, only use manufacturer-approved lifting attachments and follow written manufacturer guidance.","Si materiales como tubería, conductos o paneles deben sobresalir por encima de las barandas, usa únicamente accesorios de elevación aprobados por el fabricante y sigue sus instrucciones por escrito.")+'</p>'+
+        '<p class="note warn">'+X("Never improvise racks or lean long material on the rails.","Nunca improvises soportes ni recuestes material largo sobre las barandas.")+'</p>';
+  }},
+  /* 18 protect work zone below + dropzone anim */
+  { ico:ICO.cone, t:["Drop zone","Zona de caída"], b:function(){
+      return tit("Protect the work zone below","Protege el área de trabajo debajo")+
+        '<p class="lead">'+X("Establish a clearly marked drop zone beneath the lift using cones, barricades, or danger tape.","Delimita una zona de exclusión debajo de la plataforma con conos, barricadas o cinta de advertencia.")+'</p>'+
+        screen("dropzone","Barricaded drop zone keeps people out from under the lift.","La zona de exclusión mantiene a la gente fuera de debajo de la plataforma.")+
+        '<p class="note">'+X("The drop zone should cover the full area a tool could reach if it falls or bounces.","La zona debe cubrir toda el área que una herramienta podría alcanzar si cae o rebota.")+'</p>';
+  }},
+  /* 19 keep people out + communicate + adjust */
+  { ico:ICO.people, t:["Keep clear","Mantener despejado"], b:function(){
+      return tit("Keep people out and communicate","Mantén a la gente fuera y comunica")+
+        '<ul>'+
+          '<li>'+X("Prevent unauthorized personnel from entering or walking underneath the elevated platform.","No permitas que personal no autorizado entre o camine debajo de la plataforma elevada.")+'</li>'+
+          '<li>'+X("Communicate the restricted area to everyone on the jobsite before work begins.","Comunica la zona restringida a todo el personal del sitio antes de comenzar.")+'</li>'+
+          '<li>'+X("If work conditions change, adjust the barricaded area to maintain protection.","Si cambian las condiciones, ajusta la zona de exclusión para mantener la protección.")+'</li>'+
+        '</ul>'+
+        '<p class="note good"><b>'+X("Talk first","Habla primero")+'</b> — '+X("a quick heads-up prevents someone from walking into the drop zone.","un aviso rápido evita que alguien entre a la zona de caída.")+'</p>';
+  }},
+  /* 20 checklist */
+  { ico:ICO.list, t:["Checklist","Lista"], b:function(){
+      var items=[
+        ["Every tool is tethered or in a closed pouch","Cada herramienta está amarrada o en bolsa cerrada"],
+        ["Lanyards & anchors are rated (no rope/tape/zip ties)","Cordones y anclajes certificados (sin cuerda/cinta/cinchos)"],
+        ["Tools anchored to the basket, not my harness","Herramientas ancladas a la canastilla, no a mi arnés"],
+        ["Platform load is within rated capacity","La carga está dentro de la capacidad nominal"],
+        ["Floor is clean and organized","El piso está limpio y organizado"],
+        ["Drop zone barricaded and communicated","Zona de caída delimitada y comunicada"]
+      ];
+      return tit("Pre-work tie-off checklist","Lista previa de amarre")+'<p class="lead">'+X("Tap each item you have confirmed before lifting.","Toca cada punto que confirmaste antes de elevar.")+'</p>'+
+        items.map(function(it){return '<div class="chk"><span class="bx">'+ICO.check+'</span><span class="txt"><b>'+X(it[0],it[1])+'</b></span></div>';}).join("")+
+        '<p class="note good" id="ckMsg"></p>';
+    }, i:function(){ var t=document.querySelectorAll(".chk").length; function u(){var d=document.querySelectorAll(".chk.done").length;$("ckMsg").textContent=X("Confirmed: ","Confirmado: ")+d+"/"+t+(d===t?X(" — ready to lift ✓"," — listo para elevar ✓"):"");} document.querySelectorAll(".chk").forEach(function(c){c.onclick=function(){c.classList.toggle("done");u();};}); u(); }
+  },
+  /* 21 quiz */
+  { ico:ICO.quiz, t:["Quiz","Evaluación"], b:function(){
+      var QUIZ=[
+        {en:"Where should a tool lanyard be anchored?",es:"¿Dónde debe anclarse el cordón de una herramienta?",
+         o_en:["To your fall-protection harness","To a rated anchor point in the lift basket","To the top guardrail"],
+         o_es:["A tu arnés de protección contra caídas","A un punto de anclaje certificado en la canastilla","A la baranda superior"],a:1},
+        {en:"Which is acceptable for tethering a tool?",es:"¿Qué es aceptable para amarrar una herramienta?",
+         o_en:["A zip tie","Electrical tape","An OSHA/ANSI load-rated lanyard"],
+         o_es:["Un cincho plástico","Cinta de electricista","Un cordón con carga certificada OSHA/ANSI"],a:2},
+        {en:"The platform's rated capacity must include…",es:"La capacidad nominal de la plataforma debe incluir…",
+         o_en:["Only the workers","Only tools and materials","Workers + tools + materials + equipment"],
+         o_es:["Solo los trabajadores","Solo herramientas y materiales","Trabajadores + herramientas + materiales + equipos"],a:2},
+        {en:"What defines the 100% tie-off rule for tools?",es:"¿Qué define la regla del 100% de amarre para herramientas?",
+         o_en:["Tools are tied off only above 30 ft","If a tool leaves your hand it stays connected to the lift","Guardrails replace tethering"],
+         o_es:["Se amarran solo por encima de 30 ft","Si una herramienta sale de tu mano, sigue conectada a la plataforma","Las barandas reemplazan el amarre"],a:1}
+      ];
+      window._QZ=QUIZ;
+      var qs=QUIZ.map(function(q,i){var o=(LANG==="es"?q.o_es:q.o_en).map(function(x,j){return '<button class="opt" data-q="'+i+'" data-o="'+j+'">'+x+'</button>';}).join("");return '<div class="q"><h3>'+(i+1)+'. '+X(q.en,q.es)+'</h3>'+o+'</div>';}).join("");
+      return tit("Quick check","Evaluación rápida")+qs+'<div class="score" id="score"></div>';
+    }, i:function(){ var QUIZ=window._QZ,ans={},ok=0; document.querySelectorAll(".opt").forEach(function(b){b.onclick=function(){var qi=+b.dataset.q;if(ans[qi])return;ans[qi]=1;var a=QUIZ[qi].a;document.querySelectorAll('.opt[data-q="'+qi+'"]').forEach(function(x){x.disabled=true;if(+x.dataset.o===a)x.classList.add("correct");});if(+b.dataset.o===a)ok++;else b.classList.add("wrong");if(Object.keys(ans).length===QUIZ.length)$("score").textContent=X("Score: ","Puntaje: ")+ok+"/"+QUIZ.length;};}); }
+  },
+  /* 22 wrap-up */
+  { ico:ICO.trophy, t:["Wrap-up","Cierre"], b:function(){
+      return tit("Key takeaways","Ideas clave")+
+        '<ul>'+
+          '<li>'+X("If it can fall, it must be secured — 100% tie-off.","Si puede caerse, debe estar asegurado — 100% de amarre.")+'</li>'+
+          '<li>'+X("Only rated lanyards & ANSI anchors — never rope, tape, or zip ties.","Solo cordones certificados y anclajes ANSI — nunca cuerda, cinta ni cinchos.")+'</li>'+
+          '<li>'+X("Anchor to the basket, respect the load limit, keep it tidy.","Ancla a la canastilla, respeta el límite de carga, mantén el orden.")+'</li>'+
+          '<li>'+X("Barricade and communicate the drop zone below.","Delimita y comunica la zona de caída debajo.")+'</li>'+
+        '</ul>'+
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px"><span class="verdict ok">'+ICO.check+' '+X("Talk complete","Charla completa")+'</span><a class="btn ghost" href="../index.html" target="_top">'+X("Back to portal","Volver al portal")+'</a></div>';
+  }}
+];
+var cur=0;
+
+/* ===================== engine ===================== */
+function pintarChrome(){
+  document.documentElement.lang=LANG;
+  $("brand").textContent=X(CONFIG.brand[0],CONFIG.brand[1]);
+  $("brandsub").textContent=X(CONFIG.subtitle[0],CONFIG.subtitle[1]);
+  $("homeTxt").textContent=X("Home","Inicio");
+  document.querySelectorAll("#lang button").forEach(function(b){ b.classList.toggle("on", b.dataset.l===LANG); });
+  var dark=document.documentElement.getAttribute("data-theme")==="dark";
+  $("temaIco").innerHTML=dark?ICO.sun:ICO.moon; $("temaTxt").textContent=dark?X("Light","Claro"):X("Dark","Oscuro");
+  $("prev").innerHTML="‹ "+X("Back","Anterior");
+  $("next").innerHTML=(cur>=STEPS.length-1?X("Restart","Reiniciar"):X("Next","Siguiente")+" ›");
+}
+function render(){
+  stopAnim(); pintarChrome();
+  var s=STEPS[cur];
+  $("card").innerHTML=s.b();
+  if(s.i) s.i();
+  initCanvases();
+  $("progbar").style.width=((cur+1)/STEPS.length*100)+"%";
+  $("mStep").textContent=X("Step ","Paso ")+(cur+1)+" / "+STEPS.length+" · "+X(s.t[0],s.t[1]);
+  $("mDur").textContent=CONFIG.duration;
+  $("prev").disabled=(cur===0);
+  $("dots").innerHTML=STEPS.map(function(_,i){return '<button class="dot'+(i===cur?' on':'')+'" data-i="'+i+'" aria-label="'+(i+1)+'"></button>';}).join("");
+  document.querySelectorAll(".dot").forEach(function(d){ d.onclick=function(){ cur=+d.dataset.i; render(); }; });
+  window.scrollTo(0,0);
+}
+$("prev").onclick=function(){ if(cur>0){cur--;render();} };
+$("next").onclick=function(){ cur=(cur>=STEPS.length-1)?0:cur+1; render(); };
+document.querySelectorAll("#lang button").forEach(function(b){ b.onclick=function(){ LANG=b.dataset.l; render(); }; });
+$("tema").onclick=function(){ var d=document.documentElement.getAttribute("data-theme")==="dark"; document.documentElement.setAttribute("data-theme", d?"light":"dark"); pintarChrome(); };
+document.addEventListener("keydown",function(e){ if(e.key==="ArrowRight")$("next").click(); if(e.key==="ArrowLeft")$("prev").click(); });
+window.addEventListener("resize",function(){ stopAnim(); initCanvases(); });
+render();
+</script>
+</body>
+</html>

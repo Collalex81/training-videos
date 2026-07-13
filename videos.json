@@ -114,6 +114,25 @@
     "tipo": "animacion"
   },
   {
+    "area": "seguridad",
+    "titulo": {
+      "es": "Amarre de herramientas en plataformas elevadoras (Toolbox Talk)",
+      "en": "Tying off tools in aerial lifts (Toolbox Talk)"
+    },
+    "descripcion": {
+      "es": "Charla de seguridad interactiva: objetos que caen, mejores prácticas de amarre (cordones OSHA/ANSI, 100% de amarre), límites de carga y orden, y protección de la zona de caída. Incluye animaciones, calculadoras, checklist y quiz.",
+      "en": "Interactive toolbox talk: dropped objects, tool-tethering best practices (OSHA/ANSI lanyards, 100% tie-off), load limits and housekeeping, and protecting the drop zone below. Includes animations, calculators, checklist and quiz."
+    },
+    "categoria": {
+      "es": "Seguridad",
+      "en": "Safety"
+    },
+    "duracion": "12:00",
+    "video": "animations/tool-tethering-aerial-lifts.html",
+    "poster": "assets/poster-tool-tethering.jpg",
+    "tipo": "animacion"
+  },
+  {
     "area": "electricidad",
     "titulo": {
       "es": "Multímetro y electricidad (DC, AC, ohms, watts, breakers, -48V)",
