@@ -222,6 +222,29 @@ var STEPS = [
           bx(ICO.energy,"Chemical / Gravity","Química / Gravedad","Reactive chemicals; raised loads &amp; parts.","Químicos reactivos; cargas y piezas elevadas.")+
         '</div>';
   }},
+  /* 5b — interactive: find every energy source */
+  { ico:ICO.energy, t:["Interactive","Interactivo"], b:function(){
+      function eh(i,x,y,en,es){ return '<g class="eh" style="cursor:pointer"><circle class="ehp" cx="'+x+'" cy="'+y+'" r="13" fill="none" stroke="#f59e0b" stroke-width="2"/><circle class="ehin" cx="'+x+'" cy="'+y+'" r="10" fill="#3a2a10"/><text class="ehn" x="'+x+'" y="'+(y+4)+'" fill="#facc15" font-family="system-ui" font-size="11" text-anchor="middle" font-weight="700">'+i+'</text><text x="'+x+'" y="'+(y+27)+'" fill="#9fd8b4" font-family="system-ui" font-size="8" text-anchor="middle">'+X(en,es)+'</text></g>'; }
+      var svg=''+
+      '<svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block" xmlns="http://www.w3.org/2000/svg">'+
+      '<rect width="320" height="180" fill="#0a160f"/>'+
+      '<rect x="150" y="40" width="70" height="8" rx="2" fill="#1c3a29"/>'+
+      '<rect x="80" y="66" width="170" height="66" rx="6" fill="#132a1e" stroke="#2f5a42" stroke-width="1.5"/>'+
+      '<circle cx="105" cy="140" r="7" fill="#0a160f" stroke="#3f7a58" stroke-width="2"/><circle cx="225" cy="140" r="7" fill="#0a160f" stroke="#3f7a58" stroke-width="2"/>'+
+      eh(1,105,84,"Electrical","Eléctrica")+eh(2,150,116,"Hydraulic","Hidráulica")+eh(3,205,84,"Pneumatic","Neumática")+eh(4,240,116,"Spring","Resorte")+eh(5,185,44,"Gravity","Gravedad")+
+      '</svg>';
+      return tit("Interactive: find every energy source","Interactivo: encuentra cada fuente")+
+        '<p class="lead">'+X("Tap each hazard marker to identify and isolate that energy source. A machine usually holds several at once — find them all.","Toca cada marca de peligro para identificar y aislar esa fuente de energía. Una máquina suele tener varias a la vez — encuéntralas todas.")+'</p>'+
+        '<div class="illus" style="aspect-ratio:16/9;background:#0a160f">'+svg+'</div>'+
+        '<div class="note" id="ehMsg"></div>';
+    }, i:function(){ var gen=_gen; var groups=document.querySelectorAll(".eh"); var total=groups.length;
+        function count(){ return document.querySelectorAll(".eh.done").length; }
+        function upd(){ var s=count(),m=$("ehMsg"); if(s>=total){ m.className="note good"; m.innerHTML="<b>"+X("All "+total+" sources isolated ✓","Las "+total+" fuentes aisladas ✓")+"</b> — "+X("now release stored energy and verify zero.","ahora libera la energía almacenada y verifica cero."); } else { m.className="note warn"; m.innerHTML=X("Isolated ","Aisladas ")+s+"/"+total+" — "+X("keep looking; machines often have more than one energy source.","sigue buscando; las máquinas suelen tener más de una fuente."); } }
+        groups.forEach(function(g){ g.onclick=function(){ if(g.classList.contains("done"))return; g.classList.add("done"); g.querySelector(".ehin").setAttribute("fill","#15803D"); g.querySelector(".ehn").textContent="✓"; g.querySelector(".ehp").setAttribute("stroke","#4ade80"); upd(); }; });
+        var t0=performance.now(); (function fr(now){ if(gen!==_gen)return; var a=(0.35+0.65*(0.5+0.5*Math.sin((now-t0)/280))).toFixed(2); document.querySelectorAll(".eh:not(.done) .ehp").forEach(function(c){ c.setAttribute("stroke-opacity",a); }); requestAnimationFrame(fr); })(performance.now());
+        upd();
+    }
+  },
   /* 6 */
   { ico:ICO.list, t:["The sequence","La secuencia"], b:function(){
       return tit("The lockout sequence — overview","La secuencia de bloqueo — resumen")+
@@ -235,6 +258,45 @@ var STEPS = [
           stepRow(6,"Verify zero energy","Verificar energía cero","Try-out / test that it cannot start.","Prueba que no pueda arrancar.")+
         '</div>';
   }},
+  /* 6b — interactive animated lockout */
+  { ico:ICO.lock, t:["Interactive","Interactivo"], b:function(){
+      var svg=''+
+      '<svg id="loSvg" viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block" xmlns="http://www.w3.org/2000/svg">'+
+      '<defs><linearGradient id="lostl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#33604a"/><stop offset=".5" stop-color="#7fc79b"/><stop offset="1" stop-color="#33604a"/></linearGradient></defs>'+
+      '<rect width="320" height="180" fill="#0a160f"/>'+
+      '<rect x="96" y="22" width="128" height="140" rx="6" fill="#132a1e" stroke="#2f5a42" stroke-width="2"/>'+
+      '<rect x="112" y="34" width="96" height="28" rx="4" fill="#04110a"/>'+
+      '<text id="hMeter" x="150" y="54" fill="#f87171" font-family="ui-monospace,monospace" font-size="16" text-anchor="middle">480 V</text>'+
+      '<g id="hChk" style="display:none"><path d="M186 48 l4 4 8 -9" fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>'+
+      '<text x="176" y="126" fill="#8fd6ac" font-family="system-ui" font-size="9">OFF</text>'+
+      '<text x="120" y="78" fill="#8fd6ac" font-family="system-ui" font-size="9">ON</text>'+
+      '<rect x="156" y="112" width="18" height="8" rx="2" fill="#1c3a29" stroke="#3f7a58" stroke-width="1"/>'+
+      '<g id="hHandle" transform="rotate(0 140 120)"><rect x="135" y="80" width="10" height="42" rx="3" fill="url(#lostl)"/><circle cx="140" cy="80" r="6" fill="#aed7bd"/></g>'+
+      '<g transform="translate(112,132)" stroke="#6f8f7f" stroke-width="1.6"><line x1="0" y1="0" x2="12" y2="0"/><line x1="0" y1="6" x2="12" y2="6"/></g>'+
+      '<g id="hArc" style="display:none" stroke="#facc15" stroke-width="1.6" fill="none" stroke-linecap="round"><path d="M120 126 l5 -4 -3 -3 5 -4"/><path d="M120 140 l5 -4 -3 -3 5 -4"/></g>'+
+      '<g id="hLock" transform="translate(168,64)" opacity="0"><rect x="-11" y="0" width="22" height="16" rx="3" fill="#e11d48"/><path d="M-6,0 v-5 a6 6 0 0 1 12 0 v5" fill="none" stroke="#e11d48" stroke-width="3"/><circle cx="0" cy="8" r="2.4" fill="#0a160f"/></g>'+
+      '<g id="hTag" transform="translate(150,126) rotate(6)" opacity="0"><line x1="20" y1="0" x2="20" y2="-10" stroke="#facc15" stroke-width="1.5"/><rect x="0" y="0" width="42" height="24" rx="3" fill="#facc15"/><rect x="0" y="0" width="42" height="8" fill="#dc2626"/><text x="21" y="6.4" fill="#fff" font-family="system-ui" font-size="5.4" text-anchor="middle" font-weight="700">DANGER</text><text x="21" y="17" fill="#111" font-family="system-ui" font-size="5.2" text-anchor="middle">DO NOT OPERATE</text></g>'+
+      '</svg>';
+      return tit("Interactive: lock it out","Interactivo: bloquéalo")+
+        '<p class="lead">'+X("Step through the lockout on a live disconnect. Watch the handle open, the lock and tag go on, the stored energy discharge, and the meter fall to zero.","Recorre el bloqueo en un desconectador vivo. Observa la palanca abrir, el candado y la etiqueta colocarse, la energía almacenada descargarse y el voltímetro caer a cero.")+'</p>'+
+        '<div class="illus" style="aspect-ratio:16/10;background:#0a160f">'+svg+'</div>'+
+        '<div class="row"><button class="btn" id="loBtn"></button><span class="lead" id="loStat" style="margin:0"></span></div>'+
+        '<p class="note bad">'+X("Notice: the meter still reads 480 V after opening the disconnect — the stored energy is only gone after step 5, and zero is confirmed at step 6.","Fíjate: el voltímetro aún marca 480 V tras abrir el desconectador — la energía almacenada se va hasta el paso 5, y el cero se confirma en el paso 6.")+'</p>';
+    }, i:function(){ var gen=_gen; var H=$("hHandle"),L=$("hLock"),T=$("hTag"),A=$("hArc"),M=$("hMeter"),C=$("hChk"),S=$("loStat"),btn=$("loBtn"); var step=0;
+        var labs=[["Powered — 480 V, live","Energizado — 480 V, vivo"],["Shut down (normal stop)","Apagado (paro normal)"],["Isolate — open the disconnect","Aislar — abre el desconectador"],["Lock the disconnect","Bloquea el desconectador"],["Apply the DANGER tag","Coloca la etiqueta DANGER"],["Release stored energy","Libera la energía almacenada"],["Verify zero energy ✓","Verifica energía cero ✓"]];
+        function stat(){ S.textContent=(step+1)+"/7 · "+X(labs[step][0],labs[step][1]); btn.textContent=(step>=6)?X("Restart","Reiniciar"):X("Next step","Siguiente paso"); }
+        function tween(a,b,d,f,done){ var t0=performance.now(); (function fr(now){ if(gen!==_gen)return; var p=Math.min(1,(now-t0)/d); f(a+(b-a)*p); if(p<1)requestAnimationFrame(fr); else if(done)done(); })(performance.now()); }
+        function reset(){ step=0; H.setAttribute("transform","rotate(0 140 120)"); L.setAttribute("transform","translate(168,64)"); L.setAttribute("opacity","0"); T.setAttribute("opacity","0"); A.style.display="none"; C.style.display="none"; M.textContent="480 V"; M.setAttribute("fill","#f87171"); stat(); }
+        btn.onclick=function(){ if(step>=6){ reset(); return; } step++;
+          if(step===2){ tween(0,90,500,function(v){H.setAttribute("transform","rotate("+v+" 140 120)");}); }
+          else if(step===3){ L.setAttribute("opacity","1"); tween(64,100,450,function(v){L.setAttribute("transform","translate(168,"+v+")");}); }
+          else if(step===4){ tween(0,1,400,function(v){T.setAttribute("opacity",v);}); }
+          else if(step===5){ A.style.display=""; tween(480,0,1000,function(v){M.textContent=Math.round(v)+" V"; M.setAttribute("fill", v>40?"#f87171":"#4ade80");}, function(){A.style.display="none";}); }
+          else if(step===6){ C.style.display=""; M.textContent="0 V"; M.setAttribute("fill","#4ade80"); }
+          stat(); };
+        reset();
+    }
+  },
   /* 7 */
   { ico:ICO.people, t:["1 · Prepare","1 · Preparar"], b:function(){
       return tit("Step 1 — Prepare and notify","Paso 1 — Preparar y notificar")+
@@ -436,6 +498,7 @@ var STEPS = [
   }}
 ];
 var cur=0;
+var _gen=0;
 
 /* ===================== engine ===================== */
 function pintarChrome(){
@@ -450,6 +513,7 @@ function pintarChrome(){
   $("next").innerHTML=(cur>=STEPS.length-1?X("Restart","Reiniciar"):X("Next","Siguiente")+" ›");
 }
 function render(){
+  _gen++;
   pintarChrome();
   var s=STEPS[cur];
   $("card").innerHTML=s.b();

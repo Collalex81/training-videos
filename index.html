@@ -198,22 +198,24 @@ const AMAP = Object.fromEntries(AREAS.map(a=>[a.key,a]));
 const UI = {
   es:{brand:"Centro de Capacitación", brandsub:"CAPACITACIÓN CORPORATIVA",
       badge:"Portal de Entrenamiento", titulo:"Capacitación por área de trabajo",
-      intro:"Selecciona tu área para ver los módulos de entrenamiento en video. Contenido disponible en español e inglés.",
-      areas:"Áreas de capacitación", inicio:"Inicio", buscar:"Buscar un video...",
+      intro:"Selecciona tu área para ver los módulos de entrenamiento, o busca en todos. Contenido disponible en español e inglés.",
+      areas:"Áreas de capacitación", inicio:"Inicio", buscar:"Buscar un módulo...",
+      buscarHome:"Buscar en todos los módulos...", vacioSearch:"Ningún módulo coincide con tu búsqueda.",
       todos:"Todos", modulos:"módulos", modulo:"módulo", ver:"Ver módulos", tema:"Oscuro",
-      stArea:"Áreas", stVid:"Videos", stIdi:"Idiomas",
-      vacio:"Aún no hay videos en esta área.",
+      stArea:"Áreas", stVid:"Módulos", stIdi:"Idiomas",
+      vacio:"Aún no hay módulos en esta área.",
       error:"No se pudo cargar videos.json. Abre el sitio con un servidor local o en GitHub Pages.",
-      footer:'Hecho con código + diseño &middot; Publicado con GitHub Pages &middot; <a href="README.md">Cómo agregar videos</a> &middot; <a href="tools/generador-portadas.html">Generador de portadas</a>'},
+      footer:'Construido y diseñado por Luis Estevez.'},
   en:{brand:"Training Center", brandsub:"CORPORATE TRAINING",
       badge:"Training Portal", titulo:"Training by work area",
-      intro:"Select your area to see the video training modules. Content available in Spanish and English.",
-      areas:"Training areas", inicio:"Home", buscar:"Search a video...",
+      intro:"Select your area to see the training modules, or search across all of them. Content available in Spanish and English.",
+      areas:"Training areas", inicio:"Home", buscar:"Search a module...",
+      buscarHome:"Search all modules...", vacioSearch:"No modules match your search.",
       todos:"All", modulos:"modules", modulo:"module", ver:"View modules", tema:"Dark",
-      stArea:"Areas", stVid:"Videos", stIdi:"Languages",
-      vacio:"No videos in this area yet.",
+      stArea:"Areas", stVid:"Modules", stIdi:"Languages",
+      vacio:"No modules in this area yet.",
       error:"Could not load videos.json. Open the site with a local server or on GitHub Pages.",
-      footer:'Built with code + design &middot; Published with GitHub Pages &middot; <a href="README.md">How to add videos</a> &middot; <a href="tools/generador-portadas.html">Poster generator</a>'}
+      footer:'Built and designed by Luis Estevez.'}
 };
 
 /* ---------- Estado ---------- */
@@ -289,9 +291,40 @@ function renderInicio(){
         '<div class="stat"><b>2</b><span>'+u.stIdi+'</span></div>'+
       '</div>'+
     '</section>'+
-    '<div class="wrap"><div class="shead"><h2>'+u.areas+'</h2></div>'+
-    '<div class="areas">'+cards+'</div></div>';
+    '<div class="wrap">'+
+      '<div class="controls"><div class="search" style="max-width:none">'+IC.search+'<input id="buscarHome" type="search" placeholder="'+u.buscarHome+'" autocomplete="off"></div></div>'+
+      '<div id="homeAreasWrap"><div class="shead"><h2>'+u.areas+'</h2></div>'+
+      '<div class="areas">'+cards+'</div></div>'+
+      '<div class="grid" id="homeGrid" style="display:none"></div>'+
+    '</div>';
   document.querySelectorAll(".acard").forEach(b=>b.onclick=()=>{ irA(b.dataset.area); });
+  var _bh=$("buscarHome"); if(_bh) _bh.addEventListener("input", homeSearch);
+}
+
+function homeSearch(){
+  const u = UI[LANG];
+  const q = ($("buscarHome")?$("buscarHome").value:"").trim().toLowerCase();
+  const wrap = $("homeAreasWrap"), grid = $("homeGrid");
+  if(!wrap || !grid) return;
+  if(!q){ wrap.style.display=""; grid.style.display="none"; grid.innerHTML=""; return; }
+  wrap.style.display="none"; grid.style.display="";
+  const lista = VIDEOS.filter(v=>{
+    const a = AMAP[v.area];
+    const hay = (t(v.titulo)+" "+t(v.descripcion)+" "+t(v.categoria)+" "+(a?t(a.nombre):"")).toLowerCase();
+    return hay.includes(q);
+  });
+  if(!lista.length){ grid.innerHTML='<div class="vacio">'+u.vacioSearch+'</div>'; return; }
+  grid.innerHTML = lista.map(v=>{
+    const i = VIDEOS.indexOf(v);
+    const a = AMAP[v.area] || {color:"#888"};
+    return '<button class="card" data-i="'+i+'"><div class="thumb">'+
+      (v.poster?'<img src="'+v.poster+'" alt="" onerror="this.style.display=\'none\'">':'')+
+      (v.categoria?'<span class="tag" style="background:'+a.color+'">'+t(v.categoria)+'</span>':'')+
+      '<span class="play">'+IC.play+'</span>'+
+      (v.duracion?'<span class="dur">'+v.duracion+'</span>':'')+
+    '</div><div class="cbody"><h3>'+t(v.titulo)+'</h3><p>'+t(v.descripcion)+'</p></div></button>';
+  }).join("");
+  grid.querySelectorAll(".card").forEach(c=>c.onclick=()=>abrir(VIDEOS[c.dataset.i]));
 }
 
 function renderArea(){

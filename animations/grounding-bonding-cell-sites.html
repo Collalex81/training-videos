@@ -248,6 +248,31 @@ var STEPS = [
         '<p class="note">'+X("NEC accepts ≤ 25 Ω for a single made electrode; telecom best practice targets ≤ 5 Ω for reliable surge performance (R56 / industry). Verify by fall-of-potential test.","El NEC acepta ≤ 25 Ω para un solo electrodo; la mejor práctica telecom busca ≤ 5 Ω para un buen desempeño ante sobretensiones (R56 / industria). Verifica con prueba de caída de potencial.")+'</p>';
     }, i:function(){ var s=$("ohmS"); function u(){ var v=+s.value; $("ohmV").textContent=v+" Ω"; var m=$("ohmMsg"); if(v<=5){ m.className="note good"; m.innerHTML="<b>"+X("Excellent","Excelente")+"</b> — "+X("meets telecom target (≤ 5 Ω).","cumple la meta telecom (≤ 5 Ω)."); } else if(v<=25){ m.className="note warn"; m.innerHTML=X("Acceptable per NEC (≤ 25 Ω), but improve toward ≤ 5 Ω for a critical site.","Aceptable por NEC (≤ 25 Ω), pero mejora hacia ≤ 5 Ω para un sitio crítico."); } else { m.className="note bad"; m.innerHTML=X("Too high — add rods/radials or treatment.","Muy alta — agrega varillas/radiales o tratamiento."); } } s.oninput=u; u(); }
   },
+  /* 6b — interactive: current to earth */
+  { ico:ICO.ohm, t:["Interactive","Interactivo"], b:function(){
+      var dots=''; for(var i=0;i<6;i++){ dots+='<circle id="rd'+i+'" cx="160" cy="46" r="3.5" fill="#4ade80"/>'; }
+      var svg=''+
+      '<svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block" xmlns="http://www.w3.org/2000/svg">'+
+      '<rect width="320" height="180" fill="#071120"/>'+
+      '<rect x="140" y="28" width="40" height="16" rx="3" fill="#12233f" stroke="#4d8bff" stroke-width="1.5"/><text x="160" y="39" fill="#9db0d6" font-family="system-ui" font-size="8" text-anchor="middle">EQUIP</text>'+
+      '<line x1="160" y1="44" x2="160" y2="150" stroke="#24406e" stroke-width="4"/>'+
+      dots+
+      '<g transform="translate(160,152)" stroke="#4ade80" stroke-width="2.5"><line x1="-15" y1="0" x2="15" y2="0"/><line x1="-9" y1="5" x2="9" y2="5"/><line x1="-4" y1="10" x2="4" y2="10"/></g>'+
+      '<text id="rBig" x="250" y="88" fill="#67e8f9" font-family="ui-monospace,monospace" font-size="26" text-anchor="middle">5 Ω</text>'+
+      '<text x="250" y="106" fill="#8fb4ff" font-family="system-ui" font-size="9" text-anchor="middle">'+X("earth resistance","resistencia")+'</text>'+
+      '</svg>';
+      return tit("Interactive: current to earth","Interactivo: corriente a tierra")+
+        '<p class="lead">'+X("Set the earth resistance and watch the current flow to ground. Lower resistance means a faster drain and better surge protection.","Ajusta la resistencia a tierra y observa la corriente fluir al suelo. Menor resistencia = drenaje más rápido y mejor protección ante sobretensiones.")+'</p>'+
+        '<div class="illus" style="aspect-ratio:16/9;background:#071120">'+svg+'</div>'+
+        '<div class="row"><span class="lbl">'+X("Earth resistance","Resistencia a tierra")+'</span><input type="range" id="rS" min="1" max="30" value="5"><span class="val" id="rV"></span></div>'+
+        '<div class="note" id="rBand"></div>';
+    }, i:function(){ var gen=_gen; var s=$("rS"),val=$("rV"); var dots=[]; for(var i=0;i<6;i++){ dots.push(document.getElementById("rd"+i)); }
+        function band(){ var R=+s.value; val.textContent=R+" Ω"; var big=document.getElementById("rBig"); if(big)big.textContent=R+" Ω"; var b=$("rBand"); if(R<=5){ b.className="note good"; b.innerHTML="<b>≤ 5 Ω</b> — "+X("fast drain; surge devices perform best.","drenaje rápido; los supresores funcionan mejor."); } else if(R<=25){ b.className="note warn"; b.innerHTML=X("Acceptable (NEC ≤ 25 Ω) but slower — improve for critical sites.","Aceptable (NEC ≤ 25 Ω) pero más lento — mejora en sitios críticos."); } else { b.className="note bad"; b.innerHTML=X("Too high — add rods / radials / treatment.","Muy alta — agrega varillas / radiales / tratamiento."); } }
+        s.oninput=band; band();
+        var last=performance.now(), phase=0;
+        (function fr(now){ if(gen!==_gen)return; var R=+s.value; var dt=now-last; last=now; var speed=(30/R+0.5)*0.00022; phase=(phase+speed*dt)%1; var col=R<=5?"#4ade80":(R<=25?"#f59e0b":"#f87171"); for(var i=0;i<6;i++){ var f=(phase+i/6)%1; var y=46+f*104; var d=dots[i]; if(d){ d.setAttribute("cy",y); d.setAttribute("fill",col); d.setAttribute("opacity",(0.35+0.65*(1-f)).toFixed(2)); } } requestAnimationFrame(fr); })(performance.now());
+    }
+  },
   /* 7 */
   { ico:ICO.bus, t:["Bus bars","Barras de tierra"], b:function(){
       return tit("Internal ground bus bars","Barras internas de tierra")+
@@ -265,6 +290,37 @@ var STEPS = [
         '<p class="lead">'+X("Grounding, bonding and down conductors must run as short, straight and smooth as practicable, with the fewest bends — and bends should be sweeping, never sharp. Route conductors downward toward earth.","Los conductores de tierra, bonding y bajada deben ir tan cortos, rectos y suaves como sea posible, con los menos dobleces — y los dobleces deben ser amplios, nunca cerrados. Dirige los conductores hacia abajo, hacia la tierra.")+'</p>'+
         '<p class="note bad">'+X("Lightning is high-frequency: a sharp 90° bend adds impedance and can flash over. Use a large radius (R56 typically ≥ 8 in / 200 mm) and avoid loops.","El rayo es de alta frecuencia: un doblez cerrado de 90° agrega impedancia y puede saltar. Usa un radio amplio (R56 típico ≥ 8 in / 200 mm) y evita lazos.")+'</p>';
   }},
+  /* 8b — interactive lightning path */
+  { ico:ICO.bolt, t:["Interactive","Interactivo"], b:function(){
+      var svg=''+
+      '<svg id="gSvg" viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block" xmlns="http://www.w3.org/2000/svg">'+
+      '<rect width="320" height="180" fill="#071120"/>'+
+      '<rect x="0" y="150" width="320" height="30" fill="#0b1a30"/><line x1="0" y1="150" x2="320" y2="150" stroke="#24406e" stroke-width="1.5"/>'+
+      '<g fill="#2b4468"><ellipse cx="150" cy="14" rx="28" ry="10"/><ellipse cx="130" cy="18" rx="15" ry="8"/><ellipse cx="172" cy="18" rx="15" ry="8"/></g>'+
+      '<rect x="138" y="24" width="24" height="10" rx="2" fill="#12233f" stroke="#4d8bff" stroke-width="1.5"/>'+
+      '<path id="gPath" d="M150 34 L150 118 L214 118 L214 148" fill="none" stroke="#3a5478" stroke-width="3"/>'+
+      '<g transform="translate(214,150)" stroke="#4ade80" stroke-width="2"><line x1="-10" y1="0" x2="10" y2="0"/><line x1="-6" y1="4" x2="6" y2="4"/><line x1="-3" y1="8" x2="3" y2="8"/></g>'+
+      '<g id="gFlash" style="display:none"><path d="M150 108 L178 130 L168 134 L206 150" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linecap="round"/><text x="150" y="92" fill="#f87171" font-family="system-ui" font-size="10" font-weight="700">FLASHOVER</text></g>'+
+      '<circle id="gDot" cx="150" cy="34" r="0" fill="#67e8f9"/>'+
+      '<text id="gRes" x="306" y="168" fill="#8fb4ff" font-family="system-ui" font-size="9" text-anchor="end"></text>'+
+      '</svg>';
+      return tit("Interactive: the lightning path","Interactivo: el trayecto del rayo")+
+        '<p class="lead">'+X("Fire a strike and watch the current follow the ground conductor to earth. Switch the bend between a sharp 90° and a sweeping radius and see the difference.","Dispara una descarga y observa la corriente seguir el conductor de tierra hasta el suelo. Cambia el doblez entre 90° cerrado y radio amplio y ve la diferencia.")+'</p>'+
+        '<div class="illus" style="aspect-ratio:16/9;background:#071120">'+svg+'</div>'+
+        '<div class="row"><button class="btn" id="gStrike">⚡ '+X("Strike","Descarga")+'</button><button class="btn ghost" id="gBend"></button></div>'+
+        '<p class="note">'+X("A sharp bend adds impedance to the fast strike current, so it can flash over and jump off the conductor. A sweeping bend lets it flow to earth.","Un doblez cerrado agrega impedancia a la corriente rápida del rayo, por eso puede saltar (flashover) y salirse del conductor. Un doblez amplio la deja fluir a tierra.")+'</p>';
+    }, i:function(){ var gen=_gen; var path=$("gPath"),dot=$("gDot"),flash=$("gFlash"),res=$("gRes"),bS=$("gStrike"),bB=$("gBend"); var sharp=true;
+        var Ds="M150 34 L150 118 L214 118 L214 148", Dw="M150 34 L150 104 Q150 128 174 128 L214 128 L214 148";
+        function setBend(){ path.setAttribute("d", sharp?Ds:Dw); bB.textContent=X("Bend: ","Doblez: ")+(sharp?X("sharp 90°","cerrado 90°"):X("sweeping","amplio")); flash.style.display="none"; res.textContent=""; dot.setAttribute("r","0"); }
+        bB.onclick=function(){ sharp=!sharp; setBend(); };
+        bS.onclick=function(){ var len=path.getTotalLength(); flash.style.display="none"; res.textContent=""; dot.setAttribute("r","4.5"); var t0=performance.now();
+          (function fr(now){ if(gen!==_gen)return; var p=Math.min(1,(now-t0)/1200); var v=p*len; var pt=path.getPointAtLength(v); dot.setAttribute("cx",pt.x); dot.setAttribute("cy",pt.y);
+            if(sharp && v>=86){ dot.setAttribute("fill","#f87171"); if(flash.style.display==="none"){ flash.style.display=""; res.setAttribute("fill","#f87171"); res.textContent=X("Sharp bend → flashover ✗","Doblez cerrado → flashover ✗"); } }
+            else { dot.setAttribute("fill","#67e8f9"); }
+            if(p<1) requestAnimationFrame(fr); else { dot.setAttribute("r","0"); if(!sharp){ res.setAttribute("fill","#4ade80"); res.textContent=X("Smooth path → to earth ✓","Camino suave → a tierra ✓"); } } })(performance.now()); };
+        setBend();
+    }
+  },
   /* 9 */
   { ico:ICO.tower, t:["Tower & lines","Torre y líneas"], b:function(){
       return tit("Grounding the tower and lines","Aterrizar la torre y las líneas")+
@@ -374,6 +430,7 @@ var STEPS = [
   }}
 ];
 var cur=0;
+var _gen=0;
 
 function pintarChrome(){
   document.documentElement.lang=LANG;
@@ -387,6 +444,7 @@ function pintarChrome(){
   $("next").innerHTML=(cur>=STEPS.length-1?X("Restart","Reiniciar"):X("Next","Siguiente")+" ›");
 }
 function render(){
+  _gen++;
   pintarChrome();
   var s=STEPS[cur];
   $("card").innerHTML=s.b();
