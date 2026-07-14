@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" font-family="system-ui,Segoe UI,Roboto,Arial,sans-serif">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b2e59"/><stop offset="0.55" stop-color="#12356b"/><stop offset="1" stop-color="#1e3a8a"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg2)"/>
+  <circle cx="700" cy="70" r="150" fill="#4d8bff" opacity="0.18"/>
+  <text x="48" y="70" fill="#bcd0f4" font-size="15" font-weight="700" letter-spacing="3">TELECOM · ERICSSON</text>
+  <!-- signal chain -->
+  <g transform="translate(48,104)">
+    <rect x="0" y="30" width="90" height="48" rx="8" fill="#0e2647" stroke="#4d8bff"/><text x="45" y="59" fill="#cfe0ff" font-size="13" text-anchor="middle" font-weight="700">BB</text>
+    <line x1="90" y1="54" x2="150" y2="54" stroke="#4ade80" stroke-width="3"/>
+    <rect x="150" y="30" width="70" height="48" rx="8" fill="#0e2647" stroke="#4d8bff"/><text x="185" y="59" fill="#cfe0ff" font-size="12" text-anchor="middle" font-weight="700">SFP</text>
+    <line x1="220" y1="54" x2="290" y2="54" stroke="#f87171" stroke-width="3" stroke-dasharray="6 4"/>
+    <text x="255" y="44" fill="#f87171" font-size="11" text-anchor="middle" font-family="monospace">NOK</text>
+    <rect x="290" y="30" width="90" height="48" rx="8" fill="#0e2647" stroke="#4d8bff"/><text x="335" y="59" fill="#cfe0ff" font-size="13" text-anchor="middle" font-weight="700">RRU</text>
+    <line x1="380" y1="54" x2="440" y2="54" stroke="#fbbf24" stroke-width="3"/>
+    <path d="M440 30 l40 24 l-40 24 z" fill="#0e2647" stroke="#4d8bff"/>
+    <text x="470" y="59" fill="#cfe0ff" font-size="12" font-weight="700">ANT</text>
+    <text x="0" y="108" fill="#9db0d6" font-size="13" font-family="monospace">RfPort=A returnLoss 23.3 dB   RfPort=H 16.1 dB</text>
+    <text x="0" y="130" fill="#9db0d6" font-size="13" font-family="monospace">CPRI: 0 OK · 5 NOK · 1 NT</text>
+  </g>
+  <text x="48" y="346" fill="#ffffff" font-size="34" font-weight="800">Salud de RF y transporte</text>
+  <text x="48" y="384" fill="#eaf1ff" font-size="21" font-weight="700">2 · SFP/CPRI · VSWR · RRU</text>
+  <text x="48" y="414" fill="#bcd0f4" font-size="15">RF &amp; transport health · light levels, VSWR</text>
+</svg>

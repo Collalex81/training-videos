@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" font-family="system-ui,Segoe UI,Roboto,Arial,sans-serif">
+  <defs>
+    <linearGradient id="bg3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b2e59"/><stop offset="0.55" stop-color="#12356b"/><stop offset="1" stop-color="#1e3a8a"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg3)"/>
+  <circle cx="700" cy="70" r="150" fill="#4d8bff" opacity="0.18"/>
+  <text x="48" y="70" fill="#bcd0f4" font-size="15" font-weight="700" letter-spacing="3">TELECOM · ERICSSON</text>
+  <!-- mmwave beams -->
+  <g transform="translate(70,110)">
+    <rect x="0" y="40" width="46" height="120" rx="6" fill="#0e2647" stroke="#4d8bff"/>
+    <text x="23" y="180" fill="#cfe0ff" font-size="11" text-anchor="middle">gNB</text>
+    <g stroke="#4ade80" stroke-width="2.5" opacity="0.9" fill="none">
+      <path d="M46 70 L230 40"/><path d="M46 90 L250 92"/><path d="M46 110 L230 150"/>
+    </g>
+    <text x="150" y="30" fill="#9db0d6" font-size="12" font-family="monospace">n261 · 27.65 GHz · 100 MHz</text>
+    <circle cx="250" cy="92" r="6" fill="#fbbf24"/>
+    <text x="70" y="200" fill="#9db0d6" font-size="13" font-family="monospace">RRC 6/6 · ENDC 3/3 · 0 alarms</text>
+  </g>
+  <text x="48" y="346" fill="#ffffff" font-size="34" font-weight="800">mmWave 5G NR</text>
+  <text x="48" y="384" fill="#eaf1ff" font-size="21" font-weight="700">3 · Sincronización y KPIs</text>
+  <text x="48" y="414" fill="#bcd0f4" font-size="15">mmWave, sync/GNSS, ENDC &amp; KPIs</text>
+</svg>

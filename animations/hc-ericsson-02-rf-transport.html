@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HC Ericsson 2 — RF &amp; Transport Health / RF y transporte</title>
+<!--
+  TELECOM (azul) — Leer un Health Check de nodo RAN Ericsson. Módulo 2 de 3.
+  TELECOM (blue) — Reading an Ericsson RAN node Health Check report. Module 2 of 3.
+  Alcance / Scope: RADIO INFO (RRU inventory), RiLink/CPRI fronthaul, LIGHT LEVEL INFO (SFP optics),
+  VSWR / return loss, antennas / MIMO branches, TX power, 5G uplink interference.
+  Fuentes / Sources: Ericsson RAN CPI (radio / RiLink / VSWR supervision descriptions), general RF/VSWR theory,
+  IEC 61300-3-35 fiber inspection practice, SFP/CPRI optical link concepts. Datos de ejemplo / sample excerpts.
+  Motor reutilizado de / Engine reused from: animations/grounding-bonding-cell-sites.html. Bilingüe EN/ES (EN por defecto).
+-->
+<style>
+  :root{
+    --pg:#f3f6fc; --card:#ffffff; --ink:#0c1c34; --sub:#51618a; --line:#dde5f3;
+    --bar:#0b2e59; --accent:#2563EB; --tint:rgba(37,99,235,.10);
+    --ok:#15803D; --okt:rgba(21,128,61,.10); --bad:#dc2626; --badt:rgba(220,38,38,.10);
+    --amber:#b45309; --ambt:rgba(180,83,9,.12); --radius:14px;
+    --shadow:0 1px 2px rgba(12,28,52,.05),0 10px 26px rgba(12,28,52,.08);
+  }
+  html[data-theme="dark"]{
+    --pg:#0a1120; --card:#141d30; --ink:#e9f0ff; --sub:#9db0d6; --line:#243149;
+    --bar:#0a1526; --accent:#4d8bff; --tint:rgba(77,139,255,.14);
+    --ok:#4ade80; --okt:rgba(74,222,128,.14); --bad:#f87171; --badt:rgba(248,113,113,.14);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  .shell{max-width:940px;margin:0 auto;padding:14px 16px 34px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0 8px;box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:600;display:block;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+  .prog{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:6px 0 4px}
+  .prog>i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);gap:8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;min-height:360px}
+  .step-ico{width:44px;height:44px;border-radius:12px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+  h1{font-size:clamp(20px,3.3vw,26px);margin:0 0 8px;font-weight:700;line-height:1.2}
+  h2{font-size:15.5px;margin:16px 0 8px;font-weight:600}
+  p{margin:0 0 12px}
+  .lead{color:var(--sub);font-size:15px}
+  ul,ol{margin:6px 0 12px;padding-left:20px}
+  li{margin:6px 0}
+  .pill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:var(--tint);padding:5px 11px;border-radius:999px;margin-bottom:10px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:8px 0}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin:8px 0}
+  .box{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:13px}
+  .box h3{margin:0 0 6px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px}
+  .box p{margin:0;font-size:12.5px;color:var(--sub)}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:var(--accent);color:#fff;font-weight:800;font-size:14px;flex:none}
+  .stat3{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
+  .stat3 .s{flex:1;min-width:120px;background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center}
+  .stat3 .s b{display:block;font-size:24px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+  .stat3 .s span{font-size:12px;color:var(--sub)}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;min-height:42px;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;flex:1}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line);border:0;cursor:pointer;padding:0}
+  .dot.on{background:var(--accent);transform:scale(1.3)}
+  .note{font-size:13px;color:var(--sub);border-left:3px solid var(--accent);background:var(--tint);padding:9px 12px;margin:12px 0;border-radius:0 8px 8px 0}
+  .warn{border-left-color:var(--amber);color:var(--amber);background:var(--ambt)}
+  .bad{border-left-color:var(--bad);color:var(--bad);background:var(--badt)}
+  .good{border-left-color:var(--ok);color:var(--ink);background:var(--okt)}
+  .good b{color:var(--ok)}
+  .illus{position:relative;aspect-ratio:16/10;background:#071120;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .illus svg{width:100%;height:100%}
+  .mcap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);margin:8px 2px 2px;justify-content:center}
+  .steps .st{display:flex;gap:12px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:7px 0}
+  .steps .st .txt b{font-size:13.5px}.steps .st .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .chk{display:flex;gap:11px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:8px 0;cursor:pointer}
+  .chk .bx{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;margin-top:1px}
+  .chk.done .bx{background:var(--ok);border-color:var(--ok)}
+  .chk.done .txt b{text-decoration:line-through;opacity:.7}
+  .chk .txt b{font-size:13.5px}.chk .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .row{display:flex;align-items:center;gap:12px;margin:10px 0;flex-wrap:wrap}
+  .row span.lbl{min-width:120px;font-size:13px;color:var(--sub)}
+  input[type=range]{flex:1;accent-color:var(--accent)}
+  .val{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;min-width:80px;text-align:right}
+  .q{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:12px}
+  .q h3{margin:0 0 10px;font-size:14px}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:11px 14px;border-radius:10px;margin:7px 0;cursor:pointer;font-size:14px;font-family:inherit}
+  .opt.correct{border-color:var(--ok);background:var(--okt);color:var(--ok);font-weight:600}
+  .opt.wrong{border-color:var(--bad);background:var(--badt);color:var(--bad)}
+  .opt:disabled{cursor:default}
+  .score{font-size:16px;font-weight:700;text-align:center;padding:10px}
+  .verdict{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;font-weight:700;font-size:15px}
+  .verdict.ok{background:var(--okt);color:var(--ok)}
+  .verdict.no{background:var(--badt);color:var(--bad)}
+  .ref{font-size:12.5px;color:var(--sub);border-bottom:1px solid var(--line);padding:8px 0}
+  .ref b{color:var(--ink)}
+  /* monospace report console */
+  .console{background:#0a0f1c;border:1px solid #21304d;border-radius:11px;margin:12px 0;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)}
+  .console .bar{display:flex;align-items:center;gap:6px;padding:8px 12px;background:#0d1526;border-bottom:1px solid #21304d}
+  .console .bar i{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .console .bar .t{margin-left:8px;font-size:11px;color:#7891bd;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.02em}
+  .console pre{margin:0;padding:12px 14px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.65;color:#c3d0e6;overflow-x:auto;white-space:pre}
+  .console .k{color:#7dd3fc}
+  .console .ok{color:#4ade80;font-weight:600}
+  .console .bad{color:#f87171;font-weight:600}
+  .console .warn{color:#fbbf24;font-weight:600}
+  .console .dim{color:#64748b}
+  .console .hl{color:#f1f5ff;font-weight:600}
+  .console .mag{color:#c084fc}
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+  .legend span{font-size:11.5px;color:var(--sub);display:inline-flex;align-items:center;gap:5px;background:var(--pg);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+  .legend b{font-family:ui-monospace,monospace}
+  .tag{display:inline-block;font-family:ui-monospace,monospace;font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px}
+  .tag.g{color:#15803D;background:rgba(21,128,61,.12)}
+  .tag.r{color:#dc2626;background:rgba(220,38,38,.12)}
+  .tag.a{color:#b45309;background:rgba(180,83,9,.14)}
+  .tag.b{color:#2563EB;background:rgba(37,99,235,.12)}
+  @media(max-width:520px){ .card{padding:15px} .shell{padding:12px 12px 28px} .brand small{display:none} .console pre{font-size:11px} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+  <div class="top">
+    <div class="brand">
+      <span class="logo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1.5" fill="currentColor" stroke="none"/></svg></span>
+      <div><b id="brand"></b><small id="brandsub"></small></div>
+    </div>
+    <div class="tools">
+      <a class="tbtn" id="home" href="../index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span id="homeTxt"></span></a>
+      <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+      <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+    </div>
+  </div>
+  <div class="prog"><i id="progbar"></i></div>
+  <div class="meta"><span id="mStep"></span><span id="mDur"></span></div>
+  </div>
+  <div class="card" id="card"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev"></button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="next"></button>
+  </div>
+</div>
+
+<script>
+var CONFIG = {
+  brand:   ["Health Check — RF &amp; Transport","Health Check — RF y transporte"],
+  subtitle:["Ericsson RAN · Module 2 of 3","Ericsson RAN · Módulo 2 de 3"],
+  duration:"≈ 18 min",
+  defaultLang:"en"
+};
+var params=new URLSearchParams(location.search);
+var LANG=params.get("lang")?(params.get("lang").toLowerCase().startsWith("es")?"es":"en"):CONFIG.defaultLang;
+function X(en,es){ return LANG==="es"?es:en; }
+function $(id){ return document.getElementById(id); }
+function tit(en,es){ return '<div class="step-ico">'+STEPS[cur].ico+'</div><h1>'+X(en,es)+'</h1>'; }
+var ICO={
+  play:'<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  radio:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M7 8 17 3M8 14h.01M12 12v4"/><circle cx="16.5" cy="14.5" r="1.5"/></svg>',
+  band:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h3l2-6 4 14 3-9 2 4h6"/></svg>',
+  link:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7H7a5 5 0 0 0 0 10h2M15 7h2a5 5 0 0 1 0 10h-2M8 12h8"/></svg>',
+  fiber:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6c8 0 8 12 16 12M4 12h6"/><circle cx="19" cy="18" r="2.4"/></svg>',
+  light:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M17 7l2.1-2.1M4.9 19.1 7 17"/></svg>',
+  wave:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c2 0 2-7 4-7s2 14 4 14 2-14 4-14 2 7 4 7"/></svg>',
+  ant:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V8M8 4l4 4 4-4M6 2l6 6 6-6"/></svg>',
+  power:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+  noise:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h2l2-5 3 14 3-18 2 9 2-4h4"/></svg>',
+  search:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>',
+  warn:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.6 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+  check:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  clean:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 3l2 2-9 9-3 1 1-3zM11 6l-7 7v4h4l7-7"/></svg>',
+  quiz:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.1 9a3 3 0 1 1 4.2 2.7c-.8.4-1.3 1-1.3 2M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>',
+  book:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h9a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-1a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h2z"/></svg>',
+  sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+  img:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>'
+};
+function bx(icon,tEn,tEs,dEn,dEs){ return '<div class="box"><h3>'+icon+X(tEn,tEs)+'</h3><p>'+X(dEn,dEs)+'</p></div>'; }
+/* console block: title + preformatted HTML body (already colored) */
+function con(titleEn,titleEs,body){
+  return '<div class="console"><div class="bar"><i style="background:#f87171"></i><i style="background:#fbbf24"></i><i style="background:#4ade80"></i>'+
+    '<span class="t">'+X(titleEn,titleEs)+'</span></div><pre>'+body+'</pre></div>';
+}
+/* fronthaul diagram: BB -> SFP -> fiber -> RRU -> antenna */
+function fhSVG(){ return ''+
+  '<svg viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">'+
+  '<rect width="360" height="200" fill="#071120"/>'+
+  /* baseband */
+  '<rect x="20" y="120" width="70" height="50" rx="5" fill="#12233f" stroke="#4d8bff" stroke-width="1.5"/>'+
+  '<text x="55" y="112" fill="#9db0d6" font-family="system-ui" font-size="9" text-anchor="middle">BASEBAND (BB)</text>'+
+  '<rect x="80" y="132" width="12" height="10" rx="2" fill="#0a0f1c" stroke="#67e8f9" stroke-width="1.2"/>'+
+  '<rect x="80" y="148" width="12" height="10" rx="2" fill="#0a0f1c" stroke="#67e8f9" stroke-width="1.2"/>'+
+  '<text x="55" y="150" fill="#67e8f9" font-family="ui-monospace,monospace" font-size="8" text-anchor="middle">SFP</text>'+
+  /* fiber up to RRU */
+  '<path d="M92 137 C160 137 150 55 230 55" stroke="#4ade80" stroke-width="2" fill="none"/>'+
+  '<path d="M92 153 C170 153 190 150 230 150" stroke="#f87171" stroke-width="2" fill="none" stroke-dasharray="4 3"/>'+
+  '<text x="150" y="42" fill="#4ade80" font-family="system-ui" font-size="8">CPRI / RiLink (fiber)</text>'+
+  /* RRU on tower */
+  '<rect x="230" y="40" width="60" height="34" rx="5" fill="#12233f" stroke="#facc15" stroke-width="1.5"/>'+
+  '<text x="260" y="60" fill="#facc15" font-family="ui-monospace,monospace" font-size="9" text-anchor="middle">RRU</text>'+
+  '<rect x="286" y="48" width="10" height="8" rx="2" fill="#0a0f1c" stroke="#67e8f9" stroke-width="1"/>'+
+  /* RF jumper to antenna */
+  '<path d="M290 66 C320 70 320 110 322 140" stroke="#e2e8f0" stroke-width="2" fill="none"/>'+
+  '<text x="298" y="92" fill="#cbd5e1" font-family="system-ui" font-size="8">RF (VSWR)</text>'+
+  '<path d="M312 140 L332 140 L322 168 Z" fill="#38507a" stroke="#8fb4ff" stroke-width="1.2"/>'+
+  '<text x="322" y="184" fill="#8fb4ff" font-family="system-ui" font-size="8" text-anchor="middle">ANT</text>'+
+  '<rect x="230" y="150" width="120" height="1" fill="none"/>'+
+  '</svg>'; }
+
+/* ---- scenario builder (excerpt -> question -> feedback -> retry/next) ---- */
+function scen(cfg){
+  return { ico:cfg.ico, t:cfg.t, b:function(){
+      var opts=cfg.opts.map(function(o,j){ return '<button class="opt" data-o="'+j+'">'+X(o.en,o.es)+'</button>'; }).join("");
+      return tit(cfg.tEn,cfg.tEs)+
+        '<span class="pill">'+X("Diagnosis scenario","Escenario de diagnóstico")+'</span>'+
+        '<p class="lead">'+X(cfg.pEn,cfg.pEs)+'</p>'+
+        cfg.excerpt()+
+        '<div class="q"><h3>'+X(cfg.qEn,cfg.qEs)+'</h3>'+opts+'</div>'+
+        '<div id="fb" class="note" style="display:none"></div>'+
+        '<div class="row" id="scRow" style="display:none;justify-content:flex-end">'+
+          '<button class="btn ghost" id="retry"></button>'+
+          '<button class="btn" id="goNext"></button>'+
+        '</div>';
+    }, i:function(){
+      var answered=false;
+      document.querySelectorAll(".opt").forEach(function(b){
+        b.onclick=function(){ if(answered)return; answered=true; var j=+b.dataset.o; var o=cfg.opts[j];
+          document.querySelectorAll(".opt").forEach(function(x,k){ x.disabled=true; if(cfg.opts[k].correct)x.classList.add("correct"); });
+          if(!o.correct)b.classList.add("wrong");
+          var fb=$("fb"); fb.style.display="block"; fb.className="note "+(o.correct?"good":"bad");
+          fb.innerHTML="<b>"+X(o.correct?"Correct.":"Not quite.",o.correct?"Correcto.":"Casi.")+"</b> "+X(o.fbEn,o.fbEs);
+          $("scRow").style.display="flex";
+        };
+      });
+      $("retry").textContent=X("↺ Try again","↺ Reintentar");
+      $("retry").onclick=function(){ render(); };
+      $("goNext").textContent=X("Next ›","Siguiente ›");
+      $("goNext").onclick=function(){ $("next").click(); };
+    }};
+}
+
+var STEPS = [
+  /* 1 — Overview */
+  { ico:ICO.play, t:["Overview","Introducción"], b:function(){
+      return tit("Reading the RF &amp; transport section","Leer la sección de RF y transporte")+
+        '<span class="pill">'+X("Module 2 of 3","Módulo 2 de 3")+'</span>'+
+        '<p class="lead">'+X("A node Health Check report is long, but the RF &amp; transport part tells you whether the radios are alive, whether the fronthaul fiber is healthy, and whether the antenna paths are good. This module teaches you to READ those excerpts and separate an OPTICS problem from an ANTENNA problem from an OFF radio.","El reporte de Health Check de un nodo es largo, pero la parte de RF y transporte te dice si los radios están vivos, si la fibra de fronthaul está sana y si los caminos de antena están bien. Este módulo te enseña a LEER esos extractos y separar un problema de ÓPTICA de uno de ANTENA de un radio APAGADO.")+'</p>'+
+        '<div class="illus">'+fhSVG()+'</div>'+
+        '<p class="mcap">'+ICO.img+' '+X("Signal chain: Baseband → SFP → CPRI fiber (RiLink) → RRU → RF jumper → antenna.","Cadena: Banda base → SFP → fibra CPRI (RiLink) → RRU → jumper RF → antena.")+'</p>'+
+        '<p class="note">'+X("You are reading, not configuring. Your job is to spot what is wrong and take the correct FIRST field action — or correctly decide there is nothing to chase.","Estás leyendo, no configurando. Tu trabajo es detectar qué está mal y tomar la PRIMERA acción correcta en campo — o decidir con criterio que no hay nada que perseguir.")+'</p>';
+  }},
+  /* 2 — Radio Info inventory */
+  { ico:ICO.radio, t:["Radio Info","Radio Info"], b:function(){
+      return tit("RADIO INFO — the RRU inventory","RADIO INFO — inventario de RRU")+
+        '<p class="lead">'+X("This block lists every FieldReplaceableUnit (RRU). Read left to right: administrativeState, operationalState, productName, then the numbers that identify the unit.","Este bloque lista cada FieldReplaceableUnit (RRU). Lee de izquierda a derecha: administrativeState, operationalState, productName, y luego los números que identifican la unidad.")+'</p>'+
+        con("HealthCheck :: RADIO INFO","HealthCheck :: RADIO INFO",
+          '<span class="dim">FieldReplaceableUnit  admState        opState         productName        productNumber  serialNo   prodDate</span>\n'+
+          'RRU-12                <span class="ok">1(UNLOCKED)</span>     <span class="ok">1(ENABLED)</span>      <span class="hl">Radio 8843 B2</span>      KRD901160/11   D82xxxxx   2021-06\n'+
+          'RRU-19                <span class="ok">1(UNLOCKED)</span>     <span class="ok">1(ENABLED)</span>      <span class="hl">Radio 2205 B46</span>     KRC161711/1    F17xxxxx   2022-03\n'+
+          'RRU-49                <span class="bad">0(LOCKED)</span>       <span class="bad">0(DISABLED)</span>     <span class="hl">Radio 2205 B46</span>     KRC161711/1    F17xxxxx   2022-03\n'+
+          'RRU-73                <span class="ok">1(UNLOCKED)</span>     <span class="ok">1(ENABLED)</span>      <span class="hl">Radio 4408 B48</span>     KRD901161/11   H90xxxxx   2023-01\n'+
+          '<span class="dim">Total: 6 radios</span>')+
+        '<div class="grid2">'+
+          bx(ICO.check,"administrativeState","administrativeState","What the operator WANTS: 1(UNLOCKED) = in service; 0(LOCKED) = intentionally taken out of service.","Lo que el operador QUIERE: 1(UNLOCKED) = en servicio; 0(LOCKED) = fuera de servicio a propósito.")+
+          bx(ICO.radio,"operationalState","operationalState","What the unit is ACTUALLY doing: 1(ENABLED) = working; 0(DISABLED) = not working / down.","Lo que la unidad HACE realmente: 1(ENABLED) = funcionando; 0(DISABLED) = caída.")+
+        '</div>'+
+        '<p class="note bad">'+X("Spot RRU-49: LOCKED + DISABLED. It is deliberately off. Remember this unit — its \"faults\" on later pages are expected, not real problems.","Fíjate en RRU-49: LOCKED + DISABLED. Está apagado a propósito. Recuerda esta unidad — sus \"fallas\" en páginas posteriores son esperadas, no problemas reales.")+'</p>';
+  }},
+  /* 3 — reading productName / band */
+  { ico:ICO.band, t:["Model &amp; band","Modelo y banda"], b:function(){
+      return tit("Reading model and band from productName","Leer modelo y banda en productName")+
+        '<p class="lead">'+X("The productName tells you the radio model and the frequency band. \"B\" = band number (3GPP). Knowing the band tells you what the radio is FOR and which antenna path it feeds.","El productName te dice el modelo del radio y la banda de frecuencia. \"B\" = número de banda (3GPP). Saber la banda te dice para QUÉ sirve el radio y qué camino de antena alimenta.")+'</p>'+
+        con("Decode :: productName","Decodificar :: productName",
+          '<span class="hl">Radio 8843 B2</span>   -> <span class="k">Radio 8843</span>, band <span class="k">B2</span>  <span class="dim">(PCS 1900, low/mid-band FDD; often paired w/ B66)</span>\n'+
+          '<span class="hl">Radio 2205 B46</span>  -> <span class="k">Radio 2205</span>, band <span class="k">B46</span> <span class="dim">(5 GHz LAA, unlicensed carrier aggregation)</span>\n'+
+          '<span class="hl">Radio 4408 B48</span>  -> <span class="k">Radio 4408</span>, band <span class="k">B48</span> <span class="dim">(3.5 GHz CBRS, TDD)</span>')+
+        '<div class="grid3">'+
+          bx(ICO.band,"B2 / B66","B2 / B66","Low/mid FDD coverage &amp; capacity layer.","Capa de cobertura y capacidad FDD baja/media.")+
+          bx(ICO.band,"B46 (LAA)","B46 (LAA)","5 GHz unlicensed, added for capacity.","5 GHz sin licencia, agregada por capacidad.")+
+          bx(ICO.band,"B48 (CBRS)","B48 (CBRS)","3.5 GHz TDD shared spectrum.","3.5 GHz TDD, espectro compartido.")+
+        '</div>'+
+        '<p class="note">'+X("Two RRUs can share the same productName (RRU-19 and RRU-49 are both Radio 2205 B46). Use the FieldReplaceableUnit ID, not just the model name, to know WHICH physical unit you are looking at.","Dos RRU pueden compartir el mismo productName (RRU-19 y RRU-49 son ambos Radio 2205 B46). Usa el ID de FieldReplaceableUnit, no solo el nombre del modelo, para saber CUÁL unidad física estás viendo.")+'</p>';
+  }},
+  /* 4 — RiLink / CPRI fronthaul */
+  { ico:ICO.link, t:["RiLink / CPRI","RiLink / CPRI"], b:function(){
+      return tit("Fronthaul: RiLink &amp; CPRI links","Fronthaul: enlaces RiLink y CPRI")+
+        '<p class="lead">'+X("A RiLink is the fronthaul (CPRI) connection between a Baseband port and an RRU port. Read linkRate, operationalState, and the riPortRef mapping that ties a BB port to a radio port.","Un RiLink es la conexión de fronthaul (CPRI) entre un puerto de banda base y un puerto de RRU. Lee linkRate, operationalState y el mapeo riPortRef que une un puerto BB con un puerto de radio.")+'</p>'+
+        con("HealthCheck :: RiLink","HealthCheck :: RiLink",
+          '<span class="dim">RiLink  linkRate   opState        riPortRef1 (BB)      riPortRef2 (RRU)</span>\n'+
+          'RiLink=1  <span class="ok">10100</span>    <span class="ok">1(ENABLED)</span>     BB-1,RiPort=<span class="k">A</span>   <->   RRU-12,RiPort=<span class="k">DATA_1</span>\n'+
+          'RiLink=2  <span class="warn">9800</span>     <span class="ok">1(ENABLED)</span>     BB-1,RiPort=<span class="k">B</span>   <->   RRU-19,RiPort=<span class="k">DATA_1</span>\n'+
+          'RiLink=5  <span class="bad">0</span>        <span class="bad">0(DISABLED)</span>    BB-1,RiPort=<span class="k">E</span>   <->   RRU-49,RiPort=<span class="k">DATA_1</span>\n'+
+          '<span class="dim">Total: 6 RiLinks</span>')+
+        '<div class="grid3">'+
+          bx(ICO.link,"linkRate ≈ 10100","linkRate ≈ 10100","CPRI running at ~10.1 Gbit/s — full negotiated rate. Good.","CPRI a ~10.1 Gbit/s — tasa negociada completa. Bien.")+
+          bx(ICO.link,"linkRate 9800","linkRate 9800","A lower CPRI rate. Valid, but note it — could be a lower option or a negotiated-down link.","Tasa CPRI menor. Válida, pero anótala — puede ser una opción menor o un enlace negociado a la baja.")+
+          bx(ICO.link,"linkRate 0","linkRate 0","No link is up. Combined with DISABLED = fronthaul DOWN to that RRU.","Sin enlace. Junto con DISABLED = fronthaul CAÍDO hacia esa RRU.")+
+        '</div>'+
+        '<p class="note bad">'+X("RiLink=5 is rate 0 and DISABLED to RRU-49 — the same radio that was LOCKED/DISABLED in the inventory. The fronthaul to RRU-49 is down. That is the through-line to watch.","RiLink=5 está en tasa 0 y DISABLED hacia RRU-49 — el mismo radio que estaba LOCKED/DISABLED en el inventario. El fronthaul a RRU-49 está caído. Ese es el hilo conductor a vigilar.")+'</p>';
+  }},
+  /* 5 — Light level info + status codes */
+  { ico:ICO.light, t:["Light Level","Nivel de luz"], b:function(){
+      return tit("LIGHT LEVEL INFO — SFP optics","LIGHT LEVEL INFO — óptica SFP")+
+        '<p class="lead">'+X("This is the optical health of the CPRI/fronthaul SFPs — the actual light on the fiber. Read the summary line first, then the per-link status codes.","Es la salud óptica de los SFP de CPRI/fronthaul — la luz real en la fibra. Lee primero la línea de resumen, luego los códigos de estado por enlace.")+'</p>'+
+        con("HealthCheck :: LIGHT LEVEL INFO","HealthCheck :: LIGHT LEVEL INFO",
+          '<span class="hl">Total: 6 CPRI links (0 OK, 0 OKW, <span class="bad">5 NOK</span>, <span class="warn">1 NT</span>)</span>\n'+
+          '<span class="dim">port   unit      status</span>\n'+
+          'O101 D1  RRU-12   <span class="bad">NOK</span>  <span class="dim">(low Rx light / fault)</span>\n'+
+          'O102 D1  RRU-19   <span class="bad">NOK</span>\n'+
+          'O103 D1  RRU-32   <span class="bad">NOK</span>\n'+
+          'O104 D1  RRU-73   <span class="bad">NOK</span>\n'+
+          'O105 D1  (spare)  <span class="bad">NOK</span>\n'+
+          'O106 D1  RRU-49   <span class="warn">NT</span>   <span class="dim">(locked unit — nothing measured)</span>')+
+        '<div class="legend">'+
+          '<span><b class="tag g">OK</b> '+X("good light level","nivel de luz bueno")+'</span>'+
+          '<span><b class="tag a">OKW</b> '+X("OK with warning (marginal)","OK con advertencia (marginal)")+'</span>'+
+          '<span><b class="tag r">NOK</b> '+X("not OK / faulted","no OK / con falla")+'</span>'+
+          '<span><b class="tag b">NT</b> '+X("not tested / not connected","no probado / sin conexión")+'</span>'+
+        '</div>'+
+        '<p class="note bad">'+X("5 NOK is a lot of faulted optics at once — that pattern usually points to a common cause (a pulled/dirty trunk, a bad BB port/SFP, or a report taken while the sector was down), not five separate coincidences.","5 NOK es mucha óptica fallada a la vez — ese patrón suele apuntar a una causa común (una troncal desconectada/sucia, un puerto/SFP de BB malo, o un reporte tomado con el sector caído), no cinco coincidencias separadas.")+'</p>';
+  }},
+  /* 6 — causes of NOK + fiber hygiene */
+  { ico:ICO.clean, t:["Low light causes","Causas de luz baja"], b:function(){
+      return tit("Why an SFP link goes NOK","Por qué un enlace SFP queda NOK")+
+        '<p class="lead">'+X("Low or missing light on the CPRI/SFP is almost always a physical layer problem. Work the cheap, common causes first.","La luz baja o ausente en CPRI/SFP casi siempre es un problema de capa física. Ataca primero las causas baratas y comunes.")+'</p>'+
+        '<div class="grid2">'+
+          bx(ICO.fiber,"Dirty / damaged fiber","Fibra sucia / dañada","A single speck on an LC endface scatters light. The #1 cause of low Rx.","Una sola mota en la cara LC dispersa la luz. Causa #1 de Rx bajo.")+
+          bx(ICO.warn,"Unseated / bent fiber","Fibra floja / doblada","Not fully clicked in, or a macro-bend past the min radius.","No conectada a fondo, o un macro-doblez pasando el radio mínimo.")+
+          bx(ICO.light,"Wrong / failed SFP","SFP incorrecto / fallado","Wrong wavelength or reach, or a dead transceiver.","Longitud de onda o alcance incorrectos, o un transceptor muerto.")+
+          bx(ICO.link,"TX/RX swapped","TX/RX invertidos","Duplex fiber reversed — receiver sees no light.","Fibra dúplex invertida — el receptor no ve luz.")+
+        '</div>'+
+        '<p class="note good"><b>'+X("Fiber hygiene: Inspect – Clean – Inspect.","Higiene de fibra: Inspeccionar – Limpiar – Inspeccionar.")+'</b> '+X("Scope the LC connector, clean it if dirty, scope again to confirm, then reseat. Check that the SFP is fully latched. Never guess a fiber is clean.","Inspecciona con microscopio el conector LC, límpialo si está sucio, vuelve a inspeccionar para confirmar y reconecta. Verifica que el SFP esté bien enganchado. Nunca supongas que una fibra está limpia.")+'</p>'+
+        '<p class="note warn">'+X("A LOCKED radio shows NT (not NOK): nothing is measured because the unit is off. Do not \"clean\" your way toward an NT link — fix the lock/fronthaul first.","Un radio LOCKED muestra NT (no NOK): no se mide nada porque la unidad está apagada. No intentes \"limpiar\" un enlace NT — primero resuelve el bloqueo/fronthaul.")+'</p>';
+  }},
+  /* 7 — VSWR / return loss */
+  { ico:ICO.wave, t:["VSWR / return loss","VSWR / return loss"], b:function(){
+      return tit("VSWR INFO — antenna &amp; feeder health","VSWR INFO — salud de antena y feeder")+
+        '<p class="lead">'+X("VSWR supervision watches the RF path (jumper, connectors, feeder, antenna) for reflected power. The report gives returnLoss in dB per RfPort. KEY RULE: higher dB is better.","La supervisión de VSWR vigila el camino RF (jumper, conectores, feeder, antena) buscando potencia reflejada. El reporte da returnLoss en dB por RfPort. REGLA CLAVE: más dB es mejor.")+'</p>'+
+        con("HealthCheck :: VSWR INFO","HealthCheck :: VSWR INFO",
+          '<span class="dim">MO ...RfPort=X                 returnLoss   supervActive  sensitivity</span>\n'+
+          'RRU-12 RfPort=A..H  <span class="ok">23.3 25.4 26.3</span> <span class="warn">19.5</span> <span class="ok">24.8 31.5 35.0 27.6</span>  <span class="k">true</span>   80\n'+
+          'RRU-19 RfPort=A/B   <span class="ok">30.9 30.7</span>                              <span class="k">true</span>   80\n'+
+          'RRU-32 RfPort=..    <span class="warn">18.7 19.1</span>                              <span class="k">true</span>   80\n'+
+          'RRU-73 RfPort=A..D  <span class="bad">16.6 16.2 16.0 16.1</span>                     <span class="k">true</span>   80\n'+
+          'RRU-49 RfPort=A/B   <span class="dim">(blank — locked, not measured)</span>          <span class="k">true</span>   80')+
+        '<div class="legend">'+
+          '<span><b class="tag g">≳ 20 dB</b> '+X("good","bueno")+'</span>'+
+          '<span><b class="tag a">14–18 dB</b> '+X("marginal / watch","marginal / vigilar")+'</span>'+
+          '<span><b class="tag r">≲ 14 dB</b> '+X("problem (VSWR ≳ 1.5)","problema (VSWR ≳ 1.5)")+'</span>'+
+        '</div>'+
+        '<p class="note">'+X("Return loss and VSWR are two views of the SAME reflection. High return loss = little power reflected = low VSWR (near 1.0) = good match. A blank value on RRU-49 = not measured because it is locked — do not chase a VSWR fault on an off radio.","El return loss y el VSWR son dos vistas de la MISMA reflexión. Return loss alto = poca potencia reflejada = VSWR bajo (cerca de 1.0) = buen acople. Un valor en blanco en RRU-49 = no medido porque está bloqueado — no persigas una falla de VSWR en un radio apagado.")+'</p>';
+  }},
+  /* 8 — interactive VSWR slider */
+  { ico:ICO.wave, t:["Interactive","Interactivo"], b:function(){
+      var svg=''+
+      '<svg viewBox="0 0 320 150" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block" xmlns="http://www.w3.org/2000/svg">'+
+      '<rect width="320" height="150" fill="#071120"/>'+
+      '<rect x="20" y="60" width="46" height="30" rx="4" fill="#12233f" stroke="#facc15" stroke-width="1.5"/><text x="43" y="79" fill="#facc15" font-family="ui-monospace,monospace" font-size="9" text-anchor="middle">RRU</text>'+
+      '<line x1="66" y1="75" x2="250" y2="75" stroke="#3a5478" stroke-width="4"/>'+
+      '<path d="M250 60 L272 60 L261 96 Z" fill="#38507a" stroke="#8fb4ff" stroke-width="1.2"/>'+
+      /* forward dot */
+      '<circle id="vFwd" cx="70" cy="75" r="4" fill="#4ade80"/>'+
+      /* reflected dot */
+      '<circle id="vRef" cx="250" cy="75" r="0" fill="#f87171"/>'+
+      '<text id="vBig" x="160" y="34" fill="#67e8f9" font-family="ui-monospace,monospace" font-size="22" text-anchor="middle">23 dB</text>'+
+      '<text id="vVswr" x="160" y="122" fill="#8fb4ff" font-family="system-ui" font-size="10" text-anchor="middle"></text>'+
+      '</svg>';
+      return tit("Interactive: return loss ↔ reflection","Interactivo: return loss ↔ reflexión")+
+        '<p class="lead">'+X("Slide the return loss. Watch how much power reflects back from the antenna. High dB = clean match, almost nothing bounces back.","Mueve el return loss. Observa cuánta potencia se refleja desde la antena. dB alto = buen acople, casi nada rebota.")+'</p>'+
+        '<div class="illus" style="aspect-ratio:16/8;background:#071120">'+svg+'</div>'+
+        '<div class="row"><span class="lbl">'+X("Return loss","Return loss")+'</span><input type="range" id="vS" min="6" max="36" value="23"><span class="val" id="vV"></span></div>'+
+        '<div class="note" id="vBand"></div>';
+    }, i:function(){ var gen=_gen; var s=$("vS"),val=$("vV");
+        function vswrOf(rl){ var g=Math.pow(10,-rl/20); return (1+g)/(1-g); }
+        function band(){ var rl=+s.value; val.textContent=rl+" dB"; var vswr=vswrOf(rl);
+          var big=$("vBig"); if(big)big.textContent=rl+" dB";
+          var vv=$("vVswr"); if(vv)vv.textContent="VSWR ≈ "+vswr.toFixed(2)+":1";
+          var b=$("vBand");
+          if(rl>=20){ b.className="note good"; b.innerHTML="<b>"+X("Good","Bueno")+"</b> — "+X("clean match, little reflected power.","buen acople, poca potencia reflejada."); }
+          else if(rl>=14){ b.className="note warn"; b.innerHTML="<b>"+X("Marginal","Marginal")+"</b> — "+X("watch it / trend it; inspect connectors.","vigilar / tendencia; inspecciona conectores."); }
+          else { b.className="note bad"; b.innerHTML="<b>"+X("Problem","Problema")+"</b> — "+X("feeder / jumper / connector / antenna fault likely.","probable falla de feeder / jumper / conector / antena."); }
+        }
+        s.oninput=band; band();
+        var t0=performance.now();
+        (function fr(now){ if(gen!==_gen)return; var rl=+s.value; var g=Math.pow(10,-rl/20);
+          var fwd=$("vFwd"),ref=$("vRef"); var T=(now-t0)/1400;
+          if(fwd){ var pf=(T%1); fwd.setAttribute("cx",(70+pf*180).toFixed(1)); }
+          if(ref){ if(g<0.05){ ref.setAttribute("r","0"); } else { var pr=(T%1); ref.setAttribute("r",(2+g*6).toFixed(1)); ref.setAttribute("cx",(250-pr*180).toFixed(1)); ref.setAttribute("opacity",Math.min(1,g*3).toFixed(2)); } }
+          requestAnimationFrame(fr); })(performance.now());
+    }
+  },
+  /* 9 — Antennas / MIMO branches */
+  { ico:ICO.ant, t:["Antennas / MIMO","Antenas / MIMO"], b:function(){
+      return tit("Antenna branch counts (MIMO)","Conteo de ramas de antena (MIMO)")+
+        '<p class="lead">'+X("SectorCarrier / NRSectorCarrier list the branch counts: noOfRx/TxAntennas, noOfUsedRx/Tx, noOfMutedTxAntennas. Compare carriers — a reduced or muted count vs its peers hints at a radio branch problem.","SectorCarrier / NRSectorCarrier listan el conteo de ramas: noOfRx/TxAntennas, noOfUsedRx/Tx, noOfMutedTxAntennas. Compara portadoras — un conteo reducido o silenciado frente a sus pares sugiere un problema de rama del radio.")+'</p>'+
+        con("HealthCheck :: ANTENNA BRANCHES","HealthCheck :: ANTENNA BRANCHES",
+          '<span class="dim">MO                 Rx / Tx / usedRx / usedTx / mutedTx</span>\n'+
+          'NRSectorCarrier=20   <span class="ok">4 / 4 / 4 / 4 / 0</span>\n'+
+          'NRSectorCarrier=36   <span class="ok">4 / 4 / 4 / 4 / 0</span>\n'+
+          'NRSectorCarrier=52   <span class="ok">4 / 4 / 4 / 4 / 0</span>\n'+
+          'SectorCarrier=19     <span class="ok">2 / 2 / 2 / 2 / 0</span>\n'+
+          'SectorCarrier=29     <span class="ok">2 / 2 / 2 / 2 / 0</span>\n'+
+          'SectorCarrier=49     <span class="warn">2 / 2 / .. reduced entries ..</span>  <span class="dim">(locked unit)</span>')+
+        '<p class="note">'+X("Consistency is what you check. Three 4T4R NR carriers matching each other is healthy. If one showed 4/4/2/4 (only 2 used Rx), that branch/path is suspect — but confirm the unit is actually in service first.","Lo que revisas es la consistencia. Tres portadoras NR 4T4R iguales entre sí es sano. Si una mostrara 4/4/2/4 (solo 2 Rx usados), esa rama/camino es sospechosa — pero confirma primero que la unidad está en servicio.")+'</p>'+
+        '<p class="note warn">'+X("SectorCarrier=49 shows reduced entries because it belongs to the LOCKED RRU-49. That is expected, not a MIMO fault.","SectorCarrier=49 muestra entradas reducidas porque pertenece a la RRU-49 LOCKED. Eso es esperado, no una falla de MIMO.")+'</p>';
+  }},
+  /* 10 — TX power */
+  { ico:ICO.power, t:["TX power","Potencia TX"], b:function(){
+      return tit("TX power &amp; power state","Potencia TX y estado de potencia")+
+        '<p class="lead">'+X("The power fields tell you the radio is actually transmitting. Read them qualitatively: is txPowerState STABLE, and is availableHwOutputPower non-zero?","Los campos de potencia te dicen que el radio realmente transmite. Léelos de forma cualitativa: ¿txPowerState está STABLE y availableHwOutputPower es distinto de cero?")+'</p>'+
+        con("HealthCheck :: TX POWER","HealthCheck :: TX POWER",
+          '<span class="dim">MO                        field                      value</span>\n'+
+          'NRSectorCarrier=20  configuredMaxTxPower       <span class="k">160000</span>\n'+
+          'NRSectorCarrier=20  maximumTransmissionPower   <span class="k">160000</span>\n'+
+          'NRSectorCarrier=20  txPowerState               <span class="ok">1(STABLE)</span>\n'+
+          'SectorEquipmentFunction=49  availableHwOutputPower  <span class="bad">0</span>   <span class="dim">(locked = radio off)</span>')+
+        '<div class="grid2">'+
+          bx(ICO.power,"txPowerState STABLE","txPowerState STABLE","The power loop has settled — the radio is transmitting normally.","El lazo de potencia se estabilizó — el radio transmite normalmente.")+
+          bx(ICO.warn,"availableHwOutputPower 0","availableHwOutputPower 0","On a locked unit, 0 output power just means the radio is off. On an in-service unit, 0 would be a real fault.","En una unidad bloqueada, 0 de potencia solo significa que el radio está apagado. En una unidad en servicio, 0 sería una falla real.")+
+        '</div>'+
+        '<p class="note">'+X("Don't over-read the exact numbers. Compare: STABLE vs not, and 0 vs non-zero, always in the context of whether the unit is locked.","No sobre-interpretes los números exactos. Compara: STABLE o no, y 0 o distinto de cero, siempre en el contexto de si la unidad está bloqueada.")+'</p>';
+  }},
+  /* 11 — interference */
+  { ico:ICO.noise, t:["Uplink noise","Ruido de subida"], b:function(){
+      return tit("5G uplink interference / noise floor","Interferencia / piso de ruido en subida 5G")+
+        '<p class="lead">'+X("pmRadioRecInterferencePower (Int_AvgRadioRecInterferencePower) is the received uplink interference power per DU/cell. A low value near the thermal floor is healthy; a markedly higher value means something is raising the noise.","pmRadioRecInterferencePower (Int_AvgRadioRecInterferencePower) es la potencia de interferencia recibida en subida por DU/celda. Un valor bajo cerca del piso térmico es sano; un valor mucho mayor significa que algo eleva el ruido.")+'</p>'+
+        con("HealthCheck :: UL INTERFERENCE (per hour)","HealthCheck :: INTERFERENCIA UL (por hora)",
+          '<span class="dim">DU / cell            Int_AvgRadioRecInterferencePower (dBm)</span>\n'+
+          'DU=...0001    <span class="ok">-119.3  -119.1  -119.4  -119.2  -119.3</span>   <span class="ok">healthy floor</span>\n'+
+          'DU=...0003    <span class="warn">-116.0  -105.0  -106.2  -105.4  -116.1</span>   <span class="warn">elevated</span>')+
+        '<div class="grid2">'+
+          bx(ICO.check,"≈ -119 dBm","≈ -119 dBm","Near the thermal noise floor — a clean, quiet uplink. This is what good looks like.","Cerca del piso de ruido térmico — subida limpia y silenciosa. Así se ve lo bueno.")+
+          bx(ICO.warn,"≈ -105 dBm","≈ -105 dBm","~14 dB above the floor — real added interference. Suspect an external interferer, PIM, or overshoot.","~14 dB sobre el piso — interferencia real añadida. Sospecha interferente externo, PIM o sobrealcance.")+
+        '</div>'+
+        '<p class="note">'+X("Remember dBm is negative and logarithmic: -105 is much HIGHER power than -119. Higher received interference power is worse for uplink.","Recuerda que dBm es negativo y logarítmico: -105 es mucha MÁS potencia que -119. Más potencia de interferencia recibida es peor para la subida.")+'</p>';
+  }},
+  /* 12 — SCENARIO 1: light level 5 NOK 1 NT */
+  scen({ ico:ICO.search, t:["Scenario 1","Escenario 1"],
+    tEn:"Scenario: 5 NOK, 1 NT", tEs:"Escenario: 5 NOK, 1 NT",
+    pEn:"You open the LIGHT LEVEL INFO summary and see the line below. What does it mean, and what is your FIRST action?",
+    pEs:"Abres el resumen de LIGHT LEVEL INFO y ves la línea de abajo. ¿Qué significa y cuál es tu PRIMERA acción?",
+    excerpt:function(){ return con("LIGHT LEVEL INFO","LIGHT LEVEL INFO",
+      '<span class="hl">Total: 6 CPRI links (0 OK, 0 OKW, <span class="bad">5 NOK</span>, <span class="warn">1 NT</span>)</span>\n'+
+      '<span class="dim">... plus RiLink=5 DISABLED to RRU-49, and several "No Connection" alarms ...</span>'); },
+    qEn:"Best first interpretation and action?", qEs:"¿Mejor interpretación y acción inicial?",
+    opts:[
+      {en:"Antennas are bad — schedule a VSWR sweep and tower climb to replace jumpers.",
+       es:"Las antenas están mal — programa un barrido de VSWR y subida a torre para cambiar jumpers.",
+       correct:false,
+       fbEn:"Trap. NOK on the LIGHT LEVEL block is a fronthaul OPTICS problem (CPRI/SFP), not an antenna/VSWR problem. VSWR lives in a different section. Don't send a crew up the tower for an optics fault.",
+       fbEs:"Trampa. NOK en el bloque LIGHT LEVEL es un problema de ÓPTICA de fronthaul (CPRI/SFP), no de antena/VSWR. El VSWR está en otra sección. No envíes una cuadrilla a la torre por una falla óptica."},
+      {en:"5 of 6 CPRI/SFP links are faulted (NOK) and 1 is not tested (NT). Inspect & clean the LC fibers, reseat/check SFPs, verify fiber and TX/RX, and correlate with the DISABLED RiLink and the 'No Connection' alarms.",
+       es:"5 de 6 enlaces CPRI/SFP están fallados (NOK) y 1 no probado (NT). Inspecciona y limpia las fibras LC, reconecta/revisa SFPs, verifica fibra y TX/RX, y correlaciona con el RiLink DISABLED y las alarmas 'No Connection'.",
+       correct:true,
+       fbEn:"Right. This is the fronthaul optical layer. Work fiber hygiene first (Inspect–Clean–Inspect), check SFP seating, and use the DISABLED RiLink + No Connection alarms to localize whether it's a common trunk/BB port or the report was taken while the sector was down.",
+       fbEs:"Correcto. Es la capa óptica del fronthaul. Trabaja primero la higiene de fibra (Inspeccionar–Limpiar–Inspeccionar), revisa el asiento del SFP, y usa el RiLink DISABLED + alarmas No Connection para ubicar si es una troncal/puerto BB común o si el reporte se tomó con el sector caído."},
+      {en:"The NT link is the emergency — the locked RRU-49 needs its optics cleaned immediately.",
+       es:"El enlace NT es la emergencia — la RRU-49 bloqueada necesita limpieza de óptica de inmediato.",
+       correct:false,
+       fbEn:"No. NT = not tested because RRU-49 is LOCKED; nothing is measured on a unit that's off. Cleaning its optics won't do anything. The five NOK links are the real signal.",
+       fbEs:"No. NT = no probado porque RRU-49 está LOCKED; no se mide nada en una unidad apagada. Limpiar su óptica no hará nada. Los cinco enlaces NOK son la señal real."}
+    ]}),
+  /* 13 — SCENARIO 2: VSWR RRU-73 ~16 */
+  scen({ ico:ICO.wave, t:["Scenario 2","Escenario 2"],
+    tEn:"Scenario: RRU-73 return loss ~16 dB", tEs:"Escenario: RRU-73 return loss ~16 dB",
+    pEn:"RRU-73 reports ~16 dB return loss on all four ports, while RRU-12 shows 20–35 dB. Interpret and choose the action.",
+    pEs:"RRU-73 reporta ~16 dB de return loss en sus cuatro puertos, mientras RRU-12 muestra 20–35 dB. Interpreta y elige la acción.",
+    excerpt:function(){ return con("VSWR INFO","VSWR INFO",
+      'RRU-12 RfPort=A..H  <span class="ok">23.3 25.4 26.3 24.8 31.5 35.0 27.6</span>  (<span class="warn">19.5</span>)\n'+
+      'RRU-73 RfPort=A..D  <span class="bad">16.6  16.2  16.0  16.1</span>   <span class="warn">all four ~16 dB</span>'); },
+    qEn:"Best reading and first action?", qEs:"¿Mejor lectura y acción inicial?",
+    opts:[
+      {en:"RRU-73 is clearly failed — swap the radio today.",
+       es:"RRU-73 claramente falló — cambia el radio hoy.",
+       correct:false,
+       fbEn:"Too aggressive. ~16 dB is marginal (VSWR ~1.4), not a hard failure. And a common ~16 dB across ALL four ports points to something shared in the path, not four dead radio branches. Investigate before swapping hardware.",
+       fbEs:"Muy agresivo. ~16 dB es marginal (VSWR ~1.4), no una falla dura. Y un ~16 dB común en LOS cuatro puertos apunta a algo compartido en el camino, no a cuatro ramas de radio muertas. Investiga antes de cambiar hardware."},
+      {en:"RRU-73 is the worst/marginal path. A consistent low value across all four ports points to a common feeder/jumper/connector or weatherproofing issue near that radio. Inspect and re-torque connectors, redo weatherproofing, and trend it.",
+       es:"RRU-73 es el camino peor/marginal. Un valor bajo consistente en los cuatro puertos apunta a un feeder/jumper/conector común o problema de sellado cerca de ese radio. Inspecciona y re-torquea conectores, rehaz el sellado y da seguimiento.",
+       correct:true,
+       fbEn:"Right. It's borderline, not clearly failed, and the uniformity across ports is the clue: look for a shared cause (bad ground/weatherproofing, a common connector at the radio) rather than replacing the radio first. Then trend the value over time.",
+       fbEs:"Correcto. Es limítrofe, no una falla clara, y la uniformidad entre puertos es la pista: busca una causa compartida (sellado/tierra malos, un conector común en el radio) antes de reemplazar el radio. Luego da seguimiento al valor."},
+      {en:"16 dB is higher than 35 dB numerically? No — ignore it, it's within spec.",
+       es:"¿16 dB es más alto que 35 dB numéricamente? No — ignóralo, está en spec.",
+       correct:false,
+       fbEn:"No. Higher dB is better for return loss, so 16 dB is WORSE than RRU-12's 23–35 dB. It sits in the marginal 14–18 dB band and stands out from its peers — worth inspecting, not ignoring.",
+       fbEs:"No. Más dB es mejor en return loss, así que 16 dB es PEOR que los 23–35 dB de RRU-12. Está en la banda marginal 14–18 dB y resalta frente a sus pares — vale inspeccionar, no ignorar."}
+    ]}),
+  /* 14 — SCENARIO 3: RRU-49 off */
+  scen({ ico:ICO.warn, t:["Scenario 3","Escenario 3"],
+    tEn:"Scenario: RRU-49 blanks &amp; zeros", tEs:"Escenario: RRU-49 en blanco y ceros",
+    pEn:"RRU-49 shows a blank VSWR, availableHwOutputPower 0, admState LOCKED / opState DISABLED, RiLink=5 down, and 'No Connection' alarms. What's the right call?",
+    pEs:"RRU-49 muestra VSWR en blanco, availableHwOutputPower 0, admState LOCKED / opState DISABLED, RiLink=5 caído y alarmas 'No Connection'. ¿Cuál es la decisión correcta?",
+    excerpt:function(){ return con("Cross-reference :: RRU-49","Referencia cruzada :: RRU-49",
+      'RADIO INFO   RRU-49   <span class="bad">0(LOCKED)  0(DISABLED)</span>  Radio 2205 B46\n'+
+      'RiLink=5     rate <span class="bad">0</span>   <span class="bad">0(DISABLED)</span>   BB-1,RiPort=E <-> RRU-49\n'+
+      'VSWR         RRU-49 RfPort=A/B   <span class="dim">(blank)</span>\n'+
+      'TX POWER     availableHwOutputPower  <span class="bad">0</span>\n'+
+      'ALARMS       RRU-49  <span class="bad">"No Connection"</span>'); },
+    qEn:"What do you do?", qEs:"¿Qué haces?",
+    opts:[
+      {en:"Open a VSWR trouble ticket — the blank/zero VSWR proves an antenna fault on RRU-49.",
+       es:"Abre un ticket de VSWR — el VSWR en blanco/cero prueba una falla de antena en RRU-49.",
+       correct:false,
+       fbEn:"Trap. The blank VSWR isn't a fault reading — it's 'not measured' because the unit is LOCKED and DISABLED with no output power. You can't have a VSWR result on a radio that isn't transmitting. Chasing an antenna fault here wastes a truck roll.",
+       fbEs:"Trampa. El VSWR en blanco no es una lectura de falla — es 'no medido' porque la unidad está LOCKED y DISABLED sin potencia de salida. No puede haber un resultado de VSWR en un radio que no transmite. Perseguir una falla de antena aquí desperdicia una salida."},
+      {en:"Recognize the whole cluster (locked+disabled, RiLink down, 0 output, blank VSWR, No Connection) as ONE root cause: the unit/fronthaul is down. Don't chase VSWR; confirm whether the lock is intentional and escalate per the plan.",
+       es:"Reconoce todo el conjunto (locked+disabled, RiLink caído, 0 de salida, VSWR en blanco, No Connection) como UNA causa raíz: la unidad/fronthaul está caída. No persigas VSWR; confirma si el bloqueo es intencional y escala según el plan.",
+       correct:true,
+       fbEn:"Right. Every 'fault' on RRU-49 is a downstream symptom of the same thing: the radio is off / not connected. The correct action is to determine if it's locked on purpose (maintenance) or truly down, then escalate — not to troubleshoot RF on a dead unit.",
+       fbEs:"Correcto. Cada 'falla' de RRU-49 es un síntoma derivado de lo mismo: el radio está apagado / sin conexión. La acción correcta es determinar si está bloqueado a propósito (mantenimiento) o realmente caído, y luego escalar — no diagnosticar RF en una unidad muerta."},
+      {en:"Clean the SFP optics and re-torque the antenna connectors on RRU-49 to clear all the alarms.",
+       es:"Limpia la óptica SFP y re-torquea los conectores de antena de RRU-49 para limpiar todas las alarmas.",
+       correct:false,
+       fbEn:"No. The optics show NT (not tested) and VSWR is blank precisely because nothing is being measured on a locked/off unit. Physical cleaning won't clear alarms that stem from the unit being administratively locked and disconnected.",
+       fbEs:"No. La óptica muestra NT (no probado) y el VSWR está en blanco precisamente porque no se mide nada en una unidad bloqueada/apagada. La limpieza física no borrará alarmas que vienen de que la unidad está bloqueada y desconectada administrativamente."}
+    ]}),
+  /* 15 — SCENARIO 4: interference */
+  scen({ ico:ICO.noise, t:["Scenario 4","Escenario 4"],
+    tEn:"Scenario: -119 vs -105 dBm", tEs:"Escenario: -119 vs -105 dBm",
+    pEn:"Two 5G cells report uplink interference power. One sits at ~-119 dBm, the other at ~-105 dBm. What does the report tell you?",
+    pEs:"Dos celdas 5G reportan potencia de interferencia en subida. Una está en ~-119 dBm, la otra en ~-105 dBm. ¿Qué te dice el reporte?",
+    excerpt:function(){ return con("UL INTERFERENCE","INTERFERENCIA UL",
+      'DU=...0001   <span class="ok">-119.3 dBm</span>   healthy noise floor\n'+
+      'DU=...0003   <span class="warn">-105.0 dBm</span>   ~14 dB higher'); },
+    qEn:"Correct interpretation?", qEs:"¿Interpretación correcta?",
+    opts:[
+      {en:"The -119 cell is the problem because -119 is a bigger negative number.",
+       es:"La celda de -119 es el problema porque -119 es un número negativo mayor.",
+       correct:false,
+       fbEn:"Trap. dBm is logarithmic and negative: -119 dBm is LESS power than -105 dBm. The quiet -119 cell is the healthy one, near the thermal floor. -105 is the elevated one.",
+       fbEs:"Trampa. dBm es logarítmico y negativo: -119 dBm es MENOS potencia que -105 dBm. La celda silenciosa de -119 es la sana, cerca del piso térmico. -105 es la elevada."},
+      {en:"The -105 dBm cell has elevated uplink interference (~14 dB above the floor). Investigate an external interferer, PIM, or overshoot/neighbor. The -119 dBm cell is a healthy, quiet noise floor.",
+       es:"La celda de -105 dBm tiene interferencia de subida elevada (~14 dB sobre el piso). Investiga un interferente externo, PIM o sobrealcance/vecino. La celda de -119 dBm es un piso de ruido sano y silencioso.",
+       correct:true,
+       fbEn:"Right. -105 dBm sits well above the ~-119 dBm thermal floor, so that cell is absorbing added uplink interference. Look for external sources, passive intermodulation (PIM), or overshoot from a neighbor. -119 dBm is exactly what a clean uplink looks like.",
+       fbEs:"Correcto. -105 dBm está muy por encima del piso térmico ~-119 dBm, así que esa celda absorbe interferencia de subida añadida. Busca fuentes externas, intermodulación pasiva (PIM) o sobrealcance de un vecino. -119 dBm es justo como se ve una subida limpia."},
+      {en:"Both are identical — 14 dBm is a rounding difference, ignore it.",
+       es:"Ambas son idénticas — 14 dBm es una diferencia de redondeo, ignórala.",
+       correct:false,
+       fbEn:"No. 14 dB is a factor of ~25x in power — huge. That's a clear, actionable difference in uplink noise, not rounding.",
+       fbEs:"No. 14 dB es un factor de ~25x en potencia — enorme. Es una diferencia clara y accionable en el ruido de subida, no redondeo."}
+    ]}),
+  /* 16 — putting it together */
+  { ico:ICO.check, t:["Putting it together","Integrando todo"], b:function(){
+      return tit("Read the whole picture, not one line","Lee el cuadro completo, no una línea")+
+        '<p class="lead">'+X("The power of the Health Check is cross-referencing sections. One RRU appears in many blocks — read them together before you act.","La fuerza del Health Check es cruzar secciones. Una RRU aparece en muchos bloques — léelos juntos antes de actuar.")+'</p>'+
+        '<div class="steps">'+
+          stepRow(1,"Start at state","Empieza por el estado","admState + opState tell you if a unit is even supposed to be up. Locked/disabled explains most 'faults'.","admState + opState te dicen si una unidad debería estar arriba. Locked/disabled explica casi todas las 'fallas'.")+
+          stepRow(2,"Follow the fronthaul","Sigue el fronthaul","RiLink rate/state + LIGHT LEVEL codes = the optical path. NOK = optics; work fiber hygiene.","RiLink tasa/estado + códigos LIGHT LEVEL = camino óptico. NOK = óptica; higiene de fibra.")+
+          stepRow(3,"Then the RF path","Luego el camino RF","VSWR/return loss + antenna branches + TX power = the air side. Higher dB = better.","VSWR/return loss + ramas de antena + potencia TX = lado aire. Más dB = mejor.")+
+          stepRow(4,"Separate the problems","Separa los problemas","Optics ≠ antenna ≠ off radio. Don't let one radio's expected symptoms send you up a tower.","Óptica ≠ antena ≠ radio apagado. No dejes que los síntomas esperados de un radio te suban a la torre.")+
+        '</div>'+
+        '<p class="note good">'+X("Best technicians ask: 'Is this a real fault, or an expected symptom of a locked unit?' before every truck roll.","Los mejores técnicos preguntan: '¿Es una falla real o un síntoma esperado de una unidad bloqueada?' antes de cada salida a campo.")+'</p>';
+  }},
+  /* 17 — QUIZ (8 questions) */
+  { ico:ICO.quiz, t:["Quiz","Evaluación"], b:function(){
+      var QUIZ=[
+        {en:"In RADIO INFO, RRU-49 shows 0(LOCKED) 0(DISABLED). This means:",
+         es:"En RADIO INFO, RRU-49 muestra 0(LOCKED) 0(DISABLED). Esto significa:",
+         o_en:["A hardware fault to replace now","The unit is intentionally out of service and off","A software upgrade in progress"],
+         o_es:["Falla de hardware a reemplazar ya","La unidad está fuera de servicio a propósito y apagada","Una actualización de software en curso"],a:1},
+        {en:"productName 'Radio 4408 B48' tells you the band is:",
+         es:"productName 'Radio 4408 B48' te dice que la banda es:",
+         o_en:["B2 PCS 1900","B46 LAA 5 GHz","B48 CBRS 3.5 GHz"],
+         o_es:["B2 PCS 1900","B46 LAA 5 GHz","B48 CBRS 3.5 GHz"],a:2},
+        {en:"A RiLink with linkRate 0 and operationalState DISABLED means:",
+         es:"Un RiLink con linkRate 0 y operationalState DISABLED significa:",
+         o_en:["Full-rate CPRI, healthy","Fronthaul link is down to that RRU","The fastest possible CPRI rate"],
+         o_es:["CPRI a tasa completa, sano","El enlace de fronthaul está caído hacia esa RRU","La tasa CPRI más rápida posible"],a:1},
+        {en:"In LIGHT LEVEL INFO, the status code NOK means:",
+         es:"En LIGHT LEVEL INFO, el código de estado NOK significa:",
+         o_en:["OK with warning","Not tested / not connected","Not OK — the optical link is faulted"],
+         o_es:["OK con advertencia","No probado / sin conexión","No OK — el enlace óptico está fallado"],a:2},
+        {en:"The correct first response to several NOK CPRI links is:",
+         es:"La primera respuesta correcta a varios enlaces CPRI en NOK es:",
+         o_en:["A tower climb to replace antennas","Inspect–Clean–Inspect the LC fibers and check/reseat SFPs","Increase TX power on the radios"],
+         o_es:["Subir a la torre a cambiar antenas","Inspeccionar–Limpiar–Inspeccionar las fibras LC y revisar/reconectar SFPs","Subir la potencia TX de los radios"],a:1},
+        {en:"For returnLoss, which value is the BEST antenna path?",
+         es:"Para returnLoss, ¿qué valor es el MEJOR camino de antena?",
+         o_en:["16 dB","35 dB","10 dB"],
+         o_es:["16 dB","35 dB","10 dB"],a:1},
+        {en:"RRU-49's VSWR field is blank. The reason is:",
+         es:"El campo de VSWR de RRU-49 está en blanco. La razón es:",
+         o_en:["A severe antenna fault","It is locked/off, so nothing is measured","The sensitivity is set too high"],
+         o_es:["Una falla grave de antena","Está bloqueado/apagado, así que no se mide nada","La sensibilidad está muy alta"],a:1},
+        {en:"One 5G cell reads -119 dBm uplink interference, another -105 dBm. Which is worse?",
+         es:"Una celda 5G lee -119 dBm de interferencia en subida, otra -105 dBm. ¿Cuál es peor?",
+         o_en:["-119 dBm (bigger negative)","-105 dBm (higher received interference power)","They are equal"],
+         o_es:["-119 dBm (negativo mayor)","-105 dBm (mayor potencia de interferencia recibida)","Son iguales"],a:1}
+      ];
+      window._QZ=QUIZ;
+      var qs=QUIZ.map(function(q,i){var o=(LANG==="es"?q.o_es:q.o_en).map(function(x,j){return '<button class="opt" data-q="'+i+'" data-o="'+j+'">'+x+'</button>';}).join("");return '<div class="q"><h3>'+(i+1)+'. '+X(q.en,q.es)+'</h3>'+o+'</div>';}).join("");
+      return tit("Quiz — RF &amp; transport health","Evaluación — salud de RF y transporte")+
+        '<p class="lead">'+X("8 questions. You need 80% (7 of 8) to pass.","8 preguntas. Necesitas 80% (7 de 8) para aprobar.")+'</p>'+
+        qs+'<div class="score" id="score"></div><div id="verdict" style="text-align:center;margin-top:6px"></div>';
+    }, i:function(){ var QUIZ=window._QZ,ans={},ok=0;
+      document.querySelectorAll(".opt").forEach(function(b){b.onclick=function(){var qi=+b.dataset.q;if(ans[qi])return;ans[qi]=1;var a=QUIZ[qi].a;
+        document.querySelectorAll('.opt[data-q="'+qi+'"]').forEach(function(x){x.disabled=true;if(+x.dataset.o===a)x.classList.add("correct");});
+        if(+b.dataset.o===a)ok++;else b.classList.add("wrong");
+        if(Object.keys(ans).length===QUIZ.length){
+          $("score").textContent=X("Score: ","Puntaje: ")+ok+"/"+QUIZ.length+" ("+Math.round(ok/QUIZ.length*100)+"%)";
+          var pass=ok>=Math.ceil(QUIZ.length*0.8);
+          $("verdict").innerHTML='<span class="verdict '+(pass?'ok':'no')+'">'+(pass?ICO.check+' '+X("Passed — 80%+","Aprobado — 80%+"):ICO.warn+' '+X("Below 80% — review &amp; retry","Menos de 80% — repasa y reintenta"))+'</span>';
+        }
+      };}); }
+  },
+  /* 18 — References */
+  { ico:ICO.book, t:["References","Referencias"], b:function(){
+      return tit("Key takeaways &amp; references","Ideas clave y referencias")+
+        '<ul>'+
+          '<li>'+X("Read admState + opState first — a locked/disabled unit explains most downstream 'faults' (blank VSWR, 0 power, NT optics).","Lee primero admState + opState — una unidad locked/disabled explica casi todas las 'fallas' derivadas (VSWR en blanco, 0 potencia, óptica NT).")+'</li>'+
+          '<li>'+X("LIGHT LEVEL NOK = fronthaul optics (CPRI/SFP). Fix with Inspect–Clean–Inspect and SFP reseating — not a tower climb.","LIGHT LEVEL NOK = óptica de fronthaul (CPRI/SFP). Resuelve con Inspeccionar–Limpiar–Inspeccionar y reconexión de SFP — no subiendo a la torre.")+'</li>'+
+          '<li>'+X("Return loss: higher dB is better. ≳20 good, 14–18 marginal, ≲14 (VSWR ≳1.5) inspect the RF path. VSWR and return loss are the same reflection.","Return loss: más dB es mejor. ≳20 bueno, 14–18 marginal, ≲14 (VSWR ≳1.5) inspecciona el camino RF. VSWR y return loss son la misma reflexión.")+'</li>'+
+          '<li>'+X("Uplink interference near -119 dBm is a healthy floor; markedly higher (e.g. -105 dBm) means added interference/PIM/overshoot.","Interferencia de subida cerca de -119 dBm es un piso sano; mucho mayor (p. ej. -105 dBm) significa interferencia/PIM/sobrealcance añadidos.")+'</li>'+
+        '</ul>'+
+        '<h2>'+X("References","Referencias")+'</h2>'+
+        '<div class="ref"><b>Ericsson RAN CPI / Node documentation</b> — '+X("Managed Object descriptions for FieldReplaceableUnit, RiLink (CPRI fronthaul), VSWR supervision (returnLoss, vswrSupervisionActive/Sensitivity), SectorCarrier / NRSectorCarrier antenna and TX power attributes.","Descripciones de Managed Object para FieldReplaceableUnit, RiLink (fronthaul CPRI), supervisión de VSWR (returnLoss, vswrSupervisionActive/Sensitivity), atributos de antena y potencia TX de SectorCarrier / NRSectorCarrier.")+'</div>'+
+        '<div class="ref"><b>CPRI Specification (Common Public Radio Interface)</b> — '+X("fronthaul line rates and link concepts between baseband and radio.","tasas de línea de fronthaul y conceptos de enlace entre banda base y radio.")+'</div>'+
+        '<div class="ref"><b>'+X("RF fundamentals: VSWR &amp; return loss","Fundamentos RF: VSWR y return loss")+'</b> — '+X("relationship between reflection coefficient, VSWR and return loss (dB); higher return loss = better match.","relación entre coeficiente de reflexión, VSWR y return loss (dB); mayor return loss = mejor acople.")+'</div>'+
+        '<div class="ref"><b>IEC 61300-3-35 / '+X("fiber-optic connector inspection practice","práctica de inspección de conectores de fibra")+'</b> — '+X("Inspect–Clean–Inspect method and LC endface acceptance for optical links.","método Inspeccionar–Limpiar–Inspeccionar y aceptación de cara LC para enlaces ópticos.")+'</div>'+
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px"><span class="verdict ok">'+ICO.check+' '+X("Module 2 complete","Módulo 2 completo")+'</span><a class="btn ghost" href="../index.html" target="_top">'+X("Back to portal","Volver al portal")+'</a></div>'+
+        '<p class="note">'+X("Training overview only, using representative sample data. Always follow the live node output, current Ericsson CPI, and your carrier's Method of Procedure.","Solo es un resumen de entrenamiento con datos de ejemplo representativos. Sigue siempre la salida real del nodo, la CPI de Ericsson vigente y el Method of Procedure de tu carrier.")+'</p>';
+  }}
+];
+var cur=0;
+var _gen=0;
+function stepRow(n,en,es,den,des){ return '<div class="st"><span class="num">'+n+'</span><span class="txt"><b>'+X(en,es)+'</b><span>'+X(den,des)+'</span></span></div>'; }
+
+function pintarChrome(){
+  document.documentElement.lang=LANG;
+  $("brand").innerHTML=X(CONFIG.brand[0],CONFIG.brand[1]);
+  $("brandsub").textContent=X(CONFIG.subtitle[0],CONFIG.subtitle[1]);
+  $("homeTxt").textContent=X("Home","Inicio");
+  document.querySelectorAll("#lang button").forEach(function(b){ b.classList.toggle("on", b.dataset.l===LANG); });
+  var dark=document.documentElement.getAttribute("data-theme")==="dark";
+  $("temaIco").innerHTML=dark?ICO.sun:ICO.moon; $("temaTxt").textContent=dark?X("Light","Claro"):X("Dark","Oscuro");
+  $("prev").innerHTML="‹ "+X("Back","Anterior");
+  $("next").innerHTML=(cur>=STEPS.length-1?X("Restart","Reiniciar"):X("Next","Siguiente")+" ›");
+}
+function render(){
+  _gen++;
+  pintarChrome();
+  var s=STEPS[cur];
+  $("card").innerHTML=s.b();
+  if(s.i) s.i();
+  $("progbar").style.width=((cur+1)/STEPS.length*100)+"%";
+  $("mStep").textContent=X("Step ","Paso ")+(cur+1)+" / "+STEPS.length+" · "+X(s.t[0],s.t[1]);
+  $("mDur").textContent=CONFIG.duration;
+  $("prev").disabled=(cur===0);
+  $("dots").innerHTML=STEPS.map(function(_,i){return '<button class="dot'+(i===cur?' on':'')+'" data-i="'+i+'" aria-label="'+(i+1)+'"></button>';}).join("");
+  document.querySelectorAll(".dot").forEach(function(d){ d.onclick=function(){ cur=+d.dataset.i; render(); }; });
+  window.scrollTo(0,0);
+}
+$("prev").onclick=function(){ if(cur>0){cur--;render();} };
+$("next").onclick=function(){ cur=(cur>=STEPS.length-1)?0:cur+1; render(); };
+document.querySelectorAll("#lang button").forEach(function(b){ b.onclick=function(){ LANG=b.dataset.l; render(); }; });
+$("tema").onclick=function(){ var d=document.documentElement.getAttribute("data-theme")==="dark"; document.documentElement.setAttribute("data-theme", d?"light":"dark"); pintarChrome(); };
+document.addEventListener("keydown",function(e){ if(e.key==="ArrowRight")$("next").click(); if(e.key==="ArrowLeft")$("prev").click(); });
+render();
+</script>
+</body>
+</html>

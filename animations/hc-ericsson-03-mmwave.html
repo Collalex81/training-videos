@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reading a Health Check — mmWave 5G NR / Lectura de Health Check — mmWave 5G NR</title>
+<!--
+  TELECOM (azul) — Módulo 3 de 3: Lectura de un reporte "Health Check" de un nodo RAN Ericsson.
+  TELECOM (blue) — Module 3 of 3: Reading an Ericsson RAN "Health Check" report — mmWave 5G NR, sync & KPIs.
+  Motor / Engine: grounding-bonding-cell-sites.html (reutilizado exactamente). Bilingüe EN/ES (EN por defecto).
+  Datos reales / Real data: Streetmacro 6701 B261, n261 (28 GHz), FTLBEACHPARK003, nodes 1480027/26/25.
+-->
+<style>
+  :root{
+    --pg:#f3f6fc; --card:#ffffff; --ink:#0c1c34; --sub:#51618a; --line:#dde5f3;
+    --bar:#0b2e59; --accent:#2563EB; --tint:rgba(37,99,235,.10);
+    --ok:#15803D; --okt:rgba(21,128,61,.10); --bad:#dc2626; --badt:rgba(220,38,38,.10);
+    --amber:#b45309; --ambt:rgba(180,83,9,.12); --radius:14px;
+    --shadow:0 1px 2px rgba(12,28,52,.05),0 10px 26px rgba(12,28,52,.08);
+  }
+  html[data-theme="dark"]{
+    --pg:#0a1120; --card:#141d30; --ink:#e9f0ff; --sub:#9db0d6; --line:#243149;
+    --bar:#0a1526; --accent:#4d8bff; --tint:rgba(77,139,255,.14);
+    --ok:#4ade80; --okt:rgba(74,222,128,.14); --bad:#f87171; --badt:rgba(248,113,113,.14);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  .shell{max-width:940px;margin:0 auto;padding:14px 16px 34px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0 8px;box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:600;display:block;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+  .prog{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:6px 0 4px}
+  .prog>i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);gap:8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;min-height:360px}
+  .step-ico{width:44px;height:44px;border-radius:12px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+  h1{font-size:clamp(20px,3.3vw,26px);margin:0 0 8px;font-weight:700;line-height:1.2}
+  h2{font-size:15.5px;margin:16px 0 8px;font-weight:600}
+  p{margin:0 0 12px}
+  .lead{color:var(--sub);font-size:15px}
+  ul,ol{margin:6px 0 12px;padding-left:20px}
+  li{margin:6px 0}
+  .pill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:var(--tint);padding:5px 11px;border-radius:999px;margin-bottom:10px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:8px 0}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin:8px 0}
+  .box{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:13px}
+  .box h3{margin:0 0 6px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px}
+  .box p{margin:0;font-size:12.5px;color:var(--sub)}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:var(--accent);color:#fff;font-weight:800;font-size:14px;flex:none}
+  .stat3{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
+  .stat3 .s{flex:1;min-width:120px;background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center}
+  .stat3 .s b{display:block;font-size:24px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+  .stat3 .s span{font-size:12px;color:var(--sub)}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;min-height:42px;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;flex:1}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line);border:0;cursor:pointer;padding:0}
+  .dot.on{background:var(--accent);transform:scale(1.3)}
+  .note{font-size:13px;color:var(--sub);border-left:3px solid var(--accent);background:var(--tint);padding:9px 12px;margin:12px 0;border-radius:0 8px 8px 0}
+  .warn{border-left-color:var(--amber);color:var(--amber);background:var(--ambt)}
+  .bad{border-left-color:var(--bad);color:var(--bad);background:var(--badt)}
+  .good{border-left-color:var(--ok);color:var(--ink);background:var(--okt)}
+  .good b{color:var(--ok)}
+  .illus{position:relative;aspect-ratio:16/10;background:#071120;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .illus svg{width:100%;height:100%}
+  .mcap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);margin:8px 2px 2px;justify-content:center}
+  .steps .st{display:flex;gap:12px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:7px 0}
+  .steps .st .txt b{font-size:13.5px}.steps .st .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .chk{display:flex;gap:11px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:8px 0;cursor:pointer}
+  .chk .bx{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;margin-top:1px}
+  .chk.done .bx{background:var(--ok);border-color:var(--ok)}
+  .chk.done .txt b{text-decoration:line-through;opacity:.7}
+  .chk .txt b{font-size:13.5px}.chk .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .row{display:flex;align-items:center;gap:12px;margin:10px 0;flex-wrap:wrap}
+  .row span.lbl{min-width:120px;font-size:13px;color:var(--sub)}
+  input[type=range]{flex:1;accent-color:var(--accent)}
+  .val{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;min-width:80px;text-align:right}
+  .q{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:12px}
+  .q h3{margin:0 0 10px;font-size:14px}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:11px 14px;border-radius:10px;margin:7px 0;cursor:pointer;font-size:14px;font-family:inherit}
+  .opt.correct{border-color:var(--ok);background:var(--okt);color:var(--ok);font-weight:600}
+  .opt.wrong{border-color:var(--bad);background:var(--badt);color:var(--bad)}
+  .opt:disabled{cursor:default}
+  .score{font-size:16px;font-weight:700;text-align:center;padding:10px}
+  .verdict{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;font-weight:700;font-size:15px}
+  .verdict.ok{background:var(--okt);color:var(--ok)}
+  .ref{font-size:12.5px;color:var(--sub);border-bottom:1px solid var(--line);padding:8px 0}
+  .ref b{color:var(--ink)}
+  /* monospace console / terminal block for report excerpts */
+  .term{background:#071120;border:1px solid #24406e;border-radius:12px;padding:0;margin:12px 0;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)}
+  .term .bar{display:flex;align-items:center;gap:7px;background:#0b1a30;padding:8px 12px;border-bottom:1px solid #24406e}
+  .term .bar i{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .term .bar .t{font-size:11px;color:#8fb4ff;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin-left:6px;letter-spacing:.02em}
+  .term pre{margin:0;padding:13px 14px;overflow-x:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.65;color:#cdd9ef;white-space:pre}
+  .term .k{color:#67e8f9}
+  .term .g{color:#4ade80;font-weight:600}
+  .term .y{color:#facc15}
+  .term .r{color:#f87171;font-weight:600}
+  .term .m{color:#c4b5fd}
+  .term .c{color:#5b7099}
+  /* diagnosis scenario */
+  .scfeed{border-radius:12px;padding:12px 14px;margin:10px 0;font-size:13.5px;display:none}
+  .scfeed.show{display:block}
+  .scfeed.ok{background:var(--okt);border-left:3px solid var(--ok)}
+  .scfeed.no{background:var(--badt);border-left:3px solid var(--bad)}
+  .scfeed b{display:block;margin-bottom:4px}
+  .scfeed .trap{margin-top:8px;font-size:12.5px;color:var(--sub);border-top:1px dashed var(--line);padding-top:7px}
+  .badge{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:3px 8px;border-radius:6px;margin-bottom:8px}
+  .badge.ok{background:var(--okt);color:var(--ok)}
+  .badge.no{background:var(--badt);color:var(--bad)}
+  @media(max-width:520px){ .card{padding:15px} .shell{padding:12px 12px 28px} .brand small{display:none} .term pre{font-size:11px} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+  <div class="top">
+    <div class="brand">
+      <span class="logo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10"/><path d="M2 18h20"/><path d="M12 6V3M9 3h6"/><path d="M8 11l2 2-2 2M13 15h3"/></svg></span>
+      <div><b id="brand"></b><small id="brandsub"></small></div>
+    </div>
+    <div class="tools">
+      <a class="tbtn" id="home" href="../index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span id="homeTxt"></span></a>
+      <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+      <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+    </div>
+  </div>
+  <div class="prog"><i id="progbar"></i></div>
+  <div class="meta"><span id="mStep"></span><span id="mDur"></span></div>
+  </div>
+  <div class="card" id="card"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev"></button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="next"></button>
+  </div>
+</div>
+
+<script>
+var CONFIG = {
+  brand:   ["Health Check — mmWave 5G NR","Health Check — mmWave 5G NR"],
+  subtitle:["Module 3/3 · Ericsson RAN · n261 / sync / KPIs","Módulo 3/3 · Ericsson RAN · n261 / sync / KPIs"],
+  duration:"≈ 16 min",
+  defaultLang:"en"
+};
+var params=new URLSearchParams(location.search);
+var LANG=params.get("lang")?(params.get("lang").toLowerCase().startsWith("es")?"es":"en"):CONFIG.defaultLang;
+function X(en,es){ return LANG==="es"?es:en; }
+function $(id){ return document.getElementById(id); }
+function tit(en,es){ return '<div class="step-ico">'+STEPS[cur].ico+'</div><h1>'+X(en,es)+'</h1>'; }
+var ICO={
+  play:'<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  node:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="16" height="12" rx="2"/><path d="M8 10h.01M8 14h.01M12 10h4M12 14h4"/></svg>',
+  wave:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/><path d="M2 17c2-3 4-3 6 0M18 7c-2 3-4 3-6 0"/></svg>',
+  split:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v6M12 15v6M6 12H3M21 12h-3"/><circle cx="12" cy="12" r="3"/><path d="M7 7l3 3M17 7l-3 3M7 17l3-3M17 17l-3-3"/></svg>',
+  link:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7H7a5 5 0 0 0 0 10h2M15 7h2a5 5 0 0 1 0 10h-2M8 12h8"/></svg>',
+  radio:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4M17.7 6.3a8 8 0 0 1 0 11.4M9.2 9.2a4 4 0 0 0 0 5.6M14.8 9.2a4 4 0 0 1 0 5.6"/></svg>',
+  clock:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  sat:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 6a6 6 0 0 1 6 6"/><circle cx="6.5" cy="17.5" r="3.5"/><path d="M9 15l6-6"/></svg>',
+  fiber:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v5a4 4 0 0 0 4 4h8a4 4 0 0 1 4 4v3"/><circle cx="4" cy="4" r="1.5"/></svg>',
+  chart:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16"/><rect x="7" y="12" width="3" height="5"/><rect x="12" y="8" width="3" height="9"/><rect x="17" y="5" width="3" height="12"/></svg>',
+  calc:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15v4M8 19h4"/></svg>',
+  diag:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 8v4l2 2"/><path d="M16 3l2 2 3-3"/></svg>',
+  search:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>',
+  check:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  warn:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.6 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+  quiz:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.1 9a3 3 0 1 1 4.2 2.7c-.8.4-1.3 1-1.3 2M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>',
+  book:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h9a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-1a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h2z"/></svg>',
+  sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+  term:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M13 15h4"/></svg>'
+};
+function bx(icon,tEn,tEs,dEn,dEs){ return '<div class="box"><h3>'+icon+X(tEn,tEs)+'</h3><p>'+X(dEn,dEs)+'</p></div>'; }
+
+/* monospace terminal excerpt block. title + preformatted (already-escaped) body */
+function term(titleEn,titleEs,body){
+  return '<div class="term"><div class="bar"><i style="background:#f87171"></i><i style="background:#facc15"></i><i style="background:#4ade80"></i>'+
+    '<span class="t">'+ICO.term+' '+X(titleEn,titleEs)+'</span></div><pre>'+body+'</pre></div>';
+}
+
+/* Interactive diagnosis scenario builder.
+   opts = array of {en,es,correct,fbEn,fbEs,trapEn,trapEs} */
+function scenario(id,opts){
+  var html='<div id="'+id+'">';
+  html+=opts.map(function(o,j){
+    return '<button class="opt" data-sc="'+id+'" data-j="'+j+'">'+X(o.en,o.es)+'</button>';
+  }).join("");
+  html+='<div class="scfeed" id="'+id+'_fb"></div>';
+  html+='<div class="row" id="'+id+'_ctl" style="display:none;margin-top:6px"><button class="btn ghost" id="'+id+'_retry">'+X("Try again","Intentar de nuevo")+'</button></div>';
+  html+='</div>';
+  return html;
+}
+function wireScenario(id,opts){
+  var fb=$(id+"_fb"), ctl=$(id+"_ctl");
+  function reset(){
+    document.querySelectorAll('.opt[data-sc="'+id+'"]').forEach(function(b){ b.disabled=false; b.classList.remove("correct","wrong"); });
+    fb.className="scfeed"; fb.innerHTML=""; ctl.style.display="none";
+  }
+  document.querySelectorAll('.opt[data-sc="'+id+'"]').forEach(function(b){
+    b.onclick=function(){
+      var j=+b.dataset.j, o=opts[j];
+      document.querySelectorAll('.opt[data-sc="'+id+'"]').forEach(function(x){
+        x.disabled=true;
+        if(opts[+x.dataset.j].correct) x.classList.add("correct");
+      });
+      if(!o.correct) b.classList.add("wrong");
+      fb.className="scfeed show "+(o.correct?"ok":"no");
+      fb.innerHTML='<span class="badge '+(o.correct?"ok":"no")+'">'+(o.correct?X("Correct","Correcto"):X("Not quite","No exactamente"))+'</span>'+
+        '<b>'+X(o.fbEn,o.fbEs)+'</b>'+
+        (o.trapEn?'<div class="trap">'+X(o.trapEn,o.trapEs)+'</div>':'');
+      ctl.style.display=o.correct?"none":"flex";
+    };
+  });
+  if($(id+"_retry")) $(id+"_retry").onclick=reset;
+}
+
+/* mmWave beam / LOS diagram */
+function beamSVG(){ return ''+
+  '<svg viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">'+
+  '<rect width="360" height="200" fill="#071120"/>'+
+  '<rect x="0" y="170" width="360" height="30" fill="#0b1a30"/><line x1="0" y1="170" x2="360" y2="170" stroke="#24406e" stroke-width="1.5"/>'+
+  /* streetmacro pole */
+  '<rect x="40" y="60" width="10" height="110" fill="#2b4468"/>'+
+  '<rect x="30" y="40" width="30" height="24" rx="3" fill="#12233f" stroke="#4d8bff" stroke-width="1.5"/>'+
+  '<text x="45" y="34" fill="#8fb4ff" font-family="system-ui" font-size="8" text-anchor="middle">Streetmacro 6701</text>'+
+  /* narrow beams (beamforming) */
+  '<g opacity="0.85"><path d="M60 52 L200 40 L200 64 Z" fill="#67e8f9" opacity="0.28"/>'+
+  '<path d="M60 52 L210 82 L210 104 Z" fill="#67e8f9" opacity="0.22"/>'+
+  '<path d="M60 52 L180 120 L180 140 Z" fill="#67e8f9" opacity="0.18"/></g>'+
+  '<text x="150" y="30" fill="#67e8f9" font-family="system-ui" font-size="8">n261 · 28 GHz · '+X("narrow beams","haces estrechos")+'</text>'+
+  /* UE */
+  '<circle cx="205" cy="52" r="4" fill="#4ade80"/><rect x="200" y="60" width="10" height="16" rx="2" fill="#12233f" stroke="#4ade80" stroke-width="1.2"/>'+
+  /* obstruction blocking */
+  '<rect x="250" y="110" width="26" height="60" fill="#3a5478"/><text x="263" y="106" fill="#9db0d6" font-family="system-ui" font-size="7" text-anchor="middle">'+X("building","edificio")+'</text>'+
+  '<path d="M60 52 L248 130" stroke="#f87171" stroke-width="1.5" stroke-dasharray="4 3"/>'+
+  '<text x="300" y="150" fill="#f87171" font-family="system-ui" font-size="8" text-anchor="middle">'+X("blocked / no LOS","bloqueado / sin LOS")+'</text>'+
+  '<circle cx="285" cy="150" r="4" fill="none" stroke="#f87171" stroke-width="1.5"/><line x1="282" y1="147" x2="288" y2="153" stroke="#f87171" stroke-width="1.5"/>'+
+  '</svg>'; }
+
+/* NSA / ENDC anchor diagram */
+function nsaSVG(){ return ''+
+  '<svg viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">'+
+  '<rect width="360" height="200" fill="#071120"/>'+
+  /* UE */
+  '<rect x="160" y="150" width="16" height="26" rx="3" fill="#12233f" stroke="#4ade80" stroke-width="1.5"/><text x="168" y="190" fill="#4ade80" font-family="system-ui" font-size="8" text-anchor="middle">UE</text>'+
+  /* 4G anchor */
+  '<rect x="30" y="40" width="90" height="40" rx="4" fill="#12233f" stroke="#4d8bff" stroke-width="1.5"/>'+
+  '<text x="75" y="58" fill="#8fb4ff" font-family="system-ui" font-size="9" text-anchor="middle">4G eNB (anchor)</text>'+
+  '<text x="75" y="70" fill="#67e8f9" font-family="ui-monospace,monospace" font-size="8" text-anchor="middle">node 448650</text>'+
+  /* 5G mmWave gNB */
+  '<rect x="240" y="40" width="90" height="40" rx="4" fill="#12233f" stroke="#4d8bff" stroke-width="1.5"/>'+
+  '<text x="285" y="58" fill="#8fb4ff" font-family="system-ui" font-size="9" text-anchor="middle">5G gNB mmWave</text>'+
+  '<text x="285" y="70" fill="#67e8f9" font-family="ui-monospace,monospace" font-size="8" text-anchor="middle">node 1480027</text>'+
+  /* X2 link */
+  '<line x1="120" y1="60" x2="240" y2="60" stroke="#facc15" stroke-width="2" stroke-dasharray="5 3"/>'+
+  '<text x="180" y="52" fill="#facc15" font-family="system-ui" font-size="9" text-anchor="middle">X2 / Xn</text>'+
+  /* UE links */
+  '<line x1="164" y1="150" x2="80" y2="80" stroke="#4ade80" stroke-width="1.5"/><text x="105" y="120" fill="#4ade80" font-family="system-ui" font-size="8">LTE</text>'+
+  '<line x1="172" y1="150" x2="285" y2="80" stroke="#67e8f9" stroke-width="1.5"/><text x="235" y="120" fill="#67e8f9" font-family="system-ui" font-size="8">NR leg</text>'+
+  '<text x="180" y="20" fill="#9db0d6" font-family="system-ui" font-size="9" text-anchor="middle">'+X("5G NSA: NR leg is ADDED onto the 4G anchor (ENDC)","5G NSA: la pata NR se AGREGA sobre el ancla 4G (ENDC)")+'</text>'+
+  '</svg>'; }
+
+var STEPS = [
+  /* 1 — Overview */
+  { ico:ICO.play, t:["Overview","Introducción"], b:function(){
+      return tit("Reading a mmWave 5G NR Health Check","Lectura de un Health Check mmWave 5G NR")+
+        '<span class="pill">Module 3 / 3 · Ericsson RAN</span>'+
+        '<p class="lead">'+X("This is the third and final module. In Modules 1–2 you read a 4G macro node. Now you read an Ericsson <b>mmWave 5G NR</b> Health Check: a Streetmacro node on band n261 (28 GHz), its NR objects, its 5G NSA link back to the 4G anchor, its timing/sync, and its KPIs. You will practice interpreting real excerpts and deciding what is healthy vs. what needs action.","Este es el tercer y último módulo. En los Módulos 1–2 leíste un nodo macro 4G. Ahora lees un Health Check <b>mmWave 5G NR</b> Ericsson: un nodo Streetmacro en banda n261 (28 GHz), sus objetos NR, su enlace 5G NSA al ancla 4G, su sincronización, y sus KPIs. Practicarás interpretar extractos reales y decidir qué está sano y qué requiere acción.")+'</p>'+
+        term("Health Check — report header","Health Check — encabezado del reporte",
+          '<span class="c"># ============= ERICSSON RAN HEALTH CHECK =============</span>\n'+
+          '<span class="k">Node:</span> 1480027 / 1480026 / 1480025\n'+
+          '<span class="k">Name:</span> 1480027_5GNB_FTL_FTLBEACHPARK003\n'+
+          '<span class="k">Health Check Timestamp (UTC):</span> 2026-07-10 13:45:40\n'+
+          '<span class="c">-----------------------------------------------------</span>\n'+
+          '<span class="k">Alarms &gt;&gt;&gt;</span> <span class="g">Total: 0 Alarms  (0 Critical, 0 Major)</span>')+
+        '<p class="note">'+X("One report can bundle several mmWave nodes at one site. This site (FTLBEACHPARK003) carries three gNBs: 1480027, 1480026 and 1480025.","Un reporte puede agrupar varios nodos mmWave en un sitio. Este sitio (FTLBEACHPARK003) lleva tres gNBs: 1480027, 1480026 y 1480025.")+'</p>';
+  }},
+
+  /* 2 — What makes mmWave different */
+  { ico:ICO.wave, t:["What is mmWave?","¿Qué es mmWave?"], b:function(){
+      return tit("What makes a mmWave node different","Qué hace diferente a un nodo mmWave")+
+        '<p class="lead">'+X("A mmWave node is an <b>integrated radio</b>. The node type here is \"Streetmacro 6701 B261\" — the radio, antenna and beamforming are built into one unit. There is NO separate RRU, RiLink or CPRI fronthaul like on a classic macro. On the inventory that shows up as RiLink \"Total: 0 MOs\".","Un nodo mmWave es un <b>radio integrado</b>. Aquí el tipo de nodo es \"Streetmacro 6701 B261\" — el radio, la antena y el beamforming vienen en una sola unidad. NO hay RRU, RiLink ni fronthaul CPRI separado como en un macro clásico. En el inventario eso aparece como RiLink \"Total: 0 MOs\".")+'</p>'+
+        term("Inventory excerpt","Extracto de inventario",
+          '<span class="k">FieldReplaceableUnit</span>=BB-1   <span class="g">1(UNLOCKED) 1(ENABLED)</span>\n'+
+          '   productName : <span class="m">"Streetmacro 6701 B261"</span>\n'+
+          '   productNumber: KRK 101 01/11\n'+
+          '<span class="k">SupportUnit</span>=1   FAN\n'+
+          '<span class="k">RiLink</span>       <span class="y">Total: 0 MOs</span>   <span class="c"># no separate fronthaul link</span>')+
+        '<div class="grid3">'+
+          bx(ICO.wave,"Band n261","Banda n261","28 GHz (27.5–28.35 GHz) — very high frequency, very wide channels.","28 GHz (27.5–28.35 GHz) — frecuencia muy alta, canales muy anchos.")+
+          bx(ICO.radio,"Beamforming","Beamforming","Energy is focused into narrow steerable beams toward each user.","La energía se enfoca en haces estrechos dirigibles hacia cada usuario.")+
+          bx(ICO.warn,"Short / LOS","Corto / LOS","Range is short and easily blocked; needs line-of-sight.","El alcance es corto y se bloquea fácil; necesita línea de vista.")+
+        '</div>'+
+        '<p class="note">'+X("Because RiLink shows 0 MOs, do NOT go hunting for CPRI/fronthaul faults on this node — there is no fronthaul to fault. That is normal for an integrated mmWave radio.","Como RiLink muestra 0 MOs, NO busques fallas de CPRI/fronthaul en este nodo — no hay fronthaul que fallar. Es normal en un radio mmWave integrado.")+'</p>';
+  }},
+
+  /* 3 — mmWave RF behaviour */
+  { ico:ICO.radio, t:["mmWave RF","RF mmWave"], b:function(){
+      return tit("Why mmWave coverage is short & LOS-sensitive","Por qué la cobertura mmWave es corta y sensible a LOS")+
+        '<p class="lead">'+X("At 28 GHz the signal is easily absorbed and blocked. A wall, a truck, foliage, even heavy rain can drop the link. Coverage is a set of narrow beams, not a wide cell — so physical alignment and a clear line-of-sight matter enormously.","A 28 GHz la señal se absorbe y bloquea fácilmente. Un muro, un camión, follaje, o lluvia fuerte pueden tumbar el enlace. La cobertura es un conjunto de haces estrechos, no una celda amplia — por eso la alineación física y una línea de vista despejada importan muchísimo.")+'</p>'+
+        '<div class="illus" style="aspect-ratio:16/9">'+beamSVG()+'</div>'+
+        '<p class="mcap">'+ICO.term+' '+X("Narrow n261 beams reach a clear UE; an obstruction breaks the LOS path.","Haces n261 estrechos alcanzan un UE despejado; una obstrucción rompe la línea de vista.")+'</p>'+
+        '<p class="note warn">'+X("Field implication: if a mmWave cell reports poor throughput or drops, check for new obstructions (construction, signage, tree growth), panel alignment/tilt, and radome cleanliness — often the problem is physical, not a fault code.","Implicación de campo: si una celda mmWave reporta baja tasa o caídas, revisa nuevas obstrucciones (obra, letreros, crecimiento de árboles), alineación/tilt del panel y limpieza del radomo — muchas veces el problema es físico, no un código de falla.")+'</p>';
+  }},
+
+  /* 4 — NR objects */
+  { ico:ICO.split, t:["NR objects","Objetos NR"], b:function(){
+      return tit("NR objects: DU / CU functional split","Objetos NR: split funcional DU / CU")+
+        '<p class="lead">'+X("5G NR splits the base station into functions. Learn to recognize them in the report:","5G NR divide la estación base en funciones. Aprende a reconocerlas en el reporte:")+'</p>'+
+        '<div class="grid2">'+
+          bx(ICO.node,"GNBDUFunction","GNBDUFunction","The Distributed Unit — real-time lower layers, holds the cells &amp; radio (NRCellDU).","La Unidad Distribuida — capas bajas en tiempo real, contiene las celdas y el radio (NRCellDU).")+
+          bx(ICO.node,"GNBCUCP / GNBCUUP","GNBCUCP / GNBCUUP","The Central Unit — Control Plane and User Plane; higher layers (NRCellCU).","La Unidad Central — Plano de Control y de Usuario; capas altas (NRCellCU).")+
+          bx(ICO.radio,"NRCellDU / NRCellCU","NRCellDU / NRCellCU","The cell as seen by the DU vs. the CU — same cell, two views.","La celda vista por el DU vs. el CU — misma celda, dos vistas.")+
+          bx(ICO.wave,"NRSectorCarrier","NRSectorCarrier","The physical carrier: frequency, bandwidth, power for a sector.","La portadora física: frecuencia, ancho de banda, potencia de un sector.")+
+        '</div>'+
+        term("NR cells excerpt","Extracto de celdas NR",
+          '<span class="k">NRCellDU</span>=1480027_0001_0003_01 ... _07   (<span class="m">label: n261_SC</span>)\n'+
+          '   all cells:  <span class="g">1(UNLOCKED) 1(ENABLED)</span>\n'+
+          '<span class="k">NRSectorCarrier</span>=1 .. 7               <span class="g">UNLOCKED / ENABLED</span>')+
+        '<p class="note">'+X("This node has 7 cells / sector carriers (n261_SC). All UNLOCKED + ENABLED means every cell is administratively allowed and operationally in service.","Este nodo tiene 7 celdas / portadoras (n261_SC). Todas UNLOCKED + ENABLED significa que cada celda está administrativamente permitida y operativamente en servicio.")+'</p>';
+  }},
+
+  /* 5 — Reading the carrier */
+  { ico:ICO.wave, t:["The carrier","La portadora"], b:function(){
+      return tit("Reading the NR sector carrier","Lectura de la portadora NR")+
+        '<p class="lead">'+X("The NRSectorCarrier tells you exactly what RF the node is transmitting. Read each field:","La NRSectorCarrier te dice exactamente qué RF transmite el nodo. Lee cada campo:")+'</p>'+
+        term("Carrier excerpt","Extracto de portadora",
+          '<span class="k">NRSectorCarrier</span>=1\n'+
+          '   arfcnDL              : <span class="m">2073333</span>\n'+
+          '   frequencyDL          : <span class="m">27650040</span> <span class="c">kHz  = 27.65 GHz</span>\n'+
+          '   bSChannelBwDL        : <span class="m">100</span> <span class="c">MHz</span>\n'+
+          '   configuredMaxTxPower : <span class="m">33000</span>\n'+
+          '   maxTransmissionPower : <span class="m">33000</span>\n'+
+          '   txPowerState         : <span class="g">1 (STABLE)</span>\n'+
+          '<span class="k">SectorEquipmentFunction</span>=1\n'+
+          '   availableHwOutputPower : <span class="m">200476</span>')+
+        '<div class="grid2">'+
+          bx(ICO.wave,"frequencyDL 27650040","frequencyDL 27650040","In kHz → 27.65 GHz. Confirms this is mmWave band n261.","En kHz → 27.65 GHz. Confirma que es mmWave banda n261.")+
+          bx(ICO.chart,"bSChannelBwDL 100","bSChannelBwDL 100","100 MHz channel — very wide, typical of mmWave.","Canal de 100 MHz — muy ancho, típico de mmWave.")+
+          bx(ICO.radio,"txPowerState 1 (STABLE)","txPowerState 1 (STABLE)","Power output has settled and is stable — good.","La potencia se estabilizó y es estable — bien.")+
+          bx(ICO.check,"configured = max","configured = max","Configured power equals the max — running at planned level.","La potencia configurada iguala el máximo — opera al nivel planeado.")+
+        '</div>'+
+        '<p class="note good"><b>'+X("Healthy read","Lectura sana")+':</b> '+X("27.65 GHz, 100 MHz, power STABLE and at configured level. This carrier is transmitting normally.","27.65 GHz, 100 MHz, potencia STABLE y al nivel configurado. Esta portadora transmite normalmente.")+'</p>';
+  }},
+
+  /* 6 — NSA / ENDC interfaces */
+  { ico:ICO.link, t:["NSA / ENDC","NSA / ENDC"], b:function(){
+      return tit("5G NSA, ENDC & inter-node interfaces","5G NSA, ENDC e interfaces inter-nodo")+
+        '<p class="lead">'+X("This is 5G <b>NSA</b> (Non-Standalone). The mmWave gNB does not stand alone — the phone stays anchored on a 4G eNB, and the 5G NR leg is <b>added</b> on top. That addition is called <b>ENDC</b> (E-UTRA New Radio Dual Connectivity).","Esto es 5G <b>NSA</b> (No Autónomo). El gNB mmWave no funciona solo — el teléfono queda anclado en un eNB 4G, y la pata NR 5G se <b>agrega</b> encima. Esa suma se llama <b>ENDC</b> (E-UTRA New Radio Dual Connectivity).")+'</p>'+
+        '<div class="illus" style="aspect-ratio:16/9">'+nsaSVG()+'</div>'+
+        term("Interfaces excerpt","Extracto de interfaces",
+          '<span class="k">ExternalENodeBFunction</span>=<span class="m">auto311_480_3_448650</span>   <span class="c"># the 4G anchor</span>\n'+
+          '   <span class="k">TermPointToENodeB</span>=auto1     <span class="g">1 ENABLED</span>   <span class="c"># X2 link</span>\n'+
+          '<span class="k">ExternalGNBCUCPFunction</span>=<span class="m">auto311_480_3_1489967</span>\n'+
+          '   <span class="k">TermPointToGNodeB</span>                            <span class="c"># Xn link</span>\n'+
+          '<span class="k">SctpEndpoint</span>= F1_NRCUCP , F1_NRDU , Xn        <span class="c"># F1 = CU&lt;-&gt;DU</span>')+
+        '<div class="grid2">'+
+          bx(ICO.link,"X2 → 4G anchor","X2 → ancla 4G","ExternalENodeBFunction + TermPointToENodeB = X2 to the LTE eNB.","ExternalENodeBFunction + TermPointToENodeB = X2 al eNB LTE.")+
+          bx(ICO.link,"Xn → other gNBs","Xn → otros gNBs","ExternalGNBCUCPFunction + TermPointToGNodeB = Xn between gNBs.","ExternalGNBCUCPFunction + TermPointToGNodeB = Xn entre gNBs.")+
+        '</div>'+
+        '<p class="note warn"><b>'+X("Key teaching point","Punto clave")+':</b> '+X("The external eNodeB \"...448650\" is the SAME site's 4G macro — node 448650 from Modules 1–2. If that X2/Xn link is down, the 5G NR leg can't be added and ENDC fails. This is how all three modules tie together.","El eNodeB externo \"...448650\" es el macro 4G del MISMO sitio — el nodo 448650 de los Módulos 1–2. Si ese enlace X2/Xn cae, la pata NR 5G no se puede agregar y ENDC falla. Así se conectan los tres módulos.")+'</p>';
+  }},
+
+  /* 7 — Synchronization */
+  { ico:ICO.clock, t:["Synchronization","Sincronización"], b:function(){
+      return tit("Timing & synchronization (TDD needs it)","Timing y sincronización (TDD lo necesita)")+
+        '<p class="lead">'+X("mmWave runs TDD — uplink and downlink share the same frequency and take turns in time. For neighbours not to talk over each other, every node must agree on time to within microseconds. That comes from GNSS/GPS plus PTP/1588 and SyncE.","mmWave opera en TDD — subida y bajada comparten la misma frecuencia y se turnan en el tiempo. Para que los vecinos no se pisen, cada nodo debe coincidir en el tiempo con precisión de microsegundos. Eso viene de GNSS/GPS más PTP/1588 y SyncE.")+'</p>'+
+        term("Sync / GNSS status excerpt","Extracto de estado sync / GNSS",
+          '<span class="k">Synchronization</span>=1\n'+
+          '   syncReference       : GNSS\n'+
+          '   syncStatus          : <span class="g">LOCKED / IN-SYNC</span>\n'+
+          '<span class="k">GnssSystem</span>=1\n'+
+          '   satellitesInView    : 11\n'+
+          '   gnssStatus          : <span class="g">OK (fix acquired)</span>')+
+        '<div class="grid2">'+
+          bx(ICO.check,"Read: is it locked?","Lee: ¿está locked?","Look for syncStatus LOCKED / IN-SYNC and a GNSS fix. That is the healthy state.","Busca syncStatus LOCKED / IN-SYNC y fix GNSS. Ese es el estado sano.")+
+          bx(ICO.warn,"If GNSS is lost","Si se pierde GNSS","Node enters holdover, timing drifts, and TDD can cause interference then degrade.","El nodo entra en holdover, el timing deriva, y TDD puede causar interferencia y degradarse.")+
+        '</div>'+
+        '<p class="note bad">'+X("A lost GNSS reference is a real field problem: check the GNSS antenna and cable, sky view (obstruction/snow), the configured sync source, and the holdover status. Timing faults can look like RF problems but originate at the sync source.","Perder la referencia GNSS es un problema real de campo: revisa la antena GNSS y su cable, la vista al cielo (obstrucción/nieve), la fuente de sync configurada, y el estado de holdover. Las fallas de timing pueden parecer problemas de RF pero nacen en la fuente de sync.")+'</p>';
+  }},
+
+  /* 8 — Light level (SFP backhaul) */
+  { ico:ICO.fiber, t:["Light level","Nivel óptico"], b:function(){
+      return tit("Light level — SFP backhaul optics","Nivel óptico — óptica SFP de backhaul")+
+        '<p class="lead">'+X("The mmWave node still reaches the network over fiber backhaul via an SFP. Read the optical light level with the same OK / OKW / NOK / NT logic from Module 2 — now applied to the backhaul optics.","El nodo mmWave sigue llegando a la red por backhaul de fibra vía un SFP. Lee el nivel óptico con la misma lógica OK / OKW / NOK / NT del Módulo 2 — ahora aplicada a la óptica de backhaul.")+'</p>'+
+        term("Optical / SFP excerpt","Extracto óptico / SFP",
+          '<span class="k">SfpModule</span>=backhaul-1\n'+
+          '   rxPower  : -6.2 dBm   status: <span class="g">OK</span>\n'+
+          '   txPower  : -2.1 dBm   status: <span class="g">OK</span>')+
+        '<div class="grid2">'+
+          bx(ICO.check,"OK","OK","Rx/Tx within spec — healthy backhaul optics.","Rx/Tx dentro de spec — óptica de backhaul sana.")+
+          bx(ICO.warn,"OKW","OKW","Warning — near the limit; trend it and inspect connectors.","Advertencia — cerca del límite; monitorea y revisa conectores.")+
+          bx(ICO.warn,"NOK","NOK","Out of spec — clean/reseat fiber, check the far end.","Fuera de spec — limpia/reasienta la fibra, revisa el otro extremo.")+
+          bx(ICO.node,"NT","NT","Not tested / no reading — SFP absent or no data.","No probado / sin lectura — SFP ausente o sin datos.")+
+        '</div>'+
+        '<p class="note">'+X("No backhaul = no node. If light is NOK, the whole gNB (all 7 cells) is unreachable even though the RF hardware is fine.","Sin backhaul = sin nodo. Si el nivel es NOK, todo el gNB (las 7 celdas) queda inalcanzable aunque el hardware de RF esté bien.")+'</p>';
+  }},
+
+  /* 9 — KPIs */
+  { ico:ICO.chart, t:["KPIs","KPIs"], b:function(){
+      return tit("KPI INFO: what the counters mean","KPI INFO: qué significan los contadores")+
+        '<p class="lead">'+X("The report lists performance counters (pm...). They come in Attempt / Success pairs. Learn the three that matter most:","El reporte lista contadores de desempeño (pm...). Vienen en pares Intento / Éxito. Aprende los tres más importantes:")+'</p>'+
+        term("KPI counters excerpt","Extracto de contadores KPI",
+          '<span class="k">NRCellCU</span>=1489967_0001_0001_04\n'+
+          '   pmRrcConnEstabAtt        : <span class="m">6</span>\n'+
+          '   pmRrcConnEstabSucc       : <span class="g">6</span>   <span class="c"># RRC setup 6/6</span>\n'+
+          '   pmEndcSetupUeAtt         : <span class="m">3</span>\n'+
+          '   pmEndcSetupUeSucc        : <span class="g">3</span>   <span class="c"># ENDC add 3/3</span>\n'+
+          '   pmEndcRelUeNormal        : <span class="g">7</span>\n'+
+          '   pmEndcRelUeAbnormalMenb  : <span class="g">0</span>\n'+
+          '   pmEndcRelUeAbnormalSgnb  : <span class="g">0</span>')+
+        '<div class="grid3">'+
+          bx(ICO.link,"RRC setup","Setup RRC","pmRrcConnEstabSucc / ...Att = did users connect? Here 6/6.","pmRrcConnEstabSucc / ...Att = ¿se conectaron los usuarios? Aquí 6/6.")+
+          bx(ICO.wave,"ENDC add","Alta ENDC","pmEndcSetupUeSucc / ...Att = did the NR leg get added? Here 3/3.","pmEndcSetupUeSucc / ...Att = ¿se agregó la pata NR? Aquí 3/3.")+
+          bx(ICO.check,"Release quality","Calidad de liberación","Normal vs Abnormal (Menb/Sgnb). Here all Normal, 0 abnormal.","Normal vs Anormal (Menb/Sgnb). Aquí todo Normal, 0 anormal.")+
+        '</div>'+
+        '<p class="note good"><b>'+X("Healthy read","Lectura sana")+':</b> '+X("RRC 6/6, ENDC 3/3, and every release Normal (0 abnormal) → users connect, the NR leg adds cleanly, and sessions end gracefully.","RRC 6/6, ENDC 3/3, y toda liberación Normal (0 anormal) → los usuarios conectan, la pata NR se agrega limpio, y las sesiones terminan bien.")+'</p>';
+  }},
+
+  /* 10 — KPI math */
+  { ico:ICO.calc, t:["KPI math","Cálculo KPI"], b:function(){
+      return tit("Computing a success rate","Cálculo de una tasa de éxito")+
+        '<p class="lead">'+X("Any Att/Succ pair becomes a percentage: <b>success rate = Succ ÷ Att × 100</b>. Move the slider to see how the same formula reads on a bad node.","Cualquier par Att/Succ se vuelve porcentaje: <b>tasa de éxito = Éxito ÷ Intento × 100</b>. Mueve el control para ver cómo la misma fórmula se lee en un nodo malo.")+'</p>'+
+        '<div class="stat3">'+
+          '<div class="s"><b>3</b><span>pmEndcSetupUeAtt</span></div>'+
+          '<div class="s"><b>3</b><span>pmEndcSetupUeSucc</span></div>'+
+          '<div class="s"><b>100%</b><span>'+X("this node","este nodo")+'</span></div>'+
+        '</div>'+
+        '<p class="note good">'+X("This node: 3 ÷ 3 × 100 = 100% ENDC setup success. Nothing to action.","Este nodo: 3 ÷ 3 × 100 = 100% de éxito de alta ENDC. Nada que accionar.")+'</p>'+
+        '<h2>'+X("Now a contrasting node","Ahora un nodo de contraste")+'</h2>'+
+        '<div class="row"><span class="lbl">pmEndcSetupUeSucc</span><input type="range" id="kS" min="0" max="50" value="42"><span class="val" id="kV"></span></div>'+
+        '<div class="note" id="kMsg"></div>'+
+        '<p class="note">'+X("A LOW ENDC setup success points at: the anchor / X2 link, coverage at the cell edge (mmWave drops fast), or a neighbour / configuration issue — NOT usually the mmWave hardware itself.","Un ÉXITO de alta ENDC BAJO apunta a: el ancla / enlace X2, cobertura en el borde de celda (mmWave cae rápido), o un problema de vecino / configuración — NO suele ser el hardware mmWave en sí.")+'</p>';
+    }, i:function(){ var s=$("kS"); function u(){ var succ=+s.value, att=50; var pct=Math.round(succ/att*1000)/10; $("kV").textContent=succ+" / "+att; var m=$("kMsg");
+        m.innerHTML="<b>"+succ+" ÷ "+att+" × 100 = "+pct+"%</b> — ";
+        if(pct>=98){ m.className="note good"; m.innerHTML+=X("excellent, no action.","excelente, sin acción."); }
+        else if(pct>=90){ m.className="note warn"; m.innerHTML+=X("watch it — investigate anchor/coverage trends.","obsérvalo — investiga tendencias de ancla/cobertura."); }
+        else { m.className="note bad"; m.innerHTML+=X("low — check X2 to the anchor, cell-edge coverage, neighbours/config.","bajo — revisa X2 al ancla, cobertura en borde, vecinos/config."); } }
+        s.oninput=u; u(); }
+  },
+
+  /* 11 — Scenario A: healthy baseline */
+  { ico:ICO.diag, t:["Diagnose: baseline","Diagnóstico: baseline"], b:function(){
+      return tit("Scenario 1 — Is this node healthy?","Escenario 1 — ¿Este nodo está sano?")+
+        '<p class="lead">'+X("You open the Health Check and see this. What do you conclude and record?","Abres el Health Check y ves esto. ¿Qué concluyes y registras?")+'</p>'+
+        term("Node summary","Resumen del nodo",
+          '<span class="k">Alarms &gt;&gt;&gt;</span> <span class="g">Total: 0 Alarms (0 Critical, 0 Major)</span>\n'+
+          '<span class="k">NRCellDU</span>=..._01.._07   <span class="g">all UNLOCKED / ENABLED</span>\n'+
+          '<span class="k">KPIs</span>: RRC 6/6 · ENDC setup 3/3 · abnormal rel = 0')+
+        scenario("scA",[
+          {en:"Healthy baseline — record it and sign off.",es:"Baseline sano — regístralo y firma.",correct:true,
+           fbEn:"Correct. 0 alarms, all cells in service, and KPI setups where Att = Succ is a clean baseline. Record: the UTC timestamp (2026-07-10 13:45:40), 0 alarms, all 7 NR cells UNLOCKED/ENABLED, RRC 6/6 and ENDC 3/3 (100%). Then sign off.",
+           fbEs:"Correcto. 0 alarmas, todas las celdas en servicio, y KPIs con Att = Succ es un baseline limpio. Registra: la marca de tiempo UTC (2026-07-10 13:45:40), 0 alarmas, las 7 celdas NR UNLOCKED/ENABLED, RRC 6/6 y ENDC 3/3 (100%). Luego firma.",
+           trapEn:"Tip: always capture the timestamp — a Health Check is only meaningful for the moment it was taken.",trapEs:"Tip: captura siempre la marca de tiempo — un Health Check solo vale para el momento en que se tomó."},
+          {en:"Not enough info — the low counters (only 3–6) mean something is broken.",es:"Falta info — los contadores bajos (solo 3–6) indican algo roto.",correct:false,
+           fbEn:"No. Low absolute counts just mean low traffic during the window (a quiet small cell). What matters is the RATIO: 6/6 and 3/3 are both 100%. Low volume is not a fault.",
+           fbEs:"No. Conteos absolutos bajos solo indican poco tráfico en la ventana (una celda pequeña tranquila). Lo que importa es la RAZÓN: 6/6 y 3/3 son ambos 100%. Bajo volumen no es falla.",
+           trapEn:"Trap: don't confuse low volume with poor performance. Judge the success rate, not the raw count.",trapEs:"Trampa: no confundas bajo volumen con mal desempeño. Juzga la tasa de éxito, no el conteo bruto."},
+          {en:"Cannot be healthy — a real 5G node must show more than 3 ENDC attempts.",es:"No puede estar sano — un nodo 5G real debe mostrar más de 3 intentos ENDC.",correct:false,
+           fbEn:"No. There is no minimum attempt count for 'healthy'. A newly turned-up or lightly loaded mmWave cell can legitimately show single-digit counters and still be perfect at 100% success.",
+           fbEs:"No. No hay un mínimo de intentos para estar 'sano'. Una celda mmWave recién activada o poco cargada puede mostrar contadores de un dígito y aun así ser perfecta al 100%.",
+           trapEn:"Trap: absolute counts depend on traffic and window length, not on health.",trapEs:"Trampa: los conteos absolutos dependen del tráfico y la ventana, no de la salud."}
+        ]);
+    }, i:function(){ wireScenario("scA",window._scA); }
+  },
+
+  /* 12 — Scenario B: identify band */
+  { ico:ICO.diag, t:["Diagnose: band","Diagnóstico: banda"], b:function(){
+      return tit("Scenario 2 — Identify the technology & band","Escenario 2 — Identifica la tecnología y banda")+
+        '<p class="lead">'+X("Read the carrier below. What is it, and what does that imply for the site?","Lee la portadora de abajo. ¿Qué es, y qué implica para el sitio?")+'</p>'+
+        term("Carrier","Portadora",
+          '   frequencyDL   : <span class="m">27650040</span> kHz\n'+
+          '   bSChannelBwDL : <span class="m">100</span> MHz\n'+
+          '   label         : <span class="m">n261_SC</span>')+
+        scenario("scB",[
+          {en:"5G NR mmWave, band n261 (~27.65 GHz) — expect short range, LOS-sensitive, beamformed coverage.",es:"5G NR mmWave, banda n261 (~27.65 GHz) — espera alcance corto, sensible a LOS, cobertura por haces.",correct:true,
+           fbEn:"Correct. 27650040 kHz = 27.65 GHz, inside n261 (27.5–28.35 GHz). A 100 MHz channel confirms mmWave. Implication: short range, easily blocked, needs line-of-sight and precise alignment — so obstructions and tilt are prime suspects for coverage complaints.",
+           fbEs:"Correcto. 27650040 kHz = 27.65 GHz, dentro de n261 (27.5–28.35 GHz). Un canal de 100 MHz confirma mmWave. Implicación: alcance corto, se bloquea fácil, necesita línea de vista y alineación precisa — así que obstrucciones y tilt son sospechosos primarios ante quejas de cobertura.",
+           trapEn:"Remember: frequencyDL is in kHz. Divide by 1,000,000 to get GHz.",trapEs:"Recuerda: frequencyDL está en kHz. Divide entre 1.000.000 para obtener GHz."},
+          {en:"5G mid-band (C-band, ~3.5 GHz) — normal macro coverage.",es:"5G banda media (banda C, ~3,5 GHz) — cobertura macro normal.",correct:false,
+           fbEn:"No — that would read ~3500000 kHz. Here frequencyDL is 27650040 kHz = 27.65 GHz, which is mmWave n261, not C-band. mmWave behaves very differently: much shorter range and LOS-dependent.",
+           fbEs:"No — eso se leería ~3500000 kHz. Aquí frequencyDL es 27650040 kHz = 27.65 GHz, que es mmWave n261, no banda C. mmWave se comporta muy distinto: alcance mucho más corto y dependiente de LOS.",
+           trapEn:"Trap: don't eyeball 'big number = 5G' — read the actual GHz to know the band class.",trapEs:"Trampa: no supongas 'número grande = 5G' — lee los GHz reales para conocer la clase de banda."},
+          {en:"4G LTE — because a 100 MHz channel is an LTE carrier aggregation total.",es:"4G LTE — porque 100 MHz es un total de agregación LTE.",correct:false,
+           fbEn:"No. The label n261_SC and 27.65 GHz make this unmistakably 5G NR mmWave. A single 100 MHz NR channel is normal at mmWave; LTE channels top out at 20 MHz each.",
+           fbEs:"No. La etiqueta n261_SC y 27.65 GHz lo hacen inequívocamente 5G NR mmWave. Un solo canal NR de 100 MHz es normal en mmWave; los canales LTE llegan a 20 MHz cada uno.",
+           trapEn:"Trap: the n261 label and GHz range settle it — no need to guess from bandwidth alone.",trapEs:"Trampa: la etiqueta n261 y el rango en GHz lo definen — no adivines solo por el ancho de banda."}
+        ]);
+    }, i:function(){ wireScenario("scB",window._scB); }
+  },
+
+  /* 13 — Scenario C: cross-report ENDC */
+  { ico:ICO.diag, t:["Diagnose: ENDC","Diagnóstico: ENDC"], b:function(){
+      return tit("Scenario 3 — The cross-report payoff","Escenario 3 — El pago de leer dos reportes")+
+        '<p class="lead">'+X("The mmWave gNB lists its 4G anchor. In the Module-1 report, that same anchor node had a Critical alarm. Connect the dots:","El gNB mmWave lista su ancla 4G. En el reporte del Módulo 1, ese mismo nodo ancla tenía una alarma Crítica. Une los puntos:")+'</p>'+
+        term("Two reports side by side","Dos reportes lado a lado",
+          '<span class="c"># --- mmWave gNB 1480027 (this report) ---</span>\n'+
+          '<span class="k">ExternalENodeBFunction</span>=auto311_480_3_<span class="m">448650</span>\n'+
+          '   pmEndcSetupUeSucc / Att : <span class="r">1 / 9</span>  (11%)\n'+
+          '<span class="c"># --- 4G macro 448650 (Module-1 report) ---</span>\n'+
+          '<span class="r">CRITICAL</span> : External Link to GNodeB Failure (<span class="y">X2</span>)')+
+        scenario("scC",[
+          {en:"The X2 to the anchor is down, so ENDC can't add the NR leg. The fault is inter-node transport/neighbour — correlate the two reports; the mmWave RF is fine.",es:"El X2 al ancla está caído, así ENDC no puede agregar la pata NR. La falla es transporte/vecino inter-nodo — correlaciona los dos reportes; el RF mmWave está bien.",correct:true,
+           fbEn:"Correct — this is the payoff of cross-report reading. Node 448650 is the shared 4G anchor. Its Critical 'External Link to GNodeB Failure (X2)' means the X2 to the gNB is broken, so the 5G NR leg can't be added and ENDC setup collapses (1/9). Fix the X2/transport at the anchor; don't dispatch to reseat the mmWave radio.",
+           fbEs:"Correcto — este es el pago de leer dos reportes. El nodo 448650 es el ancla 4G compartida. Su Crítica 'External Link to GNodeB Failure (X2)' significa que el X2 al gNB está roto, así que la pata NR 5G no se agrega y el alta ENDC colapsa (1/9). Arregla el X2/transporte en el ancla; no despaches para reasentar el radio mmWave.",
+           trapEn:"This is why you always read the anchor's report too — the mmWave symptom, the 4G root cause.",trapEs:"Por eso siempre lees también el reporte del ancla — el síntoma en mmWave, la causa raíz en 4G."},
+          {en:"The mmWave radio has failed — replace the Streetmacro unit.",es:"El radio mmWave falló — reemplaza la unidad Streetmacro.",correct:false,
+           fbEn:"No — and this is exactly the trap. The gNB shows 0 alarms and STABLE power; its RF is healthy. The ENDC failure is caused by the anchor's broken X2. Swapping the radio wastes a truck roll and won't fix anything.",
+           fbEs:"No — y esta es justo la trampa. El gNB muestra 0 alarmas y potencia STABLE; su RF está sano. La falla ENDC la causa el X2 roto del ancla. Cambiar el radio desperdicia una visita y no arregla nada.",
+           trapEn:"Trap: a symptom on the 5G node can have its root cause on the 4G node. Follow the interface.",trapEs:"Trampa: un síntoma en el nodo 5G puede tener su causa raíz en el nodo 4G. Sigue la interfaz."},
+          {en:"It's a coverage problem — the UE is at the mmWave cell edge.",es:"Es un problema de cobertura — el UE está en el borde de la celda mmWave.",correct:false,
+           fbEn:"Not here. Cell-edge coverage can lower ENDC success, but you have a smoking gun: a Critical X2 failure on the named anchor 448650. That transport fault, not coverage, explains a near-total ENDC collapse.",
+           fbEs:"Aquí no. La cobertura en borde puede bajar el éxito ENDC, pero tienes una prueba clara: una falla X2 Crítica en el ancla nombrada 448650. Ese fallo de transporte, no la cobertura, explica un colapso casi total del ENDC.",
+           trapEn:"Trap: when a correlated Critical alarm exists, chase it before guessing at RF/coverage.",trapEs:"Trampa: cuando hay una alarma Crítica correlacionada, persíguela antes de suponer RF/cobertura."}
+        ]);
+    }, i:function(){ wireScenario("scC",window._scC); }
+  },
+
+  /* 14 — Scenario D: KPI math contrast */
+  { ico:ICO.diag, t:["Diagnose: KPI","Diagnóstico: KPI"], b:function(){
+      return tit("Scenario 4 — What does low ENDC success mean?","Escenario 4 — ¿Qué significa un éxito ENDC bajo?")+
+        '<p class="lead">'+X("Two cells, same counter pair. Compute each and decide what a low value suggests.","Dos celdas, el mismo par de contadores. Calcula cada una y decide qué sugiere un valor bajo.")+'</p>'+
+        term("Two cells","Dos celdas",
+          '<span class="k">Cell A</span>: pmEndcSetupUeSucc <span class="g">3</span> / pmEndcSetupUeAtt <span class="m">3</span>\n'+
+          '<span class="k">Cell B</span>: pmEndcSetupUeSucc <span class="y">42</span> / pmEndcSetupUeAtt <span class="m">50</span>')+
+        scenario("scD",[
+          {en:"A = 100%, B = 84%. B's shortfall points to the anchor/X2, cell-edge coverage, or a neighbour/config issue — worth investigating.",es:"A = 100%, B = 84%. La caída de B apunta al ancla/X2, cobertura en borde, o vecino/config — vale investigar.",correct:true,
+           fbEn:"Correct. 3/3 = 100%; 42/50 = 84%. Cell B is losing ~1 in 6 NR-leg additions. Low ENDC setup success typically means the anchor/X2 is flaky, the UE hits the mmWave cell edge (which drops fast), or there's a neighbour/config mismatch. Investigate those before touching the radio.",
+           fbEs:"Correcto. 3/3 = 100%; 42/50 = 84%. La celda B pierde ~1 de cada 6 altas de la pata NR. Un éxito de alta ENDC bajo suele significar que el X2/ancla falla intermitente, que el UE llega al borde de la celda mmWave (que cae rápido), o que hay un desajuste de vecino/config. Investiga eso antes de tocar el radio.",
+           trapEn:"84% may look 'okay' but for ENDC setup it's a real degradation worth a ticket.",trapEs:"84% puede parecer 'aceptable' pero para alta ENDC es una degradación real que amerita un ticket."},
+          {en:"A = 100%, B = 84%, but 84% is fine — no action needed.",es:"A = 100%, B = 84%, pero 84% está bien — sin acción.",correct:false,
+           fbEn:"The math is right but the judgement isn't. For ENDC setup success, losing 8 of 50 attempts is a meaningful degradation — users are failing to get their 5G leg. It warrants investigation, not a shrug.",
+           fbEs:"El cálculo está bien pero el criterio no. Para el éxito de alta ENDC, perder 8 de 50 intentos es una degradación relevante — los usuarios no logran su pata 5G. Amerita investigación, no encogerse de hombros.",
+           trapEn:"Trap: 'looks high' isn't a threshold. Compare against the expected target for that KPI.",trapEs:"Trampa: 'se ve alto' no es un umbral. Compara contra el objetivo esperado de ese KPI."},
+          {en:"B is better than A because 42 successes is far more than 3.",es:"B es mejor que A porque 42 éxitos es mucho más que 3.",correct:false,
+           fbEn:"No — you're comparing raw counts instead of rates. A succeeds every time (100%); B fails 16% of attempts. More traffic doesn't mean better performance; always divide Succ by Att.",
+           fbEs:"No — estás comparando conteos brutos en vez de tasas. A tiene éxito siempre (100%); B falla el 16% de los intentos. Más tráfico no significa mejor desempeño; siempre divide Éxito entre Intento.",
+           trapEn:"Trap: never rank cells by raw success count — rank by success rate.",trapEs:"Trampa: nunca clasifiques celdas por conteo bruto de éxitos — clasifica por tasa de éxito."}
+        ]);
+    }, i:function(){ wireScenario("scD",window._scD); }
+  },
+
+  /* 15 — Scenario E: sync/GNSS */
+  { ico:ICO.diag, t:["Diagnose: sync","Diagnóstico: sync"], b:function(){
+      return tit("Scenario 5 — GNSS reference lost","Escenario 5 — Referencia GNSS perdida")+
+        '<p class="lead">'+X("A TDD mmWave node reports its GNSS reference lost. What happens, and what do you check?","Un nodo mmWave TDD reporta su referencia GNSS perdida. ¿Qué pasa, y qué revisas?")+'</p>'+
+        term("Sync status","Estado de sync",
+          '<span class="k">Synchronization</span>=1  syncStatus : <span class="r">HOLDOVER</span>\n'+
+          '<span class="k">GnssSystem</span>=1       gnssStatus : <span class="r">NOK (no fix)</span>  satellitesInView: 0')+
+        scenario("scE",[
+          {en:"TDD timing drifts in holdover → interference and then degradation. Check the GNSS antenna/cable, sky view, sync source config, and holdover status.",es:"El timing TDD deriva en holdover → interferencia y luego degradación. Revisa antena/cable GNSS, vista al cielo, config de fuente de sync, y estado de holdover.",correct:true,
+           fbEn:"Correct. Without a GNSS fix the node runs on its internal oscillator (holdover); over time the TDD frame timing drifts out of alignment with neighbours, causing UL/DL interference and eventually cell degradation or lock. Physical checks first: GNSS antenna and cable/connectors, clear sky view (obstruction, ice/snow, water ingress), then the configured sync source and how long holdover has lasted.",
+           fbEs:"Correcto. Sin fix GNSS el nodo corre con su oscilador interno (holdover); con el tiempo el timing de la trama TDD se desalinea de los vecinos, causando interferencia UL/DL y al final degradación o bloqueo de la celda. Revisa primero lo físico: antena y cable/conectores GNSS, vista al cielo despejada (obstrucción, hielo/nieve, entrada de agua), luego la fuente de sync configurada y cuánto lleva el holdover.",
+           trapEn:"Timing faults masquerade as RF/interference problems — always check sync when a TDD cell degrades.",trapEs:"Las fallas de timing se disfrazan de problemas RF/interferencia — revisa siempre el sync cuando una celda TDD se degrada."},
+          {en:"Nothing urgent — GNSS only sets the clock display; the cell keeps working normally.",es:"Nada urgente — GNSS solo pone el reloj; la celda sigue normal.",correct:false,
+           fbEn:"No. On a TDD node GNSS provides the phase/time reference the air interface depends on. Lose it long enough and holdover drifts past tolerance, creating interference with neighbours and forcing the cell to degrade or go down. It is operationally urgent, not cosmetic.",
+           fbEs:"No. En un nodo TDD, GNSS provee la referencia de fase/tiempo de la que depende la interfaz aérea. Piérdelo suficiente y el holdover deriva más allá de la tolerancia, creando interferencia con vecinos y forzando la degradación o caída de la celda. Es urgente, no cosmético.",
+           trapEn:"Trap: 'holdover' is a countdown, not a safe state — it buys time, then timing fails.",trapEs:"Trampa: 'holdover' es una cuenta regresiva, no un estado seguro — da tiempo, luego el timing falla."},
+          {en:"It's an RF fault — swap the mmWave radio to restore timing.",es:"Es una falla RF — cambia el radio mmWave para restaurar el timing.",correct:false,
+           fbEn:"No. The timing reference comes from the GNSS subsystem (antenna, cable, receiver, sync config), not the mmWave RF path. Swapping the radio won't restore a GNSS fix. Troubleshoot the GNSS antenna/cable and sky view first.",
+           fbEs:"No. La referencia de timing viene del subsistema GNSS (antena, cable, receptor, config de sync), no del camino RF mmWave. Cambiar el radio no restaura el fix GNSS. Diagnostica primero la antena/cable GNSS y la vista al cielo.",
+           trapEn:"Trap: match the fault to its subsystem — a sync problem is fixed at the sync source.",trapEs:"Trampa: haz coincidir la falla con su subsistema — un problema de sync se arregla en la fuente de sync."}
+        ]);
+    }, i:function(){ wireScenario("scE",window._scE); }
+  },
+
+  /* 16 — Sign-off checklist */
+  { ico:ICO.check, t:["Sign-off","Firma"], b:function(){
+      var items=[
+        ["Timestamp (UTC) captured","Marca de tiempo (UTC) capturada"],
+        ["Total: 0 Alarms (0 Critical, 0 Major)","Total: 0 Alarmas (0 Críticas, 0 Mayores)"],
+        ["All NR cells UNLOCKED & ENABLED","Todas las celdas NR UNLOCKED y ENABLED"],
+        ["Carrier: freq/BW/power STABLE","Portadora: freq/BW/potencia STABLE"],
+        ["Sync LOCKED / GNSS OK","Sync LOCKED / GNSS OK"],
+        ["Backhaul light level OK","Nivel óptico de backhaul OK"],
+        ["X2/Xn to anchor ENABLED","X2/Xn al ancla ENABLED"],
+        ["KPIs: RRC & ENDC success ~100%, 0 abnormal","KPIs: éxito RRC y ENDC ~100%, 0 anormal"]
+      ];
+      return tit("Clean-node sign-off","Firma de nodo limpio")+
+        '<p class="lead">'+X("For a healthy mmWave gNB, verify and record each of these. Tap each item you confirmed.","Para un gNB mmWave sano, verifica y registra cada punto. Toca cada punto que confirmaste.")+'</p>'+
+        items.map(function(it){return '<div class="chk"><span class="bx">'+ICO.check+'</span><span class="txt"><b>'+X(it[0],it[1])+'</b></span></div>';}).join("")+
+        '<p class="note good" id="ckMsg"></p>';
+    }, i:function(){ var t=document.querySelectorAll(".chk").length; function u(){var d=document.querySelectorAll(".chk.done").length;$("ckMsg").textContent=X("Verified: ","Verificado: ")+d+"/"+t+(d===t?" — "+X("clean baseline, sign off.","baseline limpio, firma."):"");} document.querySelectorAll(".chk").forEach(function(c){c.onclick=function(){c.classList.toggle("done");u();};}); u(); }
+  },
+
+  /* 17 — Quiz (8 questions, >=80%) */
+  { ico:ICO.quiz, t:["Quiz","Evaluación"], b:function(){
+      var QUIZ=[
+        {en:"What does the node type \"Streetmacro 6701 B261\" tell you?",es:"¿Qué te dice el tipo de nodo \"Streetmacro 6701 B261\"?",
+         o_en:["A 4G macro with separate RRUs","An integrated mmWave radio — no separate RRU/RiLink/CPRI fronthaul","A backhaul router"],o_es:["Un macro 4G con RRUs separados","Un radio mmWave integrado — sin RRU/RiLink/CPRI fronthaul separado","Un router de backhaul"],a:1},
+        {en:"RiLink shows \"Total: 0 MOs\". This means:",es:"RiLink muestra \"Total: 0 MOs\". Esto significa:",
+         o_en:["The fronthaul link failed","Normal — an integrated mmWave radio has no separate fronthaul","The node is locked"],o_es:["El enlace fronthaul falló","Normal — un radio mmWave integrado no tiene fronthaul separado","El nodo está bloqueado"],a:1},
+        {en:"frequencyDL 27650040 kHz corresponds to:",es:"frequencyDL 27650040 kHz corresponde a:",
+         o_en:["3.5 GHz C-band","27.65 GHz — mmWave band n261","2.76 GHz LTE"],o_es:["Banda C 3,5 GHz","27,65 GHz — banda mmWave n261","LTE 2,76 GHz"],a:1},
+        {en:"In 5G NSA, ENDC is:",es:"En 5G NSA, ENDC es:",
+         o_en:["The 4G handover procedure","Adding the 5G NR leg onto the 4G anchor","A backhaul protocol"],o_es:["El procedimiento de handover 4G","Agregar la pata NR 5G sobre el ancla 4G","Un protocolo de backhaul"],a:1},
+        {en:"ExternalENodeBFunction + TermPointToENodeB represents:",es:"ExternalENodeBFunction + TermPointToENodeB representa:",
+         o_en:["The F1 CU–DU link","The X2 link to the 4G anchor eNB","The GNSS reference"],o_es:["El enlace F1 CU–DU","El enlace X2 al eNB ancla 4G","La referencia GNSS"],a:1},
+        {en:"pmEndcSetupUeSucc 42 / pmEndcSetupUeAtt 50 gives:",es:"pmEndcSetupUeSucc 42 / pmEndcSetupUeAtt 50 da:",
+         o_en:["84% — a degradation worth investigating","142% success","Cannot be computed"],o_es:["84% — una degradación que amerita investigar","142% de éxito","No se puede calcular"],a:0},
+        {en:"On a mmWave gNB, low ENDC setup success most likely points to:",es:"En un gNB mmWave, un éxito de alta ENDC bajo apunta más probablemente a:",
+         o_en:["The FAN unit","The anchor/X2 link, cell-edge coverage, or neighbour/config","The report timestamp"],o_es:["La unidad FAN","El enlace ancla/X2, cobertura en borde, o vecino/config","La marca de tiempo del reporte"],a:1},
+        {en:"A TDD mmWave node loses its GNSS reference. You first check:",es:"Un nodo mmWave TDD pierde su referencia GNSS. Primero revisas:",
+         o_en:["The mmWave radio — swap it","GNSS antenna/cable, sky view, sync source and holdover status","The RRC counters"],o_es:["El radio mmWave — cámbialo","Antena/cable GNSS, vista al cielo, fuente de sync y estado de holdover","Los contadores RRC"],a:1}
+      ];
+      window._QZ=QUIZ;
+      var qs=QUIZ.map(function(q,i){var o=(LANG==="es"?q.o_es:q.o_en).map(function(x,j){return '<button class="opt" data-q="'+i+'" data-o="'+j+'">'+x+'</button>';}).join("");return '<div class="q"><h3>'+(i+1)+'. '+X(q.en,q.es)+'</h3>'+o+'</div>';}).join("");
+      return tit("Quiz — 8 questions (pass ≥ 80%)","Evaluación — 8 preguntas (aprobar ≥ 80%)")+qs+'<div class="score" id="score"></div>';
+    }, i:function(){ var QUIZ=window._QZ,ans={},ok=0; document.querySelectorAll(".opt").forEach(function(b){b.onclick=function(){var qi=+b.dataset.q;if(ans[qi])return;ans[qi]=1;var a=QUIZ[qi].a;document.querySelectorAll('.opt[data-q="'+qi+'"]').forEach(function(x){x.disabled=true;if(+x.dataset.o===a)x.classList.add("correct");});if(+b.dataset.o===a)ok++;else b.classList.add("wrong");if(Object.keys(ans).length===QUIZ.length){var pct=Math.round(ok/QUIZ.length*100);var pass=pct>=80;$("score").innerHTML='<span class="verdict '+(pass?'ok':'')+'" style="'+(pass?'':'background:var(--badt);color:var(--bad)')+'">'+(pass?ICO.check:ICO.warn)+' '+X("Score: ","Puntaje: ")+ok+"/"+QUIZ.length+" ("+pct+"%) — "+(pass?X("PASS","APROBADO"):X("try again ≥ 80%","reintenta ≥ 80%"))+'</span>';}};}); }
+  },
+
+  /* 18 — References */
+  { ico:ICO.book, t:["References","Referencias"], b:function(){
+      return tit("Key takeaways &amp; references","Ideas clave y referencias")+
+        '<ul>'+
+        '<li>'+X("A mmWave Streetmacro is an integrated radio (n261 / 28 GHz): no separate RRU/RiLink/CPRI; short range and LOS-sensitive.","Un Streetmacro mmWave es un radio integrado (n261 / 28 GHz): sin RRU/RiLink/CPRI separado; alcance corto y sensible a LOS.")+'</li>'+
+        '<li>'+X("Read NR objects (DU/CU split, NRSectorCarrier) and confirm cells UNLOCKED/ENABLED and power STABLE.","Lee los objetos NR (split DU/CU, NRSectorCarrier) y confirma celdas UNLOCKED/ENABLED y potencia STABLE.")+'</li>'+
+        '<li>'+X("5G NSA needs the X2/Xn link to the 4G anchor; if that link is down, ENDC fails — correlate the anchor's report.","5G NSA necesita el enlace X2/Xn al ancla 4G; si ese enlace cae, ENDC falla — correlaciona el reporte del ancla.")+'</li>'+
+        '<li>'+X("TDD mmWave needs tight sync (GNSS + PTP/1588, SyncE); a lost GNSS fix drifts timing and degrades the cell.","mmWave TDD necesita sync estricta (GNSS + PTP/1588, SyncE); perder el fix GNSS deriva el timing y degrada la celda.")+'</li>'+
+        '<li>'+X("KPI success rate = Succ ÷ Att × 100; judge the ratio, not the raw count; abnormal releases point at anchor/coverage/config.","Tasa de éxito KPI = Éxito ÷ Intento × 100; juzga la razón, no el conteo; las liberaciones anormales apuntan a ancla/cobertura/config.")+'</li>'+
+        '</ul>'+
+        '<h2>'+X("References","Referencias")+'</h2>'+
+        '<div class="ref"><b>Ericsson RAN CPI</b> — '+X("Customer Product Information: Health Check reports, managed-object model (GNBDUFunction, GNBCUCPFunction, GNBCUUPFunction, NRCellDU/NRCellCU, NRSectorCarrier), and PM counter descriptions.","Customer Product Information: reportes Health Check, modelo de objetos gestionados (GNBDUFunction, GNBCUCPFunction, GNBCUUPFunction, NRCellDU/NRCellCU, NRSectorCarrier), y descripciones de contadores PM.")+'</div>'+
+        '<div class="ref"><b>3GPP NR frequency bands</b> — '+X("NR operating bands including FR2 band n261 (27.5–28.35 GHz); ARFCN / channel raster and bandwidth definitions.","Bandas de operación NR incluyendo la banda FR2 n261 (27,5–28,35 GHz); ARFCN / raster de canal y definiciones de ancho de banda.")+'</div>'+
+        '<div class="ref"><b>5G NSA / EN-DC architecture</b> — '+X("3GPP Multi-RAT Dual Connectivity: X2 to the LTE anchor eNB, Xn between gNBs, F1 between CU and DU.","3GPP Multi-RAT Dual Connectivity: X2 al eNB ancla LTE, Xn entre gNBs, F1 entre CU y DU.")+'</div>'+
+        '<div class="ref"><b>'+X("Timing & synchronization references","Referencias de timing y sincronización")+'</b> — '+X("IEEE 1588 PTP and Synchronous Ethernet (SyncE) for TDD phase/time alignment; GNSS/GPS as a primary time reference; ITU-T timing profiles.","IEEE 1588 PTP y Ethernet Sincrónico (SyncE) para alineación de fase/tiempo TDD; GNSS/GPS como referencia primaria de tiempo; perfiles de timing ITU-T.")+'</div>'+
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px"><span class="verdict ok">'+ICO.check+' '+X("Module 3 of 3 complete","Módulo 3 de 3 completo")+'</span><a class="btn ghost" href="../index.html" target="_top">'+X("Back to portal","Volver al portal")+'</a></div>'+
+        '<p class="note">'+X("Training overview only. Values are illustrative field examples. Always follow current Ericsson CPI, the operator's methods of procedure, and site documentation.","Solo es un resumen de entrenamiento. Los valores son ejemplos ilustrativos de campo. Sigue siempre la CPI Ericsson vigente, los métodos de procedimiento del operador y la documentación del sitio.")+'</p>';
+  }}
+];
+/* expose scenario option arrays for wiring (kept alongside their step) */
+window._scA=[
+  {en:"Healthy baseline — record it and sign off.",es:"Baseline sano — regístralo y firma.",correct:true,
+   fbEn:"Correct. 0 alarms, all cells in service, and KPI setups where Att = Succ is a clean baseline. Record: the UTC timestamp (2026-07-10 13:45:40), 0 alarms, all 7 NR cells UNLOCKED/ENABLED, RRC 6/6 and ENDC 3/3 (100%). Then sign off.",
+   fbEs:"Correcto. 0 alarmas, todas las celdas en servicio, y KPIs con Att = Succ es un baseline limpio. Registra: la marca de tiempo UTC (2026-07-10 13:45:40), 0 alarmas, las 7 celdas NR UNLOCKED/ENABLED, RRC 6/6 y ENDC 3/3 (100%). Luego firma.",
+   trapEn:"Tip: always capture the timestamp — a Health Check is only meaningful for the moment it was taken.",trapEs:"Tip: captura siempre la marca de tiempo — un Health Check solo vale para el momento en que se tomó."},
+  {en:"Not enough info — the low counters (only 3–6) mean something is broken.",es:"Falta info — los contadores bajos (solo 3–6) indican algo roto.",correct:false,
+   fbEn:"No. Low absolute counts just mean low traffic during the window (a quiet small cell). What matters is the RATIO: 6/6 and 3/3 are both 100%. Low volume is not a fault.",
+   fbEs:"No. Conteos absolutos bajos solo indican poco tráfico en la ventana (una celda pequeña tranquila). Lo que importa es la RAZÓN: 6/6 y 3/3 son ambos 100%. Bajo volumen no es falla.",
+   trapEn:"Trap: don't confuse low volume with poor performance. Judge the success rate, not the raw count.",trapEs:"Trampa: no confundas bajo volumen con mal desempeño. Juzga la tasa de éxito, no el conteo bruto."},
+  {en:"Cannot be healthy — a real 5G node must show more than 3 ENDC attempts.",es:"No puede estar sano — un nodo 5G real debe mostrar más de 3 intentos ENDC.",correct:false,
+   fbEn:"No. There is no minimum attempt count for 'healthy'. A newly turned-up or lightly loaded mmWave cell can legitimately show single-digit counters and still be perfect at 100% success.",
+   fbEs:"No. No hay un mínimo de intentos para estar 'sano'. Una celda mmWave recién activada o poco cargada puede mostrar contadores de un dígito y aun así ser perfecta al 100%.",
+   trapEn:"Trap: absolute counts depend on traffic and window length, not on health.",trapEs:"Trampa: los conteos absolutos dependen del tráfico y la ventana, no de la salud."}
+];
+window._scB=[
+  {en:"5G NR mmWave, band n261 (~27.65 GHz) — expect short range, LOS-sensitive, beamformed coverage.",es:"5G NR mmWave, banda n261 (~27.65 GHz) — espera alcance corto, sensible a LOS, cobertura por haces.",correct:true,
+   fbEn:"Correct. 27650040 kHz = 27.65 GHz, inside n261 (27.5–28.35 GHz). A 100 MHz channel confirms mmWave. Implication: short range, easily blocked, needs line-of-sight and precise alignment — so obstructions and tilt are prime suspects for coverage complaints.",
+   fbEs:"Correcto. 27650040 kHz = 27.65 GHz, dentro de n261 (27.5–28.35 GHz). Un canal de 100 MHz confirma mmWave. Implicación: alcance corto, se bloquea fácil, necesita línea de vista y alineación precisa — así que obstrucciones y tilt son sospechosos primarios ante quejas de cobertura.",
+   trapEn:"Remember: frequencyDL is in kHz. Divide by 1,000,000 to get GHz.",trapEs:"Recuerda: frequencyDL está en kHz. Divide entre 1.000.000 para obtener GHz."},
+  {en:"5G mid-band (C-band, ~3.5 GHz) — normal macro coverage.",es:"5G banda media (banda C, ~3,5 GHz) — cobertura macro normal.",correct:false,
+   fbEn:"No — that would read ~3500000 kHz. Here frequencyDL is 27650040 kHz = 27.65 GHz, which is mmWave n261, not C-band. mmWave behaves very differently: much shorter range and LOS-dependent.",
+   fbEs:"No — eso se leería ~3500000 kHz. Aquí frequencyDL es 27650040 kHz = 27.65 GHz, que es mmWave n261, no banda C. mmWave se comporta muy distinto: alcance mucho más corto y dependiente de LOS.",
+   trapEn:"Trap: don't eyeball 'big number = 5G' — read the actual GHz to know the band class.",trapEs:"Trampa: no supongas 'número grande = 5G' — lee los GHz reales para conocer la clase de banda."},
+  {en:"4G LTE — because a 100 MHz channel is an LTE carrier aggregation total.",es:"4G LTE — porque 100 MHz es un total de agregación LTE.",correct:false,
+   fbEn:"No. The label n261_SC and 27.65 GHz make this unmistakably 5G NR mmWave. A single 100 MHz NR channel is normal at mmWave; LTE channels top out at 20 MHz each.",
+   fbEs:"No. La etiqueta n261_SC y 27.65 GHz lo hacen inequívocamente 5G NR mmWave. Un solo canal NR de 100 MHz es normal en mmWave; los canales LTE llegan a 20 MHz cada uno.",
+   trapEn:"Trap: the n261 label and GHz range settle it — no need to guess from bandwidth alone.",trapEs:"Trampa: la etiqueta n261 y el rango en GHz lo definen — no adivines solo por el ancho de banda."}
+];
+window._scC=[
+  {en:"The X2 to the anchor is down, so ENDC can't add the NR leg. The fault is inter-node transport/neighbour — correlate the two reports; the mmWave RF is fine.",es:"El X2 al ancla está caído, así ENDC no puede agregar la pata NR. La falla es transporte/vecino inter-nodo — correlaciona los dos reportes; el RF mmWave está bien.",correct:true,
+   fbEn:"Correct — this is the payoff of cross-report reading. Node 448650 is the shared 4G anchor. Its Critical 'External Link to GNodeB Failure (X2)' means the X2 to the gNB is broken, so the 5G NR leg can't be added and ENDC setup collapses (1/9). Fix the X2/transport at the anchor; don't dispatch to reseat the mmWave radio.",
+   fbEs:"Correcto — este es el pago de leer dos reportes. El nodo 448650 es el ancla 4G compartida. Su Crítica 'External Link to GNodeB Failure (X2)' significa que el X2 al gNB está roto, así que la pata NR 5G no se agrega y el alta ENDC colapsa (1/9). Arregla el X2/transporte en el ancla; no despaches para reasentar el radio mmWave.",
+   trapEn:"This is why you always read the anchor's report too — the mmWave symptom, the 4G root cause.",trapEs:"Por eso siempre lees también el reporte del ancla — el síntoma en mmWave, la causa raíz en 4G."},
+  {en:"The mmWave radio has failed — replace the Streetmacro unit.",es:"El radio mmWave falló — reemplaza la unidad Streetmacro.",correct:false,
+   fbEn:"No — and this is exactly the trap. The gNB shows 0 alarms and STABLE power; its RF is healthy. The ENDC failure is caused by the anchor's broken X2. Swapping the radio wastes a truck roll and won't fix anything.",
+   fbEs:"No — y esta es justo la trampa. El gNB muestra 0 alarmas y potencia STABLE; su RF está sano. La falla ENDC la causa el X2 roto del ancla. Cambiar el radio desperdicia una visita y no arregla nada.",
+   trapEn:"Trap: a symptom on the 5G node can have its root cause on the 4G node. Follow the interface.",trapEs:"Trampa: un síntoma en el nodo 5G puede tener su causa raíz en el nodo 4G. Sigue la interfaz."},
+  {en:"It's a coverage problem — the UE is at the mmWave cell edge.",es:"Es un problema de cobertura — el UE está en el borde de la celda mmWave.",correct:false,
+   fbEn:"Not here. Cell-edge coverage can lower ENDC success, but you have a smoking gun: a Critical X2 failure on the named anchor 448650. That transport fault, not coverage, explains a near-total ENDC collapse.",
+   fbEs:"Aquí no. La cobertura en borde puede bajar el éxito ENDC, pero tienes una prueba clara: una falla X2 Crítica en el ancla nombrada 448650. Ese fallo de transporte, no la cobertura, explica un colapso casi total del ENDC.",
+   trapEn:"Trap: when a correlated Critical alarm exists, chase it before guessing at RF/coverage.",trapEs:"Trampa: cuando hay una alarma Crítica correlacionada, persíguela antes de suponer RF/cobertura."}
+];
+window._scD=[
+  {en:"A = 100%, B = 84%. B's shortfall points to the anchor/X2, cell-edge coverage, or a neighbour/config issue — worth investigating.",es:"A = 100%, B = 84%. La caída de B apunta al ancla/X2, cobertura en borde, o vecino/config — vale investigar.",correct:true,
+   fbEn:"Correct. 3/3 = 100%; 42/50 = 84%. Cell B is losing ~1 in 6 NR-leg additions. Low ENDC setup success typically means the anchor/X2 is flaky, the UE hits the mmWave cell edge (which drops fast), or there's a neighbour/config mismatch. Investigate those before touching the radio.",
+   fbEs:"Correcto. 3/3 = 100%; 42/50 = 84%. La celda B pierde ~1 de cada 6 altas de la pata NR. Un éxito de alta ENDC bajo suele significar que el X2/ancla falla intermitente, que el UE llega al borde de la celda mmWave (que cae rápido), o que hay un desajuste de vecino/config. Investiga eso antes de tocar el radio.",
+   trapEn:"84% may look 'okay' but for ENDC setup it's a real degradation worth a ticket.",trapEs:"84% puede parecer 'aceptable' pero para alta ENDC es una degradación real que amerita un ticket."},
+  {en:"A = 100%, B = 84%, but 84% is fine — no action needed.",es:"A = 100%, B = 84%, pero 84% está bien — sin acción.",correct:false,
+   fbEn:"The math is right but the judgement isn't. For ENDC setup success, losing 8 of 50 attempts is a meaningful degradation — users are failing to get their 5G leg. It warrants investigation, not a shrug.",
+   fbEs:"El cálculo está bien pero el criterio no. Para el éxito de alta ENDC, perder 8 de 50 intentos es una degradación relevante — los usuarios no logran su pata 5G. Amerita investigación, no encogerse de hombros.",
+   trapEn:"Trap: 'looks high' isn't a threshold. Compare against the expected target for that KPI.",trapEs:"Trampa: 'se ve alto' no es un umbral. Compara contra el objetivo esperado de ese KPI."},
+  {en:"B is better than A because 42 successes is far more than 3.",es:"B es mejor que A porque 42 éxitos es mucho más que 3.",correct:false,
+   fbEn:"No — you're comparing raw counts instead of rates. A succeeds every time (100%); B fails 16% of attempts. More traffic doesn't mean better performance; always divide Succ by Att.",
+   fbEs:"No — estás comparando conteos brutos en vez de tasas. A tiene éxito siempre (100%); B falla el 16% de los intentos. Más tráfico no significa mejor desempeño; siempre divide Éxito entre Intento.",
+   trapEn:"Trap: never rank cells by raw success count — rank by success rate.",trapEs:"Trampa: nunca clasifiques celdas por conteo bruto de éxitos — clasifica por tasa de éxito."}
+];
+window._scE=[
+  {en:"TDD timing drifts in holdover → interference and then degradation. Check the GNSS antenna/cable, sky view, sync source config, and holdover status.",es:"El timing TDD deriva en holdover → interferencia y luego degradación. Revisa antena/cable GNSS, vista al cielo, config de fuente de sync, y estado de holdover.",correct:true,
+   fbEn:"Correct. Without a GNSS fix the node runs on its internal oscillator (holdover); over time the TDD frame timing drifts out of alignment with neighbours, causing UL/DL interference and eventually cell degradation or lock. Physical checks first: GNSS antenna and cable/connectors, clear sky view (obstruction, ice/snow, water ingress), then the configured sync source and how long holdover has lasted.",
+   fbEs:"Correcto. Sin fix GNSS el nodo corre con su oscilador interno (holdover); con el tiempo el timing de la trama TDD se desalinea de los vecinos, causando interferencia UL/DL y al final degradación o bloqueo de la celda. Revisa primero lo físico: antena y cable/conectores GNSS, vista al cielo despejada (obstrucción, hielo/nieve, entrada de agua), luego la fuente de sync configurada y cuánto lleva el holdover.",
+   trapEn:"Timing faults masquerade as RF/interference problems — always check sync when a TDD cell degrades.",trapEs:"Las fallas de timing se disfrazan de problemas RF/interferencia — revisa siempre el sync cuando una celda TDD se degrada."},
+  {en:"Nothing urgent — GNSS only sets the clock display; the cell keeps working normally.",es:"Nada urgente — GNSS solo pone el reloj; la celda sigue normal.",correct:false,
+   fbEn:"No. On a TDD node GNSS provides the phase/time reference the air interface depends on. Lose it long enough and holdover drifts past tolerance, creating interference with neighbours and forcing the cell to degrade or go down. It is operationally urgent, not cosmetic.",
+   fbEs:"No. En un nodo TDD, GNSS provee la referencia de fase/tiempo de la que depende la interfaz aérea. Piérdelo suficiente y el holdover deriva más allá de la tolerancia, creando interferencia con vecinos y forzando la degradación o caída de la celda. Es urgente, no cosmético.",
+   trapEn:"Trap: 'holdover' is a countdown, not a safe state — it buys time, then timing fails.",trapEs:"Trampa: 'holdover' es una cuenta regresiva, no un estado seguro — da tiempo, luego el timing falla."},
+  {en:"It's an RF fault — swap the mmWave radio to restore timing.",es:"Es una falla RF — cambia el radio mmWave para restaurar el timing.",correct:false,
+   fbEn:"No. The timing reference comes from the GNSS subsystem (antenna, cable, receiver, sync config), not the mmWave RF path. Swapping the radio won't restore a GNSS fix. Troubleshoot the GNSS antenna/cable and sky view first.",
+   fbEs:"No. La referencia de timing viene del subsistema GNSS (antena, cable, receptor, config de sync), no del camino RF mmWave. Cambiar el radio no restaura el fix GNSS. Diagnostica primero la antena/cable GNSS y la vista al cielo.",
+   trapEn:"Trap: match the fault to its subsystem — a sync problem is fixed at the sync source.",trapEs:"Trampa: haz coincidir la falla con su subsistema — un problema de sync se arregla en la fuente de sync."}
+];
+var cur=0;
+var _gen=0;
+
+function pintarChrome(){
+  document.documentElement.lang=LANG;
+  $("brand").textContent=X(CONFIG.brand[0],CONFIG.brand[1]);
+  $("brandsub").textContent=X(CONFIG.subtitle[0],CONFIG.subtitle[1]);
+  $("homeTxt").textContent=X("Home","Inicio");
+  document.querySelectorAll("#lang button").forEach(function(b){ b.classList.toggle("on", b.dataset.l===LANG); });
+  var dark=document.documentElement.getAttribute("data-theme")==="dark";
+  $("temaIco").innerHTML=dark?ICO.sun:ICO.moon; $("temaTxt").textContent=dark?X("Light","Claro"):X("Dark","Oscuro");
+  $("prev").innerHTML="‹ "+X("Back","Anterior");
+  $("next").innerHTML=(cur>=STEPS.length-1?X("Restart","Reiniciar"):X("Next","Siguiente")+" ›");
+}
+function render(){
+  _gen++;
+  pintarChrome();
+  var s=STEPS[cur];
+  $("card").innerHTML=s.b();
+  if(s.i) s.i();
+  $("progbar").style.width=((cur+1)/STEPS.length*100)+"%";
+  $("mStep").textContent=X("Step ","Paso ")+(cur+1)+" / "+STEPS.length+" · "+X(s.t[0],s.t[1]);
+  $("mDur").textContent=CONFIG.duration;
+  $("prev").disabled=(cur===0);
+  $("dots").innerHTML=STEPS.map(function(_,i){return '<button class="dot'+(i===cur?' on':'')+'" data-i="'+i+'" aria-label="'+(i+1)+'"></button>';}).join("");
+  document.querySelectorAll(".dot").forEach(function(d){ d.onclick=function(){ cur=+d.dataset.i; render(); }; });
+  window.scrollTo(0,0);
+}
+$("prev").onclick=function(){ if(cur>0){cur--;render();} };
+$("next").onclick=function(){ cur=(cur>=STEPS.length-1)?0:cur+1; render(); };
+document.querySelectorAll("#lang button").forEach(function(b){ b.onclick=function(){ LANG=b.dataset.l; render(); }; });
+$("tema").onclick=function(){ var d=document.documentElement.getAttribute("data-theme")==="dark"; document.documentElement.setAttribute("data-theme", d?"light":"dark"); pintarChrome(); };
+document.addEventListener("keydown",function(e){ if(e.key==="ArrowRight")$("next").click(); if(e.key==="ArrowLeft")$("prev").click(); });
+render();
+</script>
+</body>
+</html>

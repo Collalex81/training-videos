@@ -114,6 +114,63 @@
     "tipo": "animacion"
   },
   {
+    "area": "telecom",
+    "titulo": {
+      "es": "Health Check Ericsson (1): anatomía, alarmas y estados",
+      "en": "Ericsson Health Check (1): anatomy, alarms & states"
+    },
+    "descripcion": {
+      "es": "Cómo leer un Health Check de nodo Ericsson (4G/5G): encabezado y nodos, tablas MO, estados LOCKED/UNLOCKED y ENABLED/DISABLED, nomenclatura MO (EUtranCell/NRCellDU/RRU/RiLink/SCTP), y alarmas con severidad. Con extractos reales y escenarios de diagnóstico + quiz.",
+      "en": "How to read an Ericsson node Health Check (4G/5G): header and nodes, MO tables, LOCKED/UNLOCKED and ENABLED/DISABLED states, MO naming (EUtranCell/NRCellDU/RRU/RiLink/SCTP), and alarms with severity. With real excerpts and diagnosis scenarios + quiz."
+    },
+    "categoria": {
+      "es": "Procedimientos",
+      "en": "Procedures"
+    },
+    "duracion": "12:00",
+    "video": "animations/hc-ericsson-01-anatomy.html",
+    "poster": "assets/poster-hc-4g5g.svg",
+    "tipo": "animacion"
+  },
+  {
+    "area": "telecom",
+    "titulo": {
+      "es": "Health Check Ericsson (2): RF y transporte",
+      "en": "Ericsson Health Check (2): RF & transport"
+    },
+    "descripcion": {
+      "es": "Salud de RF y transporte: inventario de RRUs, fronthaul RiLink/CPRI, niveles de luz SFP (OK/OKW/NOK/NT), VSWR/return loss por puerto, antenas/MIMO, potencia TX e interferencia 5G. Con extractos reales, calculadora VSWR y escenarios de diagnóstico + quiz.",
+      "en": "RF and transport health: RRU inventory, RiLink/CPRI fronthaul, SFP light levels (OK/OKW/NOK/NT), VSWR/return loss per port, antennas/MIMO, TX power and 5G interference. With real excerpts, a VSWR calculator and diagnosis scenarios + quiz."
+    },
+    "categoria": {
+      "es": "Procedimientos",
+      "en": "Procedures"
+    },
+    "duracion": "14:00",
+    "video": "animations/hc-ericsson-02-rf-transport.html",
+    "poster": "assets/poster-hc-rf.svg",
+    "tipo": "animacion"
+  },
+  {
+    "area": "telecom",
+    "titulo": {
+      "es": "Health Check Ericsson (3): mmWave 5G NR, sincronización y KPIs",
+      "en": "Ericsson Health Check (3): mmWave 5G NR, sync & KPIs"
+    },
+    "descripcion": {
+      "es": "El nodo mmWave (Streetmacro, banda n261 a 28 GHz): objetos NR (NRCellDU/CU), ENDC/X2/Xn/SCTP hacia el ancla 4G, sincronización/GNSS, niveles de luz y KPIs (RRC/ENDC setup, releases). Con lectura cruzada entre reportes y escenarios de diagnóstico + quiz.",
+      "en": "The mmWave node (Streetmacro, band n261 at 28 GHz): NR objects (NRCellDU/CU), ENDC/X2/Xn/SCTP to the 4G anchor, synchronization/GNSS, light levels and KPIs (RRC/ENDC setup, releases). With cross-report reading and diagnosis scenarios + quiz."
+    },
+    "categoria": {
+      "es": "Procedimientos",
+      "en": "Procedures"
+    },
+    "duracion": "13:00",
+    "video": "animations/hc-ericsson-03-mmwave.html",
+    "poster": "assets/poster-hc-mmwave.svg",
+    "tipo": "animacion"
+  },
+  {
     "area": "seguridad",
     "titulo": {
       "es": "Seguridad en torres — trabajo en altura (OSHA / Crown Castle)",

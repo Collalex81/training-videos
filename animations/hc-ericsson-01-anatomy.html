@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reading an Ericsson RAN Health Check — Module 1 / Lectura del Health Check RAN Ericsson — Módulo 1</title>
+<!--
+  TELECOM (azul) — Cómo LEER un reporte "Health Check" de un nodo RAN Ericsson. Módulo 1 de 3: anatomía del reporte, alarmas y estados.
+  TELECOM (blue) — How to READ an Ericsson RAN node "Health Check" report. Module 1 of 3: report anatomy, alarms & states.
+  Fuentes / Sources: Ericsson RAN / node CPI (Customer Product Information) — COLI/MO command output, managed object model, alarm list; 3GPP TS 32.xxx (state management: administrativeState / operationalState) & NRM.
+  Motor basado en grounding-bonding-cell-sites.html. Bilingüe EN/ES (EN por defecto).
+-->
+<style>
+  :root{
+    --pg:#f3f6fc; --card:#ffffff; --ink:#0c1c34; --sub:#51618a; --line:#dde5f3;
+    --bar:#0b2e59; --accent:#2563EB; --tint:rgba(37,99,235,.10);
+    --ok:#15803D; --okt:rgba(21,128,61,.10); --bad:#dc2626; --badt:rgba(220,38,38,.10);
+    --amber:#b45309; --ambt:rgba(180,83,9,.12); --radius:14px;
+    --shadow:0 1px 2px rgba(12,28,52,.05),0 10px 26px rgba(12,28,52,.08);
+  }
+  html[data-theme="dark"]{
+    --pg:#0a1120; --card:#141d30; --ink:#e9f0ff; --sub:#9db0d6; --line:#243149;
+    --bar:#0a1526; --accent:#4d8bff; --tint:rgba(77,139,255,.14);
+    --ok:#4ade80; --okt:rgba(74,222,128,.14); --bad:#f87171; --badt:rgba(248,113,113,.14);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  .shell{max-width:940px;margin:0 auto;padding:14px 16px 34px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0 8px;box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:600;display:block;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+  .prog{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:6px 0 4px}
+  .prog>i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);gap:8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;min-height:360px}
+  .step-ico{width:44px;height:44px;border-radius:12px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+  h1{font-size:clamp(20px,3.3vw,26px);margin:0 0 8px;font-weight:700;line-height:1.2}
+  h2{font-size:15.5px;margin:16px 0 8px;font-weight:600}
+  p{margin:0 0 12px}
+  .lead{color:var(--sub);font-size:15px}
+  ul,ol{margin:6px 0 12px;padding-left:20px}
+  li{margin:6px 0}
+  .pill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:var(--tint);padding:5px 11px;border-radius:999px;margin-bottom:10px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:8px 0}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin:8px 0}
+  .box{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:13px}
+  .box h3{margin:0 0 6px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px}
+  .box p{margin:0;font-size:12.5px;color:var(--sub)}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:var(--accent);color:#fff;font-weight:800;font-size:14px;flex:none}
+  .stat3{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
+  .stat3 .s{flex:1;min-width:120px;background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center}
+  .stat3 .s b{display:block;font-size:24px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+  .stat3 .s span{font-size:12px;color:var(--sub)}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;min-height:42px;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;flex:1}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line);border:0;cursor:pointer;padding:0}
+  .dot.on{background:var(--accent);transform:scale(1.3)}
+  .note{font-size:13px;color:var(--sub);border-left:3px solid var(--accent);background:var(--tint);padding:9px 12px;margin:12px 0;border-radius:0 8px 8px 0}
+  .warn{border-left-color:var(--amber);color:var(--amber);background:var(--ambt)}
+  .bad{border-left-color:var(--bad);color:var(--bad);background:var(--badt)}
+  .good{border-left-color:var(--ok);color:var(--ink);background:var(--okt)}
+  .good b{color:var(--ok)}
+  .mcap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);margin:8px 2px 2px;justify-content:center}
+  .chk{display:flex;gap:11px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:8px 0;cursor:pointer}
+  .chk .bx{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;margin-top:1px}
+  .chk.done .bx{background:var(--ok);border-color:var(--ok)}
+  .q{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:12px}
+  .q h3{margin:0 0 10px;font-size:14px}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:11px 14px;border-radius:10px;margin:7px 0;cursor:pointer;font-size:14px;font-family:inherit}
+  .opt.correct{border-color:var(--ok);background:var(--okt);color:var(--ok);font-weight:600}
+  .opt.wrong{border-color:var(--bad);background:var(--badt);color:var(--bad)}
+  .opt:disabled{cursor:default}
+  .fb{display:none;font-size:13px;margin:8px 0 2px;padding:10px 12px;border-radius:0 8px 8px 0;border-left:3px solid var(--accent);background:var(--tint)}
+  .fb.good{border-left-color:var(--ok);background:var(--okt)}
+  .fb.good b{color:var(--ok)}
+  .fb.bad{border-left-color:var(--bad);background:var(--badt);color:var(--ink)}
+  .fb.bad b{color:var(--bad)}
+  .fb .trap{display:block;margin-top:6px;font-style:italic;color:var(--sub)}
+  .score{font-size:16px;font-weight:700;text-align:center;padding:10px}
+  .verdict{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;font-weight:700;font-size:15px}
+  .verdict.ok{background:var(--okt);color:var(--ok)}
+  .verdict.no{background:var(--badt);color:var(--bad)}
+  .ref{font-size:12.5px;color:var(--sub);border-bottom:1px solid var(--line);padding:8px 0}
+  .ref b{color:var(--ink)}
+  /* terminal / COLI console block */
+  .termwrap{border:1px solid #1e2c48;border-radius:10px;overflow:hidden;margin:12px 0;background:#0a0f1a;box-shadow:0 6px 18px -10px rgba(0,0,0,.6)}
+  .termbar{display:flex;align-items:center;gap:6px;padding:7px 11px;background:#111a2e;border-bottom:1px solid #1e2c48}
+  .termbar i{width:10px;height:10px;border-radius:50%;display:block}
+  .termbar span{margin-left:6px;font-size:11px;color:#8b98b8;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .term{padding:12px 14px;overflow-x:auto;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:12px;line-height:1.6;color:#7ee787;white-space:pre;-webkit-overflow-scrolling:touch}
+  .term .td{color:#7d8bad}
+  .term .ty{color:#ffd479}
+  .term .tr{color:#ff6b6b;font-weight:700}
+  .term .tm{color:#ffb454}
+  .term .tb{color:#79b8ff}
+  .term .tw{color:#e9f0ff}
+  .term .th{color:#8b98b8;text-decoration:underline}
+  .matrix{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:12px;margin:10px 0}
+  .mcell{border:1px solid var(--line);border-radius:12px;padding:13px;background:var(--pg)}
+  .mcell.g{border-color:var(--ok);background:var(--okt)}
+  .mcell.r{border-color:var(--bad);background:var(--badt)}
+  .mcell.a{border-color:var(--amber);background:var(--ambt)}
+  .mcell b{font-size:13px;display:block;font-family:ui-monospace,monospace}
+  .mcell span{font-size:12.5px;color:var(--sub);display:block;margin-top:4px}
+  .mcell .tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:2px 8px;border-radius:999px;margin-top:6px}
+  .mcell.g .tag{background:var(--ok);color:#fff}
+  .mcell.r .tag{background:var(--bad);color:#fff}
+  .mcell.a .tag{background:var(--amber);color:#fff}
+  @media(max-width:520px){ .card{padding:15px} .shell{padding:12px 12px 28px} .brand small{display:none} .term{font-size:11px} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+  <div class="top">
+    <div class="brand">
+      <span class="logo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3M7 8h10M7 12h10M7 16h6"/></svg></span>
+      <div><b id="brand"></b><small id="brandsub"></small></div>
+    </div>
+    <div class="tools">
+      <a class="tbtn" id="home" href="../index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span id="homeTxt"></span></a>
+      <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+      <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+    </div>
+  </div>
+  <div class="prog"><i id="progbar"></i></div>
+  <div class="meta"><span id="mStep"></span><span id="mDur"></span></div>
+  </div>
+  <div class="card" id="card"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev"></button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="next"></button>
+  </div>
+</div>
+
+<script>
+var CONFIG = {
+  brand:   ["Reading an Ericsson Health Check","Lectura del Health Check Ericsson"],
+  subtitle:["Module 1/3 · Anatomy, alarms & states","Módulo 1/3 · Anatomía, alarmas y estados"],
+  duration:"≈ 16 min",
+  defaultLang:"en"
+};
+var params=new URLSearchParams(location.search);
+var LANG=params.get("lang")?(params.get("lang").toLowerCase().startsWith("es")?"es":"en"):CONFIG.defaultLang;
+function X(en,es){ return LANG==="es"?es:en; }
+function $(id){ return document.getElementById(id); }
+function tit(en,es){ return '<div class="step-ico">'+STEPS[cur].ico+'</div><h1>'+X(en,es)+'</h1>'; }
+var ICO={
+  play:'<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  doc:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></svg>',
+  header:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 13h6M7 16h9"/></svg>',
+  table:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16M15 4v16"/></svg>',
+  matrix:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>',
+  tag:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l8-8h9v9l-8 8z"/><circle cx="16" cy="8" r="1.4"/></svg>',
+  alarm:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg>',
+  cell:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1a10 10 0 0 1 0-14.2M19.1 4.9a10 10 0 0 1 0 14.2M7.8 16.2a6 6 0 0 1 0-8.4M16.2 7.8a6 6 0 0 1 0 8.4"/><circle cx="12" cy="12" r="1.6"/></svg>',
+  search:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>',
+  quiz:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.1 9a3 3 0 1 1 4.2 2.7c-.8.4-1.3 1-1.3 2M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>',
+  book:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h9a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-1a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h2z"/></svg>',
+  check:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+  scr:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg>'
+};
+function bx(icon,tEn,tEs,dEn,dEs){ return '<div class="box"><h3>'+icon+X(tEn,tEs)+'</h3><p>'+X(dEn,dEs)+'</p></div>'; }
+/* COLI / console terminal block */
+function term(title,body){
+  return '<div class="termwrap"><div class="termbar"><i style="background:#ff5f56"></i><i style="background:#ffbd2e"></i><i style="background:#27c93f"></i><span>'+title+'</span></div><div class="term">'+body+'</div></div>';
+}
+function cap(en,es){ return '<p class="mcap">'+ICO.scr+' '+X(en,es)+'</p>'; }
+
+/* ---- interactive diagnosis scenarios ---- */
+window.SCEN = [
+  {
+    id:"s1",
+    title:"COLI &gt; st EUtranCell*",
+    body:
+      '<span class="th">Proxy  Adm State      Op. State      UserLabel     MO</span>\n'+
+      '<span class="tw">872</span>    <span class="tm">0 (LOCKED)</span>     <span class="tm">0 (DISABLED)</span>    448650_4_9    <span class="tb">EUtranCellTDD=448650_4_9</span>',
+    qEn:"Cell 448650_4_9 is LOCKED + DISABLED. Is this a fault you should ticket?",
+    qEs:"La celda 448650_4_9 está LOCKED + DISABLED. ¿Es una falla para levantar ticket?",
+    correct:1,
+    opts:[
+      {en:"Yes — raise a Critical ticket, the cell is down.",es:"Sí — levanta un ticket Crítico, la celda está caída.",
+       fbEn:"No. administrativeState 0 = LOCKED means an operator deliberately took the cell out of service; operationalState DISABLED simply follows the lock. A real hardware fault would look different.",
+       fbEs:"No. administrativeState 0 = LOCKED significa que un operador la sacó de servicio a propósito; operationalState DISABLED solo sigue al lock. Una falla real de hardware se ve distinta.",
+       trapEn:"Trap: opening a trouble ticket on a cell that was locked on purpose (per a work order or planned maintenance).",
+       trapEs:"Trampa: abrir un ticket sobre una celda bloqueada a propósito (por una orden de trabajo o mantenimiento planeado)."},
+      {en:"It is administratively LOCKED = intentionally out of service. Verify it against the work order / plan before doing anything.",es:"Está LOCKED administrativamente = fuera de servicio a propósito. Verifícala contra la orden de trabajo / plan antes de actuar.",
+       fbEn:"Correct. LOCKED + DISABLED is the normal signature of an admin lock. Check the change/work order: if the cell was supposed to be unlocked after the work, that is the real issue — not the state itself.",
+       fbEs:"Correcto. LOCKED + DISABLED es la firma normal de un lock administrativo. Revisa la orden de cambio: si la celda debía quedar desbloqueada tras el trabajo, ese es el problema real — no el estado en sí.",
+       trapEn:"Good instinct: read the intent (the plan), not just the state code.",
+       trapEs:"Buen instinto: lee la intención (el plan), no solo el código de estado."},
+      {en:"The radio hardware has failed.",es:"El hardware del radio falló.",
+       fbEn:"Unlikely from this line alone. A blocking hardware fault typically shows UNLOCKED + DISABLED (it wants to be up but can't) plus alarms. LOCKED + DISABLED is consistent with a deliberate lock.",
+       fbEs:"Improbable solo con esta línea. Una falla de hardware bloqueante suele mostrar UNLOCKED + DISABLED (quiere subir pero no puede) más alarmas. LOCKED + DISABLED es propio de un lock deliberado.",
+       trapEn:"Trap: assuming DISABLED always equals broken — the Adm State column changes the meaning.",
+       trapEs:"Trampa: asumir que DISABLED siempre es 'roto' — la columna Adm State cambia el significado."}
+    ]
+  },
+  {
+    id:"s2",
+    title:"COLI &gt; st EUtranCell*",
+    body:
+      '<span class="th">Proxy  Adm State      Op. State      UserLabel     MO</span>\n'+
+      '<span class="tw">51</span>     <span class="tb">1 (UNLOCKED)</span>   <span class="tr">0 (DISABLED)</span>    448650_2_3    <span class="tb">EUtranCellFDD=448650_2_3</span>',
+    qEn:"This cell reads 1 (UNLOCKED) + 0 (DISABLED). What is going on?",
+    qEs:"Esta celda muestra 1 (UNLOCKED) + 0 (DISABLED). ¿Qué pasa?",
+    correct:1,
+    opts:[
+      {en:"Healthy and carrying traffic.",es:"Sana y cursando tráfico.",
+       fbEn:"No. UNLOCKED means the operator wants it in service, but operationalState DISABLED means it is NOT operational right now. The mismatch is the alarm bell.",
+       fbEs:"No. UNLOCKED significa que el operador la quiere en servicio, pero operationalState DISABLED significa que NO está operativa ahora. El desajuste es la señal de alerta.",
+       trapEn:"Trap: reading only the Adm State column and ignoring Op. State.",
+       trapEs:"Trampa: leer solo la columna Adm State e ignorar Op. State."},
+      {en:"This IS a problem — it should be up (UNLOCKED) but Op. State is DISABLED. Investigate a blocking fault / faulty radio.",es:"Esto SÍ es un problema — debería estar arriba (UNLOCKED) pero Op. State es DISABLED. Investiga una falla bloqueante / radio dañado.",
+       fbEn:"Correct. UNLOCKED + DISABLED = 'wants to be in service but isn't.' Correlate with the alarm list and the sector/radio to find the blocking fault.",
+       fbEs:"Correcto. UNLOCKED + DISABLED = 'quiere estar en servicio pero no lo está.' Correlaciona con la lista de alarmas y el sector/radio para hallar la falla bloqueante.",
+       trapEn:"This is exactly the state that should trigger investigation.",
+       trapEs:"Este es justo el estado que debe disparar la investigación."},
+      {en:"It was locked on purpose.",es:"La bloquearon a propósito.",
+       fbEn:"That would be Adm State 0 (LOCKED). Here Adm State is 1 (UNLOCKED), so the operator expects it in service — the DISABLED op state is unexpected.",
+       fbEs:"Eso sería Adm State 0 (LOCKED). Aquí Adm State es 1 (UNLOCKED), así que el operador la espera en servicio — el estado DISABLED es inesperado.",
+       trapEn:"Trap: confusing the two 0/1 codes — remember Adm 1=UNLOCKED, Op 1=ENABLED.",
+       trapEs:"Trampa: confundir los códigos 0/1 — recuerda Adm 1=UNLOCKED, Op 1=ENABLED."}
+    ]
+  },
+  {
+    id:"s3",
+    title:"COLI &gt; lt all  (Active alarms)",
+    body:
+      '<span class="td">2026-06-24 17:32:02</span>  <span class="tm">m</span>  Link Failure    <span class="tb">RiLink=5</span> <span class="td">(No signal detected. Near end port: FieldReplaceableUnit=BB-1,RiPort=E)</span>\n'+
+      '<span class="td">2026-06-24 17:32:59</span>  <span class="tm">m</span>  No Connection   <span class="tb">SupportUnit=6</span> <span class="td">(Affected: POWER_SUPPLY. Host: FieldReplaceableUnit=RRU-49)</span>\n'+
+      '<span class="td">2026-06-24 17:32:59</span>  <span class="tm">m</span>  No Connection   <span class="tb">SupportUnit=8</span> <span class="td">(Affected: FAN. Host: FieldReplaceableUnit=RRU-49)</span>',
+    qEn:"Three alarms fired within a minute. How many root causes are you likely chasing?",
+    qEs:"Tres alarmas en un minuto. ¿Cuántas causas raíz persigues probablemente?",
+    correct:1,
+    opts:[
+      {en:"Three separate faults — open three tickets.",es:"Tres fallas separadas — abre tres tickets.",
+       fbEn:"No. Count root causes, not alarm lines. All three localize to the same radio: RiLink=5 fronthaul and the SupportUnits both name Host FieldReplaceableUnit=RRU-49, at nearly the same timestamp.",
+       fbEs:"No. Cuenta causas raíz, no líneas de alarma. Las tres apuntan al mismo radio: el fronthaul RiLink=5 y los SupportUnit nombran Host FieldReplaceableUnit=RRU-49, casi al mismo tiempo.",
+       trapEn:"Trap: one alarm per ticket. Correlate by MO / host unit / timestamp first.",
+       trapEs:"Trampa: un ticket por alarma. Primero correlaciona por MO / unidad host / marca de tiempo."},
+      {en:"One likely root cause: RRU-49 lost its fronthaul link; the SupportUnit power/fan alarms are downstream of the same unit.",es:"Una causa raíz probable: el RRU-49 perdió su fronthaul; las alarmas de power/fan del SupportUnit son consecuencia de la misma unidad.",
+       fbEn:"Correct. Same host FRU (RRU-49), same time window, and the RiLink fronthaul went down — one root cause producing several alarms. Fix the radio/fronthaul and the rest should clear.",
+       fbEs:"Correcto. Misma FRU host (RRU-49), misma ventana de tiempo, y el fronthaul RiLink cayó — una causa raíz que produce varias alarmas. Arregla el radio/fronthaul y el resto debería despejarse.",
+       trapEn:"This is the correlation skill: MO + AdditionalText + timestamp point to one unit.",
+       trapEs:"Esta es la habilidad de correlación: MO + AdditionalText + marca de tiempo apuntan a una unidad."},
+      {en:"A fan problem — replace the fan.",es:"Un problema de fan — reemplaza el ventilador.",
+       fbEn:"The FAN alarm is a symptom, not the story. The RiLink=5 fronthaul 'No signal' at the same moment points at the whole RRU-49 losing connectivity, not just its fan.",
+       fbEs:"La alarma FAN es un síntoma, no la historia. El 'No signal' del fronthaul RiLink=5 en el mismo momento apunta a que todo el RRU-49 perdió conectividad, no solo su ventilador.",
+       trapEn:"Trap: fixating on the most concrete-sounding alarm instead of the root.",
+       trapEs:"Trampa: fijarse en la alarma que suena más concreta en vez de la raíz."}
+    ]
+  },
+  {
+    id:"s4",
+    title:"COLI &gt; lt all  (Active alarms)",
+    body:
+      '<span class="td">2026-07-09 10:17:30</span>  <span class="tr">C</span>  External Link to GNodeB Failure  <span class="tb">ENodeBFunction=1</span> <span class="td">(X2 link problem to neighbouring gNodeBs)</span>',
+    qEn:"A Critical 'External Link to GNodeB Failure' (X2). Which layer do you check?",
+    qEs:"Un 'External Link to GNodeB Failure' (X2) Crítico. ¿Qué capa revisas?",
+    correct:1,
+    opts:[
+      {en:"The antenna / RF — swap the radio.",es:"La antena / RF — cambia el radio.",
+       fbEn:"No. X2 is an inter-node interface between an eNodeB and neighbouring gNodeBs, carried over transport/IP. It has nothing to do with the RF path or a specific antenna.",
+       fbEs:"No. X2 es una interfaz entre nodos (eNodeB y gNodeB vecinos), transportada sobre transporte/IP. No tiene que ver con la trayectoria RF ni una antena específica.",
+       trapEn:"Trap: reading 'Failure' and jumping to hardware/RF.",
+       trapEs:"Trampa: leer 'Failure' y saltar a hardware/RF."},
+      {en:"Transport / neighbour layer — X2 to a gNodeB. It affects 5G NSA (EN-DC) add; check IP/transport and neighbour config, not the antenna.",es:"Capa de transporte / vecino — X2 hacia un gNodeB. Afecta la agregación 5G NSA (EN-DC); revisa IP/transporte y config de vecino, no la antena.",
+       fbEn:"Correct. The MO ENodeBFunction=1 and the text 'X2 link to neighbouring gNodeBs' point to inter-node signalling/transport. In NSA this blocks adding the 5G leg. Check transport, IP reachability and X2 neighbour setup.",
+       fbEs:"Correcto. El MO ENodeBFunction=1 y el texto 'X2 hacia gNodeB vecinos' apuntan a señalización/transporte entre nodos. En NSA esto bloquea agregar la pata 5G. Revisa transporte, alcance IP y config de vecino X2.",
+       trapEn:"Read the MO + AdditionalText: they tell you it is a link, not a radio.",
+       trapEs:"Lee el MO + AdditionalText: te dicen que es un enlace, no un radio."},
+      {en:"A cell is locked somewhere.",es:"Hay una celda bloqueada en algún lado.",
+       fbEn:"No connection to cell admin state. This alarm is about a logical inter-node link (X2), not a cell being LOCKED/UNLOCKED.",
+       fbEs:"Sin relación con el estado admin de una celda. Esta alarma es sobre un enlace lógico entre nodos (X2), no una celda LOCKED/UNLOCKED.",
+       trapEn:"Trap: mapping every alarm back to a cell state table.",
+       trapEs:"Trampa: mapear toda alarma a una tabla de estado de celdas."}
+    ]
+  }
+];
+function scnStep(idx){
+  var sc=window.SCEN[idx];
+  var opts=sc.opts.map(function(o,j){ return '<button class="opt" data-o="'+j+'">'+X(o.en,o.es)+'</button>'; }).join("");
+  return term(sc.title, sc.body)+
+    '<div class="q scn" data-idx="'+idx+'"><h3>'+X(sc.qEn,sc.qEs)+'</h3>'+opts+
+    '<div class="fb"></div>'+
+    '<div style="margin-top:8px;display:none" class="scnre"><button class="btn ghost" data-re="1">'+X("Try again","Reintentar")+'</button></div></div>';
+}
+function initScn(){
+  document.querySelectorAll(".scn").forEach(function(scn){
+    var sc=window.SCEN[+scn.dataset.idx];
+    var opts=scn.querySelectorAll(".opt");
+    var fb=scn.querySelector(".fb");
+    var re=scn.querySelector(".scnre");
+    function reset(){ opts.forEach(function(x){x.classList.remove("correct","wrong");x.disabled=false;}); fb.style.display="none"; re.style.display="none"; }
+    re.querySelector("[data-re]").onclick=reset;
+    opts.forEach(function(b){
+      b.onclick=function(){
+        var chosen=+b.dataset.o, o=sc.opts[chosen], right=(chosen===sc.correct);
+        opts.forEach(function(x){ x.disabled=true; if(+x.dataset.o===sc.correct)x.classList.add("correct"); });
+        if(!right) b.classList.add("wrong");
+        fb.className="fb "+(right?"good":"bad");
+        fb.innerHTML="<b>"+(right?X("Correct","Correcto"):X("Not quite","Casi"))+".</b> "+X(o.fbEn,o.fbEs)+'<span class="trap">'+X(o.trapEn,o.trapEs)+"</span>";
+        fb.style.display="block";
+        re.style.display=right?"none":"block";
+      };
+    });
+  });
+}
+
+var STEPS = [
+  /* 1 — Overview */
+  { ico:ICO.play, t:["Overview","Introducción"], b:function(){
+      return tit("Reading an Ericsson node Health Check","Lectura del Health Check de un nodo Ericsson")+
+        '<span class="pill">'+X("Module 1 of 3 · Report anatomy","Módulo 1 de 3 · Anatomía del reporte")+'</span>'+
+        '<p class="lead">'+X("A Health Check (HC) is a snapshot of COLI / MO command outputs run on a RAN node to verify its health — after field work, or on a schedule. It captures node identity, managed-object states, active alarms, cells and hardware. This module teaches you to READ one confidently.","Un Health Check (HC) es una instantánea de las salidas de comandos COLI / MO ejecutados en un nodo RAN para verificar su salud — tras un trabajo de campo o de forma programada. Captura la identidad del nodo, estados de managed objects, alarmas activas, celdas y hardware. Este módulo te enseña a LEERLO con confianza.")+'</p>'+
+        term("Health Check — cover",
+          '<span class="td"># Ericsson RAN Node Health Check</span>\n'+
+          '<span class="tw">Nodes in report:</span> <span class="ty">3</span>   <span class="td">(a single HC file can hold several nodes)</span>\n'+
+          '<span class="tw">Sections     :</span> Header · MO States · Alarms · Cells/Carriers\n'+
+          '<span class="tw">Generated by :</span> COLI / MO command dump')+
+        '<div class="grid3">'+
+          bx(ICO.header,"Header","Encabezado","Node id, site label, UTC timestamp, Pre-Check.","Id del nodo, etiqueta del sitio, fecha UTC, Pre-Check.")+
+          bx(ICO.table,"States","Estados","MO tables: Adm / Op state per object.","Tablas MO: estado Adm / Op por objeto.")+
+          bx(ICO.alarm,"Alarms","Alarmas","Active faults with severity & MO.","Fallas activas con severidad y MO.")+
+        '</div>'+
+        '<p class="note">'+X("One report, many nodes. Always confirm WHICH node a table or alarm belongs to before you act.","Un reporte, varios nodos. Confirma siempre a QUÉ nodo pertenece una tabla o alarma antes de actuar.")+'</p>';
+  }},
+  /* 2 — Header */
+  { ico:ICO.header, t:["Report header","Encabezado"], b:function(){
+      return tit("The report header","El encabezado del reporte")+
+        '<p class="lead">'+X("Every node section starts with a header that tells you WHO and WHEN. Read it first — it is how you attribute everything below it to the right site.","Cada sección de nodo inicia con un encabezado que dice QUIÉN y CUÁNDO. Léelo primero — así atribuyes todo lo de abajo al sitio correcto.")+'</p>'+
+        term("Health Check — node header",
+          '<span class="tw">Node:</span> <span class="ty">448650</span>\n'+
+          '<span class="tw">UserLabel:</span> <span class="tb">448650_FTL_BEACH_PARK_1</span>\n'+
+          '<span class="tw">Health Check Timestamp (UTC):</span> 2026-07-10 13:22:41\n'+
+          '<span class="tw">Pre-Check:</span> <span class="td">PASS</span>')+
+        '<div class="grid2">'+
+          bx(ICO.tag,"Node / UserLabel","Node / UserLabel","'Node' is the network id; UserLabel is the human site name (site number + market + name).","'Node' es el id de red; UserLabel es el nombre legible (número + mercado + nombre).")+
+          bx(ICO.doc,"Timestamp (UTC)","Marca (UTC)","When the snapshot was taken — always UTC. Compare against alarm times.","Cuándo se tomó — siempre UTC. Compárala con las horas de alarma.")+
+        '</div>'+
+        '<p class="note">'+X("Pre-Check is a baseline taken before work; a Post-Check is compared against it. If your report shows multiple headers, it contains multiple nodes.","Pre-Check es la base tomada antes del trabajo; el Post-Check se compara contra ella. Si el reporte tiene varios encabezados, contiene varios nodos.")+'</p>';
+  }},
+  /* 3 — MO state table columns + codes */
+  { ico:ICO.table, t:["MO state table","Tabla de estados MO"], b:function(){
+      return tit("Reading MO state tables","Lectura de tablas de estado MO")+
+        '<p class="lead">'+X("State tables list managed objects (MOs) with their administrative and operational state. Learn the columns and the 0/1 codes.","Las tablas listan managed objects (MOs) con su estado administrativo y operativo. Aprende las columnas y los códigos 0/1.")+'</p>'+
+        term("COLI > st  (managed-object states)",
+          '<span class="th">Proxy  Adm State      Op. State      UserLabel     MO</span>\n'+
+          '<span class="tw">47</span>     <span class="tb">1 (UNLOCKED)</span>   <span class="tb">1 (ENABLED)</span>    448650_1_2    <span class="tb">EUtranCellFDD=448650_1_2</span>\n'+
+          '<span class="tw">872</span>    <span class="tm">0 (LOCKED)</span>     <span class="tm">0 (DISABLED)</span>    448650_4_9    <span class="tb">EUtranCellTDD=448650_4_9</span>\n'+
+          '<span class="tw">3854</span>   <span class="tb">1 (UNLOCKED)</span>   <span class="tb">1 (ENABLED)</span>    ...           <span class="tb">NRCellDU=1489967_0001_0001_04</span>\n'+
+          '<span class="td">&gt;&gt;&gt; Total: 12 MOs</span>')+
+        '<div class="grid2">'+
+          bx(ICO.tag,"administrativeState","administrativeState","<b>1 = UNLOCKED</b> (operator allows service) · <b>0 = LOCKED</b> (operator blocked service).","<b>1 = UNLOCKED</b> (el operador permite servicio) · <b>0 = LOCKED</b> (el operador bloqueó el servicio).")+
+          bx(ICO.tag,"operationalState","operationalState","<b>1 = ENABLED</b> (actually working) · <b>0 = DISABLED</b> (not working right now).","<b>1 = ENABLED</b> (realmente funcionando) · <b>0 = DISABLED</b> (no funciona ahora).")+
+        '</div>'+
+        '<p class="note warn">'+X("Adm State is INTENT (what the operator wants). Op. State is REALITY (what the node reports). Reading them together is the whole skill.","Adm State es INTENCIÓN (lo que el operador quiere). Op. State es REALIDAD (lo que el nodo reporta). Leerlos juntos es toda la habilidad.")+'</p>';
+  }},
+  /* 4 — interpretation matrix */
+  { ico:ICO.matrix, t:["State matrix","Matriz de estados"], b:function(){
+      return tit("Adm × Op interpretation matrix","Matriz de interpretación Adm × Op")+
+        '<p class="lead">'+X("Combine the two states. Only one combination is a silent red flag.","Combina los dos estados. Solo una combinación es una bandera roja silenciosa.")+'</p>'+
+        '<div class="matrix">'+
+          '<div class="mcell g"><b>UNLOCKED + ENABLED</b><span>'+X("Healthy — in service, carrying (or ready for) traffic.","Sano — en servicio, cursando (o listo para) tráfico.")+'</span><span class="tag">'+X("Healthy","Sano")+'</span></div>'+
+          '<div class="mcell a"><b>LOCKED + DISABLED</b><span>'+X("Intentionally out of service (admin lock). Verify against the plan — usually not a fault.","Fuera de servicio a propósito (lock admin). Verifica contra el plan — normalmente no es falla.")+'</span><span class="tag">'+X("By design","Por diseño")+'</span></div>'+
+          '<div class="mcell r"><b>UNLOCKED + DISABLED</b><span>'+X("PROBLEM — wants to be up but isn\'t. A blocking fault. Investigate & correlate with alarms.","PROBLEMA — quiere estar arriba pero no lo está. Falla bloqueante. Investiga y correlaciona con alarmas.")+'</span><span class="tag">'+X("Investigate","Investigar")+'</span></div>'+
+          '<div class="mcell a"><b>LOCKED + ENABLED</b><span>'+X("Transitional — often mid lock/unlock. Re-check shortly; should settle.","Transitorio — suele ser a mitad de lock/unlock. Revisa de nuevo pronto; debería estabilizar.")+'</span><span class="tag">'+X("Transitional","Transitorio")+'</span></div>'+
+        '</div>'+
+        '<p class="note bad">'+X("UNLOCKED + DISABLED is the one to chase. LOCKED + DISABLED looks 'down' but is usually deliberate — check the work order before ticketing.","UNLOCKED + DISABLED es la que persigues. LOCKED + DISABLED parece 'caída' pero suele ser deliberada — revisa la orden de trabajo antes de levantar ticket.")+'</p>';
+  }},
+  /* 5 — MO naming primer */
+  { ico:ICO.tag, t:["MO naming","Nombres MO"], b:function(){
+      return tit("MO naming: the MO tells you WHERE","Nombres MO: el MO te dice DÓNDE")+
+        '<p class="lead">'+X("A managed-object name is a path. Reading it tells you what the object is and where it lives in the node.","El nombre de un managed object es una ruta. Leerlo te dice qué es el objeto y dónde vive en el nodo.")+'</p>'+
+        term("Managed-object types you will meet",
+          '<span class="tw">ManagedElement</span>                <span class="td">the node itself (top of the tree)</span>\n'+
+          '<span class="tw">EUtranCellFDD / EUtranCellTDD</span>  <span class="td">LTE (4G) cells — FDD or TDD</span>\n'+
+          '<span class="tw">NRCellDU / NRCellCU</span>            <span class="td">5G NR cells — DU (radio/L1) & CU (L3) split</span>\n'+
+          '<span class="tw">SectorCarrier / NRSectorCarrier</span> <span class="td">the carrier on a sector</span>\n'+
+          '<span class="tw">SectorEquipmentFunction</span>       <span class="td">maps cells to radio hardware</span>\n'+
+          '<span class="tw">FieldReplaceableUnit</span>          <span class="td">BB baseband · RRU radio · SupportUnit fan/power</span>\n'+
+          '<span class="tw">RiLink / RiPort</span>                <span class="td">radio interface (fronthaul) link & port</span>\n'+
+          '<span class="tw">TermPointToENodeB / GNodeB</span>     <span class="td">X2 / Xn neighbour endpoints</span>\n'+
+          '<span class="tw">SctpEndpoint</span>                   <span class="td">F1 / Xn signalling transport</span>')+
+        '<p class="note">'+X("Example: FieldReplaceableUnit=BB-1,RiPort=E reads right-to-left — port E on baseband unit BB-1. The MO localizes the fault for you.","Ejemplo: FieldReplaceableUnit=BB-1,RiPort=E se lee de derecha a izquierda — puerto E en la unidad de banda base BB-1. El MO te localiza la falla.")+'</p>'+
+        '<div class="grid3">'+
+          bx(ICO.cell,"Cells","Celdas","EUtranCell* = LTE, NRCell* = 5G NR.","EUtranCell* = LTE, NRCell* = 5G NR.")+
+          bx(ICO.doc,"Hardware","Hardware","FieldReplaceableUnit = BB / RRU / SupportUnit.","FieldReplaceableUnit = BB / RRU / SupportUnit.")+
+          bx(ICO.tag,"Transport","Transporte","RiLink fronthaul; TermPoint / Sctp = neighbours/signalling.","RiLink fronthaul; TermPoint / Sctp = vecinos/señalización.")+
+        '</div>';
+  }},
+  /* 6 — Alarms */
+  { ico:ICO.alarm, t:["Alarms","Alarmas"], b:function(){
+      return tit("The alarms section","La sección de alarmas")+
+        '<p class="lead">'+X("The alarm table lists active faults. Read the severity letter, the Specific Problem, and above all the MO + AdditionalText, which localize the fault.","La tabla de alarmas lista fallas activas. Lee la letra de severidad, el Specific Problem y sobre todo el MO + AdditionalText, que localizan la falla.")+'</p>'+
+        term("COLI > lt all  (active alarms — node 448650)",
+          '<span class="th">Date & Time (UTC)     S  Specific Problem                 MO (AdditionalText)</span>\n'+
+          '<span class="td">2026-06-24 17:32:02</span>  <span class="tm">m</span>  Link Failure                     <span class="tb">RiLink=5</span> <span class="td">(No signal. Near end: FRU=BB-1,RiPort=E)</span>\n'+
+          '<span class="td">2026-06-24 17:32:59</span>  <span class="tm">m</span>  No Connection                    <span class="tb">SupportUnit=6</span> <span class="td">(POWER_SUPPLY. Host: FRU=RRU-49)</span>\n'+
+          '<span class="td">2026-06-24 17:32:59</span>  <span class="tm">m</span>  No Connection                    <span class="tb">SupportUnit=8</span> <span class="td">(FAN. Host: FRU=RRU-49)</span>\n'+
+          '<span class="td">2026-07-09 10:17:30</span>  <span class="tr">C</span>  External Link to GNodeB Failure  <span class="tb">ENodeBFunction=1</span> <span class="td">(X2 link problem)</span>\n'+
+          '<span class="td">2026-07-10 13:19:13</span>  <span class="tm">m</span>  XnC Link to GNodeB Failure       <span class="tb">GNBCUCPFunction=1</span> <span class="td">(XnC link problem)</span>\n'+
+          '<span class="ty">&gt;&gt;&gt; Total: 5 Alarms (1 Critical, 0 Major)</span>')+
+        '<div class="grid3">'+
+          bx(ICO.alarm,"Severity (S)","Severidad (S)","<b>C</b> = Critical · <b>M</b> = Major · <b>m</b> = minor / warning.","<b>C</b> = Crítica · <b>M</b> = Mayor · <b>m</b> = menor / advertencia.")+
+          bx(ICO.tag,"MO + text","MO + texto","Names the exact unit/link and the affected service.","Nombra la unidad/enlace exacto y el servicio afectado.")+
+          bx(ICO.doc,"Summary line","Línea resumen","'>>> Total: N Alarms (x Critical, y Major)'.","'>>> Total: N Alarmas (x Críticas, y Mayores)'.")+
+        '</div>'+
+        '<p class="note warn">'+X("Correlate: several alarms with the same host FRU / timestamp are usually one root cause. External / environmental alarm blocks may say 'No Data Available' — that means not collected, not necessarily healthy.","Correlaciona: varias alarmas con la misma FRU host / marca de tiempo suelen ser una causa raíz. Los bloques de alarmas externas / ambientales pueden decir 'No Data Available' — eso es 'no recolectado', no necesariamente 'sano'.")+'</p>';
+  }},
+  /* 7 — Cells / carriers / UE */
+  { ico:ICO.cell, t:["Cells & carriers","Celdas y portadoras"], b:function(){
+      return tit("Cells, carriers & 'is it carrying users?'","Celdas, portadoras y '¿carga usuarios?'")+
+        '<p class="lead">'+X("Beyond state, the report shows each cell\'s bandwidth, band/EARFCN and a UE (connected-user) count — a quick hint of whether a cell is actually serving traffic.","Además del estado, el reporte muestra el ancho de banda, banda/EARFCN y un conteo de UE (usuarios conectados) por celda — una pista rápida de si la celda realmente cursa tráfico.")+'</p>'+
+        term("COLI > cell / carrier detail",
+          '<span class="tw">EUtranCellFDD=448650_1_2</span>\n'+
+          '  <span class="td">dlChannelBandwidth</span>  <span class="ty">20000</span>   <span class="td">(kHz = 20 MHz DL)</span>\n'+
+          '  <span class="td">ulChannelBandwidth</span>  <span class="ty">20000</span>   <span class="td">(kHz = 20 MHz UL)</span>\n'+
+          '  <span class="td">earfcndl</span>            <span class="ty">2050</span>    <span class="td">(DL carrier freq index)</span>\n'+
+          '  <span class="td">earfcnul</span>            <span class="ty">20050</span>   <span class="td">(UL carrier freq index)</span>\n'+
+          '  <span class="td">freqBand</span>            <span class="ty">4</span>       <span class="td">(LTE Band 4 / AWS)</span>\n'+
+          '  <span class="td">connectedUsers</span>      <span class="ty">37</span>      <span class="td">(UE count — cell is serving)</span>')+
+        '<div class="grid3">'+
+          bx(ICO.cell,"Bandwidth","Ancho de banda","In kHz: 20000 = 20 MHz. Wider = more capacity.","En kHz: 20000 = 20 MHz. Más ancho = más capacidad.")+
+          bx(ICO.tag,"Band / EARFCN","Banda / EARFCN","freqBand + EARFCN identify the exact carrier.","freqBand + EARFCN identifican la portadora exacta.")+
+          bx(ICO.check,"UE count","Conteo UE","Users > 0 on an UNLOCKED+ENABLED cell = live traffic.","Usuarios > 0 en celda UNLOCKED+ENABLED = tráfico vivo.")+
+        '</div>'+
+        '<p class="note">'+X("A cell that is UNLOCKED + ENABLED but shows 0 users at a busy hour deserves a second look — state can be green while coverage is not.","Una celda UNLOCKED + ENABLED pero con 0 usuarios en hora pico merece una segunda mirada — el estado puede estar en verde aunque la cobertura no.")+'</p>';
+  }},
+  /* 8 — Multi-node / clean node */
+  { ico:ICO.doc, t:["Clean vs busy","Limpio vs con fallas"], b:function(){
+      return tit("A clean node vs a node with faults","Un nodo limpio vs un nodo con fallas")+
+        '<p class="lead">'+X("A single HC file may hold several nodes. Some are clean; some are not. Read each node's summary line on its own.","Un solo HC puede contener varios nodos. Algunos están limpios; otros no. Lee la línea resumen de cada nodo por separado.")+'</p>'+
+        term("Health Check — a clean node",
+          '<span class="tw">Node:</span> <span class="ty">1480027</span>\n'+
+          '<span class="tw">UserLabel:</span> <span class="tb">1480027_5GNB_FTL_FTLBEACHPARK003</span>\n'+
+          '<span class="ty">&gt;&gt;&gt; Total: 0 Alarms (0 Critical, 0 Major)</span>   <span class="td">&lt;-- healthy, nothing to chase</span>')+
+        term("Health Check — a node with faults",
+          '<span class="tw">Node:</span> <span class="ty">448650</span>\n'+
+          '<span class="tw">UserLabel:</span> <span class="tb">448650_FTL_BEACH_PARK_1</span>\n'+
+          '<span class="tr">&gt;&gt;&gt; Total: 5 Alarms (1 Critical, 0 Major)</span>   <span class="td">&lt;-- read the alarm list</span>')+
+        '<p class="note good"><b>'+X("Habit","Hábito")+':</b> '+X("For every node, scan (1) the header, (2) the alarm total, (3) any UNLOCKED+DISABLED MOs. That three-step scan catches most real problems fast.","Para cada nodo, revisa (1) el encabezado, (2) el total de alarmas, (3) cualquier MO UNLOCKED+DISABLED. Ese escaneo de tres pasos atrapa rápido la mayoría de problemas reales.")+'</p>';
+  }},
+  /* 9-12 — scenarios */
+  { ico:ICO.search, t:["Diagnose 1","Diagnóstico 1"], b:function(){
+      return tit("Diagnose it: a locked cell","Diagnostícalo: una celda bloqueada")+
+        '<p class="lead">'+X("Read the excerpt, then choose. This is practice, not a graded exam — read the feedback and retry.","Lee el extracto y elige. Es práctica, no un examen — lee la retroalimentación y reintenta.")+'</p>'+
+        scnStep(0);
+    }, i:initScn },
+  { ico:ICO.search, t:["Diagnose 2","Diagnóstico 2"], b:function(){
+      return tit("Diagnose it: state mismatch","Diagnostícalo: estados que no cuadran")+
+        '<p class="lead">'+X("Same table, different signature. What does UNLOCKED + DISABLED mean?","Misma tabla, firma distinta. ¿Qué significa UNLOCKED + DISABLED?")+'</p>'+
+        scnStep(1);
+    }, i:initScn },
+  { ico:ICO.search, t:["Diagnose 3","Diagnóstico 3"], b:function(){
+      return tit("Diagnose it: correlate the alarms","Diagnostícalo: correlaciona las alarmas")+
+        '<p class="lead">'+X("Three alarms, one minute apart. Count root causes, not lines.","Tres alarmas, con un minuto de diferencia. Cuenta causas raíz, no líneas.")+'</p>'+
+        scnStep(2);
+    }, i:initScn },
+  { ico:ICO.search, t:["Diagnose 4","Diagnóstico 4"], b:function(){
+      return tit("Diagnose it: which layer?","Diagnostícalo: ¿qué capa?")+
+        '<p class="lead">'+X("A Critical X2 alarm. Decide where to look before you touch anything.","Una alarma X2 Crítica. Decide dónde mirar antes de tocar nada.")+'</p>'+
+        scnStep(3);
+    }, i:initScn },
+  /* 13 — Quiz */
+  { ico:ICO.quiz, t:["Quiz","Evaluación"], b:function(){
+      var QUIZ=[
+        { q_en:"administrativeState 1 means:", q_es:"administrativeState 1 significa:",
+          o_en:["LOCKED","UNLOCKED","DISABLED"], o_es:["LOCKED","UNLOCKED","DISABLED"], a:1,
+          e_en:"Adm 1 = UNLOCKED (operator allows the object in service); 0 = LOCKED.",
+          e_es:"Adm 1 = UNLOCKED (el operador permite el objeto en servicio); 0 = LOCKED." },
+        { q_en:"operationalState 0 means:", q_es:"operationalState 0 significa:",
+          o_en:["ENABLED / working","DISABLED / not working now","UNLOCKED"], o_es:["ENABLED / funcionando","DISABLED / no funciona ahora","UNLOCKED"], a:1,
+          e_en:"Op 0 = DISABLED: the node reports it is not operational right now.",
+          e_es:"Op 0 = DISABLED: el nodo reporta que no está operativo ahora." },
+        { q_en:"A cell reads UNLOCKED + DISABLED. This is:", q_es:"Una celda muestra UNLOCKED + DISABLED. Esto es:",
+          o_en:["Healthy","A problem to investigate (blocking fault)","Intentionally out of service"], o_es:["Sana","Un problema a investigar (falla bloqueante)","Fuera de servicio a propósito"], a:1,
+          e_en:"Wants to be up (UNLOCKED) but isn't (DISABLED) = a blocking fault. Correlate with alarms.",
+          e_es:"Quiere estar arriba (UNLOCKED) pero no lo está (DISABLED) = falla bloqueante. Correlaciona con alarmas." },
+        { q_en:"A cell reads LOCKED + DISABLED. Best first action:", q_es:"Una celda muestra LOCKED + DISABLED. Mejor primera acción:",
+          o_en:["Open a Critical ticket immediately","Verify it against the work order / plan","Replace the radio"], o_es:["Abrir un ticket Crítico ya","Verificar contra la orden de trabajo / plan","Reemplazar el radio"], a:1,
+          e_en:"LOCKED + DISABLED is usually a deliberate admin lock — confirm intent before ticketing.",
+          e_es:"LOCKED + DISABLED suele ser un lock administrativo deliberado — confirma la intención antes de levantar ticket." },
+        { q_en:"In the alarm table, severity 'C' means:", q_es:"En la tabla de alarmas, la severidad 'C' significa:",
+          o_en:["Cleared","Critical","Configuration"], o_es:["Despejada","Crítica","Configuración"], a:1,
+          e_en:"C = Critical, M = Major, m = minor/warning.",
+          e_es:"C = Crítica, M = Mayor, m = menor/advertencia." },
+        { q_en:"Three alarms name the same Host FieldReplaceableUnit=RRU-49 at the same time. You should:", q_es:"Tres alarmas nombran el mismo Host FieldReplaceableUnit=RRU-49 a la misma hora. Debes:",
+          o_en:["Open three separate tickets","Treat them as one likely root cause","Ignore them"], o_es:["Abrir tres tickets separados","Tratarlas como una causa raíz probable","Ignorarlas"], a:1,
+          e_en:"Correlate by MO / host unit / timestamp: one root cause (RRU-49) produced several alarms.",
+          e_es:"Correlaciona por MO / unidad host / marca de tiempo: una causa raíz (RRU-49) produjo varias alarmas." },
+        { q_en:"The MO 'NRCellDU=...' refers to:", q_es:"El MO 'NRCellDU=...' se refiere a:",
+          o_en:["An LTE FDD cell","A 5G NR cell (DU part of the DU/CU split)","A power supply unit"], o_es:["Una celda LTE FDD","Una celda 5G NR (parte DU del split DU/CU)","Una fuente de poder"], a:1,
+          e_en:"NRCell* = 5G NR; DU is the distributed unit (radio/lower layers). EUtranCell* would be LTE.",
+          e_es:"NRCell* = 5G NR; DU es la unidad distribuida (radio/capas bajas). EUtranCell* sería LTE." },
+        { q_en:"A Critical 'External Link to GNodeB Failure (X2)' points at:", q_es:"Un 'External Link to GNodeB Failure (X2)' Crítico apunta a:",
+          o_en:["The antenna / RF path","Inter-node transport / neighbour (X2), not RF","A locked cell"], o_es:["La antena / trayectoria RF","Transporte / vecino entre nodos (X2), no RF","Una celda bloqueada"], a:1,
+          e_en:"X2/Xn are logical inter-node links over transport. Check IP/transport & neighbour config, not the antenna.",
+          e_es:"X2/Xn son enlaces lógicos entre nodos sobre transporte. Revisa IP/transporte y config de vecino, no la antena." }
+      ];
+      window._QZ=QUIZ;
+      var qs=QUIZ.map(function(q,i){
+        var o=(LANG==="es"?q.o_es:q.o_en).map(function(x,j){return '<button class="opt" data-q="'+i+'" data-o="'+j+'">'+x+'</button>';}).join("");
+        return '<div class="q"><h3>'+(i+1)+'. '+X(q.q_en,q.q_es)+'</h3>'+o+'<div class="fb" data-fbq="'+i+'"></div></div>';
+      }).join("");
+      return tit("Quiz — read the report","Evaluación — lee el reporte")+
+        '<p class="lead">'+X("Answer all 8. You need at least 80% to pass. You can retry.","Responde las 8. Necesitas al menos 80% para aprobar. Puedes reintentar.")+'</p>'+
+        qs+'<div class="score" id="score"></div><div id="qv" style="text-align:center;margin-top:6px"></div>';
+    }, i:function(){
+      var QUIZ=window._QZ, ans={}, ok=0, N=QUIZ.length;
+      document.querySelectorAll(".opt").forEach(function(b){
+        b.onclick=function(){
+          var qi=+b.dataset.q; if(ans[qi]!==undefined) return; ans[qi]=1;
+          var a=QUIZ[qi].a, right=(+b.dataset.o===a);
+          document.querySelectorAll('.opt[data-q="'+qi+'"]').forEach(function(x){ x.disabled=true; if(+x.dataset.o===a)x.classList.add("correct"); });
+          if(right) ok++; else b.classList.add("wrong");
+          var fb=document.querySelector('.fb[data-fbq="'+qi+'"]');
+          fb.className="fb "+(right?"good":"bad");
+          fb.innerHTML="<b>"+(right?X("Correct","Correcto"):X("Review","Repasa"))+".</b> "+X(QUIZ[qi].e_en,QUIZ[qi].e_es);
+          fb.style.display="block";
+          if(Object.keys(ans).length===N){
+            var pct=Math.round(ok/N*100), pass=pct>=80;
+            $("score").textContent=X("Score: ","Puntaje: ")+ok+"/"+N+" ("+pct+"%)";
+            $("qv").innerHTML='<span class="verdict '+(pass?"ok":"no")+'">'+(pass?ICO.check:"")+' '+
+              (pass?X("Passed — 80% or higher","Aprobado — 80% o más"):X("Below 80% — review & retry","Menos de 80% — repasa y reintenta"))+'</span>'+
+              (pass?"":'<div style="margin-top:10px"><button class="btn ghost" id="qretry">'+X("Retry quiz","Reintentar")+'</button></div>');
+            var r=$("qretry"); if(r) r.onclick=function(){ render(); };
+          }
+        };
+      });
+    }
+  },
+  /* 14 — References */
+  { ico:ICO.book, t:["Sources","Fuentes"], b:function(){
+      return tit("Key takeaways &amp; references","Ideas clave y referencias")+
+        '<ul>'+
+          '<li>'+X("Read the header first: attribute every table/alarm to the right node (reports can hold several).","Lee primero el encabezado: atribuye cada tabla/alarma al nodo correcto (un reporte puede tener varios).")+'</li>'+
+          '<li>'+X("Adm State = intent, Op. State = reality. UNLOCKED+DISABLED is the red flag; LOCKED+DISABLED is usually by design.","Adm State = intención, Op. State = realidad. UNLOCKED+DISABLED es la bandera roja; LOCKED+DISABLED suele ser por diseño.")+'</li>'+
+          '<li>'+X("The MO + AdditionalText localize a fault; correlate alarms by host unit and timestamp to find one root cause.","El MO + AdditionalText localizan la falla; correlaciona alarmas por unidad host y marca de tiempo para hallar una causa raíz.")+'</li>'+
+        '</ul>'+
+        '<h2>'+X("References","Referencias")+'</h2>'+
+        '<div class="ref"><b>Ericsson RAN / Node CPI</b> — '+X("Customer Product Information for the node: COLI / MO command reference, managed-object model, and alarm descriptions (Specific Problem, severity, MO/AdditionalText).","Información de Producto del nodo: referencia de comandos COLI / MO, modelo de managed objects y descripciones de alarmas (Specific Problem, severidad, MO/AdditionalText).")+'</div>'+
+        '<div class="ref"><b>3GPP TS 32-series</b> — '+X("State management (administrativeState / operationalState) and the Network Resource Model behind EUtranCell*, NRCell*, and related MOs.","Gestión de estados (administrativeState / operationalState) y el Network Resource Model detrás de EUtranCell*, NRCell* y MOs relacionados.")+'</div>'+
+        '<div class="ref"><b>'+X("Operator work orders & MOPs","Órdenes de trabajo y MOP del operador")+'</b> — '+X("Always confirm intended states (e.g., a locked cell) against the approved plan for the site.","Confirma siempre los estados previstos (p. ej. una celda bloqueada) contra el plan aprobado del sitio.")+'</div>'+
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px"><span class="verdict ok">'+ICO.check+' '+X("Module 1 complete — next: alarms deep-dive","Módulo 1 completo — sigue: alarmas a fondo")+'</span><a class="btn ghost" href="../index.html" target="_top">'+X("Back to portal","Volver al portal")+'</a></div>'+
+        '<p class="note">'+X("Training overview only. The real report format and codes vary by node type and software release — always follow current CPI, carrier method-of-procedure and site documentation.","Solo es un resumen de entrenamiento. El formato y los códigos reales varían por tipo de nodo y versión de software — sigue siempre el CPI vigente, el MOP del carrier y la documentación del sitio.")+'</p>';
+  }}
+];
+var cur=0;
+var _gen=0;
+
+function pintarChrome(){
+  document.documentElement.lang=LANG;
+  $("brand").textContent=X(CONFIG.brand[0],CONFIG.brand[1]);
+  $("brandsub").textContent=X(CONFIG.subtitle[0],CONFIG.subtitle[1]);
+  $("homeTxt").textContent=X("Home","Inicio");
+  document.querySelectorAll("#lang button").forEach(function(b){ b.classList.toggle("on", b.dataset.l===LANG); });
+  var dark=document.documentElement.getAttribute("data-theme")==="dark";
+  $("temaIco").innerHTML=dark?ICO.sun:ICO.moon; $("temaTxt").textContent=dark?X("Light","Claro"):X("Dark","Oscuro");
+  $("prev").innerHTML="‹ "+X("Back","Anterior");
+  $("next").innerHTML=(cur>=STEPS.length-1?X("Restart","Reiniciar"):X("Next","Siguiente")+" ›");
+}
+function render(){
+  _gen++;
+  pintarChrome();
+  var s=STEPS[cur];
+  $("card").innerHTML=s.b();
+  if(s.i) s.i();
+  $("progbar").style.width=((cur+1)/STEPS.length*100)+"%";
+  $("mStep").textContent=X("Step ","Paso ")+(cur+1)+" / "+STEPS.length+" · "+X(s.t[0],s.t[1]);
+  $("mDur").textContent=CONFIG.duration;
+  $("prev").disabled=(cur===0);
+  $("dots").innerHTML=STEPS.map(function(_,i){return '<button class="dot'+(i===cur?' on':'')+'" data-i="'+i+'" aria-label="'+(i+1)+'"></button>';}).join("");
+  document.querySelectorAll(".dot").forEach(function(d){ d.onclick=function(){ cur=+d.dataset.i; render(); }; });
+  window.scrollTo(0,0);
+}
+$("prev").onclick=function(){ if(cur>0){cur--;render();} };
+$("next").onclick=function(){ cur=(cur>=STEPS.length-1)?0:cur+1; render(); };
+document.querySelectorAll("#lang button").forEach(function(b){ b.onclick=function(){ LANG=b.dataset.l; render(); }; });
+$("tema").onclick=function(){ var d=document.documentElement.getAttribute("data-theme")==="dark"; document.documentElement.setAttribute("data-theme", d?"light":"dark"); pintarChrome(); };
+document.addEventListener("keydown",function(e){ if(e.key==="ArrowRight")$("next").click(); if(e.key==="ArrowLeft")$("prev").click(); });
+render();
+</script>
+</body>
+</html>
