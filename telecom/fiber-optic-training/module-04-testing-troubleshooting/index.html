@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 4 — Testing, Certification & Troubleshooting / Pruebas y troubleshooting</title>
+<!--
+  TELECOM (azul) — Fiber Optic Training · Módulo 4: Pruebas, certificación y troubleshooting.
+  Fuentes / Sources: ANSI/TIA-526-7 (OFSTP-7, SMF), TIA-526-14 (OFSTP-14, MMF), IEC 61280-4-1/-4-2 (loss);
+  Telcordia GR-196 / IEC 61746 (OTDR); IEC 60825 (laser safety); FOA; VIAVI/EXFO/Fluke Networks app notes.
+  Motor de módulos + guardado de progreso vía ../scripts/progress.js.
+-->
+<style>
+  :root{
+    --pg:#f3f6fc; --card:#ffffff; --ink:#0c1c34; --sub:#51618a; --line:#dde5f3;
+    --bar:#0b2e59; --accent:#2563EB; --tint:rgba(37,99,235,.10);
+    --ok:#15803D; --okt:rgba(21,128,61,.10); --bad:#dc2626; --badt:rgba(220,38,38,.10);
+    --amber:#b45309; --ambt:rgba(180,83,9,.12); --radius:14px;
+    --shadow:0 1px 2px rgba(12,28,52,.05),0 10px 26px rgba(12,28,52,.08);
+  }
+  html[data-theme="dark"]{
+    --pg:#0a1120; --card:#141d30; --ink:#e9f0ff; --sub:#9db0d6; --line:#243149;
+    --bar:#0a1526; --accent:#4d8bff; --tint:rgba(77,139,255,.14);
+    --ok:#4ade80; --okt:rgba(74,222,128,.14); --bad:#f87171; --badt:rgba(248,113,113,.14);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  .shell{max-width:940px;margin:0 auto;padding:14px 16px 34px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0 8px;box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:600;display:block;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+  .prog{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:6px 0 4px}
+  .prog>i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);gap:8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;min-height:380px}
+  .step-ico{width:44px;height:44px;border-radius:12px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+  h1{font-size:clamp(20px,3.3vw,26px);margin:0 0 8px;font-weight:700;line-height:1.2}
+  h2{font-size:15.5px;margin:16px 0 8px;font-weight:600}
+  p{margin:0 0 12px}
+  .lead{color:var(--sub);font-size:15px}
+  ul,ol{margin:6px 0 12px;padding-left:20px}
+  li{margin:6px 0}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:8px 0}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin:8px 0}
+  .box{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:13px}
+  .box h3{margin:0 0 6px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px}
+  .box p{margin:0;font-size:12.5px;color:var(--sub)}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:var(--accent);color:#fff;font-weight:800;font-size:14px;flex:none}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;min-height:42px;display:inline-flex;align-items:center;gap:7px;justify-content:center;text-decoration:none}
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .btn.sm{padding:8px 12px;min-height:36px;font-size:12.5px}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;flex:1}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line);border:0;cursor:pointer;padding:0}
+  .dot.on{background:var(--accent);transform:scale(1.3)}
+  .dot.seen{background:var(--sub)}
+  .note{font-size:13px;color:var(--sub);border-left:3px solid var(--accent);background:var(--tint);padding:9px 12px;margin:12px 0;border-radius:0 8px 8px 0}
+  .warn{border-left-color:var(--amber);color:var(--amber);background:var(--ambt)}
+  .bad{border-left-color:var(--bad);color:var(--bad);background:var(--badt)}
+  .good{border-left-color:var(--ok);color:var(--ink);background:var(--okt)}
+  .good b{color:var(--ok)}
+  .illus{position:relative;aspect-ratio:16/10;background:#071120;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .illus canvas,.illus svg{width:100%;height:100%;display:block}
+  .mcap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);margin:8px 2px 2px;justify-content:center;text-align:center}
+  table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin:8px 0;border-radius:10px;overflow:hidden}
+  table.tbl th,table.tbl td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+  table.tbl th{background:var(--tint);color:var(--ink);font-weight:700;font-size:11.5px}
+  table.tbl td b{color:var(--accent)}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px}
+  .steps .st{display:flex;gap:12px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin:6px 0}
+  .steps .st .txt b{font-size:13.5px}.steps .st .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  select{border:1px solid var(--line);background:var(--pg);color:var(--ink);border-radius:8px;padding:9px 10px;font-size:13.5px;font-family:inherit;width:100%}
+  .row{display:flex;align-items:center;gap:12px;margin:9px 0;flex-wrap:wrap}
+  .row span.lbl{min-width:130px;font-size:13px;color:var(--sub)}
+  .calc{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0}
+  .evbtns{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}
+  .evbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:8px 11px;font-size:12.5px;font-family:inherit;cursor:pointer}
+  .evbtn:hover{border-color:var(--accent)}
+  .evbtn.on{border-color:var(--accent);background:var(--tint);color:var(--accent);font-weight:600}
+  .evinfo{font-size:12.5px;color:var(--sub);border-left:3px solid var(--accent);background:var(--tint);padding:10px 12px;border-radius:0 8px 8px 0;margin-top:6px;min-height:20px}
+  .tree{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:13px;margin-top:8px}
+  .tree .st{display:flex;gap:10px;align-items:flex-start;margin:7px 0;font-size:13px}
+  .tree .st .n{width:22px;height:22px;border-radius:6px;background:var(--accent);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+  .chk{display:flex;gap:11px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin:7px 0;cursor:pointer}
+  .chk .bx{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;margin-top:1px}
+  .chk.done .bx{background:var(--ok);border-color:var(--ok)}
+  .chk.done .txt b{text-decoration:line-through;opacity:.7}
+  .chk .txt b{font-size:13.5px}.chk .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:11px 14px;border-radius:10px;margin:7px 0;cursor:pointer;font-size:14px;font-family:inherit}
+  .opt.correct{border-color:var(--ok);background:var(--okt);color:var(--ok);font-weight:600}
+  .opt.wrong{border-color:var(--bad);background:var(--badt);color:var(--bad)}
+  .opt:disabled{cursor:default}
+  .q{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:12px}
+  .q h3{margin:0 0 10px;font-size:14px}
+  .explain{font-size:12.5px;color:var(--sub);margin-top:8px;padding:9px 11px;border-left:3px solid var(--accent);background:var(--tint);border-radius:0 8px 8px 0;display:none}
+  .explain.show{display:block}
+  .score{font-size:16px;font-weight:700;text-align:center;padding:10px}
+  .verdict{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;font-weight:700;font-size:15px}
+  .verdict.ok{background:var(--okt);color:var(--ok)}
+  .verdict.no{background:var(--badt);color:var(--bad)}
+  .ref{font-size:12.5px;color:var(--sub);border-bottom:1px solid var(--line);padding:8px 0}
+  .ref b{color:var(--ink)}
+  .obj{display:flex;gap:10px;align-items:flex-start;margin:7px 0;font-size:13.5px}
+  .obj svg{color:var(--accent);flex:none;margin-top:2px}
+  @media(max-width:520px){ .card{padding:15px} .shell{padding:12px 12px 28px} .brand small{display:none} .row span.lbl{min-width:100px} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+  <div class="top">
+    <div class="brand">
+      <span class="logo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/></svg></span>
+      <div><b id="brand"></b><small id="brandsub"></small></div>
+    </div>
+    <div class="tools">
+      <a class="tbtn" id="home" href="../index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span id="homeTxt"></span></a>
+      <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+      <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+    </div>
+  </div>
+  <div class="prog"><i id="progbar"></i></div>
+  <div class="meta"><span id="mStep"></span><span id="mDur"></span></div>
+  </div>
+  <div class="card" id="card"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev"></button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="next"></button>
+  </div>
+</div>
+
+<script src="../scripts/progress.js"></script>
+<script>
+var MODULE_ID="m4";
+var CONFIG={ brand:["Module 4 · Testing & Troubleshooting","Módulo 4 · Pruebas y troubleshooting"],
+  subtitle:["Fiber Optic Training · Telecom","Fiber Optic Training · Telecom"], duration:"≈ 45–55 min" };
+var LANG=(window.FOT?FOT.getLang():"en");
+var THEME=(window.FOT?FOT.getTheme():"light");
+function X(en,es){ return LANG==="es"?es:en; }
+function $(id){ return document.getElementById(id); }
+function tit(en,es){ return '<div class="step-ico">'+STEPS[cur].ico+'</div><h1>'+X(en,es)+'</h1>'; }
+
+var ICO={
+  flag:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15V4h13l-2 4 2 4H4M4 22v-7"/></svg>',
+  list:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
+  vfl:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h6M15 12h6M9 8l6 8M9 16l6-8"/><circle cx="12" cy="12" r="2"/></svg>',
+  meter:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 15l3-4 3 3 4-6"/></svg>',
+  source:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="12" r="3"/><path d="M10 12h11M14 9l3 3-3 3"/></svg>',
+  olts:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="8" height="10" rx="2"/><rect x="14" y="7" width="8" height="10" rx="2"/><path d="M10 12h4"/></svg>',
+  otdr:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14h18M6 15l3-6 3 8 2-4 2 2"/></svg>',
+  trace:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4v16h18M6 8l4 4-3 4 5-2 3 3"/></svg>',
+  gear:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.6-2-3.4-2.4 1a7 7 0 0 0-1.7-1L14.5 2h-5l-.3 2.9a7 7 0 0 0-1.7 1l-2.4-1-2 3.4L3 11a7 7 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 1.7 1l.3 2.9h5l.3-2.9a7 7 0 0 0 1.7-1l2.4 1 2-3.4-2-1.6a7 7 0 0 0 .2-1z"/></svg>',
+  waves:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10c2-4 4-4 6 0s4 4 6 0 4-4 6 0M2 16c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/></svg>',
+  tree:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v6M6 21v-4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4M12 9v6"/><circle cx="12" cy="4" r="1.5"/></svg>',
+  report:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l4 4v14H4V3z"/><path d="M8 12h8M8 16h6M8 8h3"/></svg>',
+  quiz:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.1 9a3 3 0 1 1 4.2 2.7c-.8.4-1.3 1-1.3 2M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>',
+  book:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h9a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-1a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h2z"/></svg>',
+  check:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  warn:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.6 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+  sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+};
+function bx(icon,tEn,tEs,dEn,dEs){ return '<div class="box"><h3>'+icon+X(tEn,tEs)+'</h3><p>'+X(dEn,dEs)+'</p></div>'; }
+function objRow(en,es){ return '<div class="obj">'+ICO.check+'<span>'+X(en,es)+'</span></div>'; }
+function stepRow(n,en,es,den,des){ return '<div class="st"><span class="num">'+n+'</span><span class="txt"><b>'+X(en,es)+'</b><span>'+X(den,des)+'</span></span></div>'; }
+
+/* ---------------- Canvas engine ---------------- */
+var anims=[];
+function stopAnim(){ anims.forEach(function(id){ cancelAnimationFrame(id); }); anims=[]; }
+function fitCanvas(cv){ var r=cv.getBoundingClientRect(); var dpr=Math.min(window.devicePixelRatio||1,2);
+  cv.width=Math.max(2,Math.round(r.width*dpr)); cv.height=Math.max(2,Math.round(r.height*dpr));
+  var ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx:ctx,w:r.width,h:r.height}; }
+function bgGrid(ctx,w,h){ ctx.fillStyle="#071120"; ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle="rgba(80,120,190,.16)"; ctx.lineWidth=1;
+  for(var x=0;x<=w;x+=26){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+  for(var y=0;y<=h;y+=26){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); } }
+function label(ctx,x,y,txt,col){ ctx.fillStyle=col||"#9fb6e6"; ctx.font="11px system-ui,Segoe UI,Arial"; ctx.fillText(txt,x,y); }
+
+/* VFL animation: red light leaks at a bend and a break */
+function animVFL(cv){
+  var d=fitCanvas(cv),ctx=d.ctx,w=d.w,h=d.h,t=0;
+  function frame(){
+    bgGrid(ctx,w,h);
+    var y=h*0.5, bendX=w*0.5, breakX=w*0.82;
+    // fiber with a sharp bend
+    ctx.strokeStyle="#274574"; ctx.lineWidth=7; ctx.beginPath();
+    ctx.moveTo(20,y); ctx.lineTo(bendX-30,y); ctx.quadraticCurveTo(bendX,y-26,bendX+30,y); ctx.lineTo(breakX,y); ctx.stroke();
+    // red core light up to break
+    ctx.strokeStyle="rgba(255,70,70,.9)"; ctx.lineWidth=2; ctx.beginPath();
+    ctx.moveTo(20,y); ctx.lineTo(bendX-30,y); ctx.quadraticCurveTo(bendX,y-26,bendX+30,y); ctx.lineTo(breakX,y); ctx.stroke();
+    // leak glow at bend
+    var fl=0.5+0.5*Math.abs(Math.sin(t*0.12));
+    var g=ctx.createRadialGradient(bendX,y-20,0,bendX,y-20,16); g.addColorStop(0,"rgba(255,80,80,"+fl+")"); g.addColorStop(1,"rgba(255,80,80,0)");
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(bendX,y-20,16,0,7); ctx.fill();
+    label(ctx,bendX-24,y-32,X("bend leaks","fuga en curva"),"#ff8a8a");
+    // break at end glowing
+    var g2=ctx.createRadialGradient(breakX,y,0,breakX,y,18); g2.addColorStop(0,"rgba(255,80,80,"+fl+")"); g2.addColorStop(1,"rgba(255,80,80,0)");
+    ctx.fillStyle=g2; ctx.beginPath(); ctx.arc(breakX,y,18,0,7); ctx.fill();
+    label(ctx,breakX-14,y+30,X("break / rotura","break / rotura"),"#ff8a8a");
+    // traveling pulse
+    var pr=(t*0.01)%1; var px=20+pr*(breakX-20);
+    ctx.fillStyle="#ff5a5a"; ctx.beginPath(); ctx.arc(px,y,3,0,7); ctx.fill();
+    label(ctx,20,24,X("VFL: 650 nm visible red light — glows at bends & breaks","VFL: luz roja visible de 650 nm — brilla en curvas y roturas"),"#9fb6e6");
+    t++; anims.push(requestAnimationFrame(frame));
+  }
+  frame();
+}
+
+/* OTDR fundamentals: pulse out + backscatter dots return */
+function animOTDRfund(cv){
+  var d=fitCanvas(cv),ctx=d.ctx,w=d.w,h=d.h,t=0;
+  function frame(){
+    bgGrid(ctx,w,h);
+    var y=h*0.55;
+    ctx.strokeStyle="#274574"; ctx.lineWidth=8; ctx.beginPath(); ctx.moveTo(60,y); ctx.lineTo(w-20,y); ctx.stroke();
+    // OTDR box
+    ctx.fillStyle="#16233c"; ctx.strokeStyle="#4d8bff"; ctx.lineWidth=1.5; ctx.beginPath(); ctx.roundRect(14,y-20,44,40,6); ctx.fill(); ctx.stroke();
+    label(ctx,20,y+4,"OTDR","#8fb4ff");
+    var pr=(t*0.008)%1; var px=60+pr*(w-80);
+    // outgoing pulse
+    var g=ctx.createRadialGradient(px,y,0,px,y,10); g.addColorStop(0,"rgba(120,200,255,.95)"); g.addColorStop(1,"rgba(120,200,255,0)");
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(px,y,10,0,7); ctx.fill();
+    // backscatter dots returning
+    for(var i=0;i<10;i++){ var bx=60+((px-60)*i/10); var op=0.5*(1-i/10);
+      ctx.fillStyle="rgba(120,200,255,"+op+")"; ctx.beginPath(); ctx.arc(bx,y-14,2,0,7); ctx.fill(); }
+    label(ctx,60,y-40,X("Pulse out → Rayleigh backscatter returns continuously","Pulso sale → el backscatter de Rayleigh regresa continuamente"),"#7fc4ff");
+    label(ctx,60,y+34,X("A glass–air end reflects a strong Fresnel spike back","Un extremo vidrio–aire refleja un fuerte pico de Fresnel"),"#f4b53f");
+    t++; anims.push(requestAnimationFrame(frame));
+  }
+  frame();
+}
+
+/* OTDR trace (static) with events + highlight */
+var TRACE_EVENTS=[
+  { x:0.10, ref:true,  en:["Launch connector (OTDR port)","Big spike + dead zone at the start — use a launch cable so the first real event is measurable."],
+                        es:["Conector de lanzamiento (puerto OTDR)","Gran pico + zona muerta al inicio — usa un cable de lanzamiento para poder medir el primer evento real."] },
+  { x:0.34, ref:true,  en:["Reflective event = connector / mechanical splice","Sharp spike with a small loss step. Clean connectors keep the spike low."],
+                        es:["Evento reflectivo = conector / empalme mecánico","Pico agudo con un pequeño escalón de pérdida. Conectores limpios mantienen el pico bajo."] },
+  { x:0.52, ref:false, en:["Non-reflective event = fusion splice / macrobend","A small drop in the slope with no spike. Good fusion splices are ≤0.1 dB."],
+                        es:["Evento no reflectivo = empalme por fusión / macrobend","Una pequeña caída en la pendiente sin pico. Un buen empalme por fusión es ≤0.1 dB."] },
+  { x:0.66, ref:false, en:["Macrobend","Loss that is worse at 1550 than 1310 — compare wavelengths to confirm a bend."],
+                        es:["Macrobend","Pérdida peor a 1550 que a 1310 — compara longitudes de onda para confirmar una curva."] },
+  { x:0.86, ref:true,  en:["Fiber end / break","Large Fresnel reflection then the trace drops into noise. That's the end (or a break)."],
+                        es:["Fin de fibra / rotura","Gran reflexión de Fresnel y luego la traza cae al ruido. Ese es el final (o una rotura)."] }
+];
+function drawTrace(cv,hi){
+  var d=fitCanvas(cv),ctx=d.ctx,w=d.w,h=d.h;
+  bgGrid(ctx,w,h);
+  var x0=30,x1=w-16,y0=20,y1=h-24;
+  // axes
+  ctx.strokeStyle="#3b5c93"; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x0,y1); ctx.lineTo(x1,y1); ctx.stroke();
+  label(ctx,x0+4,y0+10,"dB","#7f9fd0"); label(ctx,x1-70,y1-4,X("distance →","distancia →"),"#7f9fd0");
+  function px(fx){ return x0+fx*(x1-x0); } function py(level){ return y0+level*(y1-y0); }
+  // build trace: descending slope with events
+  var slope=0.55; // over full width
+  var pts=[]; var lvl=0.12;
+  var prevx=0;
+  // start reflective spike
+  pts.push([0.0,lvl]);
+  for(var i=0;i<TRACE_EVENTS.length;i++){
+    var ev=TRACE_EVENTS[i];
+    // slope up to event
+    lvl += (ev.x-prevx)*slope;
+    if(ev.ref){
+      pts.push([ev.x-0.005, lvl]);
+      pts.push([ev.x, Math.max(0.04, lvl-0.10)]); // spike up (toward top = less loss visually)
+      pts.push([ev.x+0.005, lvl+0.03]);
+      lvl+=0.03;
+    } else {
+      pts.push([ev.x, lvl]);
+      lvl+=0.05; // non-reflective drop
+      pts.push([ev.x+0.004, lvl]);
+    }
+    prevx=ev.x;
+  }
+  // after last event (end): drop to noise
+  pts.push([TRACE_EVENTS[TRACE_EVENTS.length-1].x+0.02, 0.95]);
+  pts.push([1.0,0.95]);
+  // draw
+  ctx.strokeStyle="#7fc4ff"; ctx.lineWidth=2; ctx.beginPath();
+  for(var p=0;p<pts.length;p++){ var X2=px(pts[p][0]), Y2=py(pts[p][1]); if(p===0)ctx.moveTo(X2,Y2); else ctx.lineTo(X2,Y2); }
+  ctx.stroke();
+  // event markers
+  for(var e=0;e<TRACE_EVENTS.length;e++){
+    var ev2=TRACE_EVENTS[e]; var mx=px(ev2.x);
+    var on=(hi===e);
+    ctx.strokeStyle=on?"#f4b53f":"rgba(200,220,255,.35)"; ctx.lineWidth=on?2:1;
+    ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(mx,y0); ctx.lineTo(mx,y1); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle=on?"#f4b53f":(ev2.ref?"#ff9b6b":"#7fffb0");
+    ctx.beginPath(); ctx.arc(mx,py(0.06),on?5:3.5,0,7); ctx.fill();
+    ctx.fillStyle=on?"#f4b53f":"#9fb6e6"; ctx.font="10px system-ui"; ctx.fillText((e+1),mx-3,py(0.06)-8);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+var STEPS=[
+/* 0 cover */
+{ ico:ICO.flag, title:["Testing, Certification & Troubleshooting","Pruebas, certificación y troubleshooting"], html:function(){
+  return tit("Module 4 — Prove it, then fix it","Módulo 4 — Demuéstralo y luego arréglalo")+
+  '<p class="lead">'+X("This module is the toolbox: VFL, power meter, light source, OLTS and OTDR — how each works, how to read an OTDR trace, and how to troubleshoot a link with a structured method.",
+                      "Este módulo es la caja de herramientas: VFL, power meter, fuente de luz, OLTS y OTDR — cómo funciona cada uno, cómo leer una traza OTDR, y cómo diagnosticar un enlace con un método estructurado.")+'</p>'+
+  '<div class="note">'+X("Estimated time","Tiempo estimado")+': '+CONFIG.duration+' · '+X("Passing score","Nota para aprobar")+': <b>80%</b> · '+X("Unlocks Module 5","Desbloquea el Módulo 5")+'</div>'+
+  '<h2>'+X("You will be able to","Podrás")+'</h2>'+
+  objRow("Follow an inspection-first workflow before energizing a link.","Seguir un flujo de inspección-primero antes de energizar un enlace.")+
+  objRow("Use a VFL, power meter, light source and OLTS correctly.","Usar VFL, power meter, fuente de luz y OLTS correctamente.")+
+  objRow("Explain how an OTDR works and set it up (pulse, range, IOR, launch cable).","Explicar cómo funciona un OTDR y configurarlo (pulso, rango, IOR, cable de lanzamiento).")+
+  objRow("Identify events on an OTDR trace (reflective, non-reflective, gainer, ghost).","Identificar eventos en una traza OTDR (reflectivo, no reflectivo, gainer, ghost).")+
+  objRow("Troubleshoot common faults with a decision tree and document results.","Diagnosticar fallas comunes con un árbol de decisiones y documentar resultados.");
+}},
+
+/* 1 inspection flow */
+{ ico:ICO.list, title:["Inspection-first workflow","Flujo: inspección primero"], html:function(){
+  return tit("Before any test or connection","Antes de cualquier prueba o conexión")+
+  '<p>'+X("Good testing starts with discipline. Follow this order every time — most ‘bad’ readings are really dirty or wrong-set-up problems.",
+          "Una buena prueba empieza con disciplina. Sigue este orden siempre — la mayoría de las lecturas ‘malas’ son en realidad problemas de suciedad o configuración incorrecta.")+'</p>'+
+  '<div class="steps">'+
+    stepRow(1,"Review documentation","Revisar documentación","Know the fiber type, wavelengths, expected loss and route.","Conoce el tipo de fibra, longitudes de onda, pérdida esperada y ruta.")+
+    stepRow(2,"Identify fiber & connectors","Identificar fibra y conectores","SMF vs MMF; LC/SC/MPO; UPC vs APC.","SMF vs MMF; LC/SC/MPO; UPC vs APC.")+
+    stepRow(3,"Inspect & clean end-faces","Inspeccionar y limpiar caras","Inspect–Clean–Inspect (Module 1). No dirty mate, ever.","Inspeccionar–Limpiar–Inspeccionar (Módulo 1). Nunca acoples sucio.")+
+    stepRow(4,"Confirm TX/RX & bend radius","Confirmar TX/RX y radio","Check polarity and that nothing is over-bent or crushed.","Verifica polaridad y que nada esté sobre-doblado o aplastado.")+
+    stepRow(5,"Select the right instrument","Elegir el instrumento","VFL for continuity, OLTS for loss, OTDR for a map of events.","VFL para continuidad, OLTS para pérdida, OTDR para un mapa de eventos.")+
+    stepRow(6,"Test, then document","Probar y documentar","Record wavelength, values, pass/fail, and photos.","Registra longitud de onda, valores, pass/fail y fotos.")+
+  '</div>';
+}},
+
+/* 2 VFL */
+{ ico:ICO.vfl, title:["Visual Fault Locator (VFL)","Localizador visual de fallas (VFL)"], html:function(){
+  return tit("Red light you can see","Luz roja que puedes ver")+
+  '<p>'+X("A VFL injects bright visible red light (typically 650 nm) into the fiber. It glows out at breaks, tight bends, bad connectors and cracks — great for continuity, polarity and finding a fault in a patch panel or short span.",
+          "Un VFL inyecta luz roja visible brillante (típicamente 650 nm) en la fibra. Brilla en roturas, curvas cerradas, conectores malos y grietas — ideal para continuidad, polaridad y hallar una falla en un patch panel o tramo corto.")+'</p>'+
+  '<div class="illus"><canvas id="cvVFL"></canvas></div>'+
+  '<div class="mcap">'+ICO.vfl+X("Visible light escapes at a macrobend and at a break","La luz visible se escapa en un macrobend y en una rotura")+'</div>'+
+  '<div class="grid2">'+
+    bx(ICO.check,"Good for","Bueno para","Continuity, polarity, finding breaks/bends in short jumpers, verifying the right port.","Continuidad, polaridad, hallar roturas/curvas en jumpers cortos, verificar el puerto correcto.")+
+    bx(ICO.warn,"Limits","Límites","Only a few km; it does NOT measure loss or distance. Never look into the fiber — even ‘just’ red light. It does not replace a power meter or OTDR.","Solo unos km; NO mide pérdida ni distancia. Nunca mires la fibra — ni siquiera la luz roja. No reemplaza al power meter ni al OTDR.")+
+  '</div>';
+}, init:function(){ animVFL($("cvVFL")); }},
+
+/* 3 power meter */
+{ ico:ICO.meter, title:["Optical Power Meter","Medidor de potencia óptica"], html:function(){
+  return tit("Measure how much light arrives","Mide cuánta luz llega")+
+  '<p>'+X("A power meter reads absolute power in <b>dBm</b>, or loss in <b>dB</b> relative to a reference. It's the fastest ‘is there light and how much?’ check.",
+          "Un power meter lee potencia absoluta en <b>dBm</b>, o pérdida en <b>dB</b> relativa a una referencia. Es la prueba más rápida de ‘¿hay luz y cuánta?’.")+'</p>'+
+  '<div class="grid2">'+
+    bx(ICO.meter,"Set the wavelength","Fija la longitud de onda","Choose 1310/1550 (or 850/1300) to match the source. Wrong wavelength = wrong reading.","Elige 1310/1550 (u 850/1300) igual que la fuente. Longitud de onda equivocada = lectura equivocada.")+
+    bx(ICO.meter,"Read TX and RX","Lee TX y RX","Measure the transmitter output, then the received end. The difference approximates link loss.","Mide la salida del transmisor y luego el extremo recibido. La diferencia aproxima la pérdida del enlace.")+
+    bx(ICO.warn,"Watch the range","Cuida el rango","Too much light saturates the detector; too little hits the noise floor. Use the right adapter and a clean connector.","Demasiada luz satura el detector; muy poca llega al piso de ruido. Usa el adaptador correcto y conector limpio.")+
+    bx(ICO.warn,"Clean first","Limpia primero","Always inspect/clean before you plug into the meter — a dirty reference ruins every reading after.","Siempre inspecciona/limpia antes de conectar al medidor — una referencia sucia arruina cada lectura después.")+
+  '</div>';
+}},
+
+/* 4 light source + reference */
+{ ico:ICO.source, title:["Light source & reference","Fuente de luz y referencia"], html:function(){
+  return tit("The other half of a loss test","La otra mitad de una prueba de pérdida")+
+  '<p>'+X("A stabilized light source sends a known, steady power at a set wavelength. Paired with a power meter, you first ‘set a reference’ (0 dB) with test jumpers, then insert the link and read the loss.",
+          "Una fuente de luz estabilizada envía una potencia conocida y estable a una longitud de onda fija. Junto con un power meter, primero ‘fijas una referencia’ (0 dB) con jumpers de prueba, luego insertas el enlace y lees la pérdida.")+'</p>'+
+  '<div class="scroll"><table class="tbl"><tr><th>'+X("Reference method","Método de referencia")+'</th><th>'+X("Jumpers","Jumpers")+'</th><th>'+X("What it includes","Qué incluye")+'</th></tr>'+
+    '<tr><td><b>1-jumper (Method B)</b></td><td>1</td><td>'+X("Includes both end connectors — the industry standard for loss.","Incluye ambos conectores de extremo — el estándar de la industria para pérdida.")+'</td></tr>'+
+    '<tr><td><b>2-jumper</b></td><td>2</td><td>'+X("Excludes one connector — under-reports loss.","Excluye un conector — subestima la pérdida.")+'</td></tr>'+
+    '<tr><td><b>3-jumper</b></td><td>3</td><td>'+X("Excludes both end connectors.","Excluye ambos conectores de extremo.")+'</td></tr>'+
+  '</table></div>'+
+  '<div class="note">'+X("Use reference-grade test cords and set the reference at the SAME wavelength you'll test. For multimode, use encircled-flux launch conditions (TIA-526-14 / IEC 61280-4-1).",
+                          "Usa cordones de prueba de grado de referencia y fija la referencia a la MISMA longitud de onda que vas a probar. Para multimodo, usa condiciones de flujo circundante (TIA-526-14 / IEC 61280-4-1).")+'</div>';
+}},
+
+/* 5 OLTS */
+{ ico:ICO.olts, title:["OLTS — insertion loss","OLTS — pérdida de inserción"], html:function(){
+  return tit("Certifying end-to-end loss (Tier 1)","Certificar la pérdida extremo a extremo (Tier 1)")+
+  '<p>'+X("An Optical Loss Test Set (OLTS) is a source + meter (often bidirectional) that measures the total insertion loss of the whole link and compares it against a loss budget → pass/fail. This is Tier 1 certification.",
+          "Un Optical Loss Test Set (OLTS) es una fuente + medidor (a menudo bidireccional) que mide la pérdida de inserción total de todo el enlace y la compara contra un presupuesto de pérdida → pass/fail. Es la certificación Tier 1.")+'</p>'+
+  '<div class="grid2">'+
+    bx(ICO.olts,"OLTS (Tier 1)","OLTS (Tier 1)","Gives one accurate end-to-end loss number + length + polarity. Answers ‘does it meet the budget?’.","Da un número preciso de pérdida extremo a extremo + longitud + polaridad. Responde ‘¿cumple el presupuesto?’.")+
+    bx(ICO.otdr,"OTDR (Tier 2)","OTDR (Tier 2)","Maps every event along the fiber. Answers ‘where is the loss and what is it?’. Complements OLTS.","Mapea cada evento a lo largo de la fibra. Responde ‘¿dónde está la pérdida y qué es?’. Complementa al OLTS.")+
+  '</div>'+
+  '<div class="note warn">'+X("An OTDR loss can differ from an OLTS loss (it measures by backscatter, not true insertion). For certification, OLTS is the reference for total loss; OTDR locates and characterizes events.",
+                               "La pérdida de un OTDR puede diferir de la de un OLTS (mide por backscatter, no inserción real). Para certificar, el OLTS es la referencia de pérdida total; el OTDR ubica y caracteriza eventos.")+'</div>';
+}},
+
+/* 6 OTDR fundamentals */
+{ ico:ICO.otdr, title:["OTDR fundamentals","Fundamentos del OTDR"], html:function(){
+  return tit("Radar for fiber","Radar para fibra")+
+  '<p>'+X("An OTDR fires a pulse and listens. Continuous <b>Rayleigh backscatter</b> gives the fiber's loss slope (dB/km); sharp <b>Fresnel reflections</b> mark connectors, mechanical joints and the end. From the round-trip time and the fiber's index (IOR) it calculates distance.",
+          "Un OTDR dispara un pulso y ‘escucha’. El <b>backscatter de Rayleigh</b> continuo da la pendiente de pérdida de la fibra (dB/km); las <b>reflexiones de Fresnel</b> agudas marcan conectores, uniones mecánicas y el final. Del tiempo de ida y vuelta y el índice (IOR) calcula la distancia.")+'</p>'+
+  '<div class="illus"><canvas id="cvFund"></canvas></div>'+
+  '<div class="mcap">'+ICO.otdr+X("Distance = (c × time) / (2 × IOR) — a wrong IOR gives wrong distances","Distancia = (c × tiempo) / (2 × IOR) — un IOR incorrecto da distancias incorrectas")+'</div>'+
+  '<div class="grid2">'+
+    bx(ICO.gear,"Pulse width","Ancho de pulso","Wider pulse = more range but bigger dead zone; narrow pulse = better resolution, shorter range.","Pulso más ancho = más alcance pero zona muerta mayor; pulso angosto = mejor resolución, menor alcance.")+
+    bx(ICO.gear,"Dead zones","Zonas muertas","After a strong reflection the OTDR is ‘blind’ for a bit — event & attenuation dead zones. Use a launch cable to move the first event out of it.","Tras una reflexión fuerte el OTDR queda ‘ciego’ un tramo — zonas muertas de evento y de atenuación. Usa un cable de lanzamiento para sacar el primer evento de ahí.")+
+    bx(ICO.gear,"Dynamic range","Rango dinámico","How much loss/distance it can see before hitting the noise floor.","Cuánta pérdida/distancia puede ver antes de llegar al piso de ruido.")+
+    bx(ICO.gear,"Launch & receive cables","Cables de lanzamiento y recepción","Let the OTDR measure the first and last connectors properly.","Permiten al OTDR medir bien el primer y último conector.")+
+  '</div>';
+}, init:function(){ animOTDRfund($("cvFund")); }},
+
+/* 7 reading a trace (interactive) */
+{ ico:ICO.trace, title:["Reading an OTDR trace","Interpretar una traza OTDR"], html:function(){
+  return tit("Every bump means something","Cada bulto significa algo")+
+  '<p class="lead">'+X("Tap an event on the trace to identify it.","Toca un evento en la traza para identificarlo.")+'</p>'+
+  '<div class="illus"><canvas id="cvTrace"></canvas></div>'+
+  '<div class="evbtns" id="evBtns"></div>'+
+  '<div class="evinfo" id="evInfo">'+X("Select an event (1–5)…","Selecciona un evento (1–5)…")+'</div>'+
+  '<div class="note warn">'+X("A ‘gainer’ (event that looks like a gain) comes from a mode-field-diameter mismatch — the real splice loss needs bidirectional averaging. ‘Ghosts’ are echo artifacts, not real faults.",
+                               "Un ‘gainer’ (evento que parece ganancia) viene de un desajuste de MFD — la pérdida real del empalme requiere promedio bidireccional. Los ‘ghosts’ son ecos artificiales, no fallas reales.")+'</div>';
+}, init:function(){ wireTrace(); }},
+
+/* 8 OTDR setup */
+{ ico:ICO.gear, title:["Setting up the OTDR","Configurar el OTDR"], html:function(){
+  return tit("Garbage in, garbage out","Basura entra, basura sale")+
+  '<div class="scroll"><table class="tbl"><tr><th>'+X("Setting","Ajuste")+'</th><th>'+X("How to choose","Cómo elegir")+'</th></tr>'+
+    '<tr><td><b>'+X("Wavelength","Longitud de onda")+'</b></td><td>'+X("Test at 1310 & 1550 (SMF). 1625/1650 for live-fiber monitoring.","Prueba a 1310 y 1550 (SMF). 1625/1650 para monitorear fibra activa.")+'</td></tr>'+
+    '<tr><td><b>'+X("Range","Rango")+'</b></td><td>'+X("Set longer than the fiber length so the end is visible.","Ajusta mayor que la longitud de la fibra para ver el final.")+'</td></tr>'+
+    '<tr><td><b>'+X("Pulse width","Ancho de pulso")+'</b></td><td>'+X("Short for near events/resolution; long for reach.","Corto para eventos cercanos/resolución; largo para alcance.")+'</td></tr>'+
+    '<tr><td><b>'+X("Averaging time","Tiempo de promedio")+'</b></td><td>'+X("Longer averaging = cleaner trace, less noise.","Más promedio = traza más limpia, menos ruido.")+'</td></tr>'+
+    '<tr><td><b>IOR</b></td><td>'+X("Set the fiber's index of refraction (≈1.4677 SMF) for accurate distance.","Fija el índice de refracción de la fibra (≈1.4677 SMF) para distancia precisa.")+'</td></tr>'+
+    '<tr><td><b>'+X("Launch / receive cable","Cable lanzamiento / recepción")+'</b></td><td>'+X("Always use them to measure the first & last connectors.","Úsalos siempre para medir el primer y último conector.")+'</td></tr>'+
+    '<tr><td><b>'+X("Direction / averaging","Dirección / promedio")+'</b></td><td>'+X("Test bidirectionally and average for true splice loss.","Prueba en ambas direcciones y promedia para la pérdida real de empalme.")+'</td></tr>'+
+  '</table></div>'+
+  '<div class="note">'+X("Auto mode is fine for a quick look, but expert mode (manual pulse/range/markers) is what you use to characterize a real problem.",
+                          "El modo automático sirve para una mirada rápida, pero el modo experto (pulso/rango/marcadores manuales) es el que usas para caracterizar un problema real.")+'</div>';
+}},
+
+/* 9 dual wavelength */
+{ ico:ICO.waves, title:["Why test 1310 & 1550 nm","Por qué probar 1310 y 1550 nm"], html:function(){
+  return tit("Two wavelengths tell a story","Dos longitudes de onda cuentan una historia")+
+  '<p>'+X("Loss and bend-sensitivity differ by wavelength. Testing both reveals problems one alone would hide.",
+          "La pérdida y la sensibilidad a curvas cambian con la longitud de onda. Probar ambas revela problemas que una sola ocultaría.")+'</p>'+
+  '<div class="grid2">'+
+    bx(ICO.waves,"1310 nm","1310 nm","Higher fiber attenuation, less sensitive to bends. Good baseline.","Mayor atenuación de la fibra, menos sensible a curvas. Buena base.")+
+    bx(ICO.waves,"1550 nm","1550 nm","Lower attenuation but MORE sensitive to macrobends. A bend shows up worse here.","Menor atenuación pero MÁS sensible a macrobends. Una curva se ve peor aquí.")+
+  '</div>'+
+  '<div class="good note">'+X("Diagnostic trick: if an event loses much more at 1550 than at 1310, it's almost certainly a macrobend — not a splice.",
+                              "Truco de diagnóstico: si un evento pierde mucho más a 1550 que a 1310, casi seguro es un macrobend — no un empalme.")+'</div>'+
+  '<div class="note warn">'+X("1625/1650 nm sits above the traffic bands, so it's used to test or monitor a LIVE fiber — but use proper filters and follow laser-safety rules (Module 5).",
+                               "1625/1650 nm queda sobre las bandas de tráfico, así que se usa para probar o monitorear una fibra ACTIVA — pero usa filtros adecuados y sigue las reglas de seguridad láser (Módulo 5).")+'</div>';
+}},
+
+/* 10 troubleshooting tree (interactive) */
+{ ico:ICO.tree, title:["Structured troubleshooting","Troubleshooting estructurado"], html:function(){
+  return tit("Pick a symptom → follow the tree","Elige un síntoma → sigue el árbol")+
+  '<div class="calc"><div class="row"><span class="lbl">'+X("Symptom","Síntoma")+'</span><select id="sym">'+
+    '<option value="nolink">'+X("No link / no light","Sin enlace / sin luz")+'</option>'+
+    '<option value="rxlow">'+X("RX power too low","Potencia RX muy baja")+'</option>'+
+    '<option value="rxhigh">'+X("RX power too high","Potencia RX muy alta")+'</option>'+
+    '<option value="flap">'+X("Link flapping / CRC errors","Enlace intermitente / errores CRC")+'</option>'+
+    '<option value="cpri">'+X("CPRI / fronthaul link down","CPRI / fronthaul caído")+'</option>'+
+  '</select></div></div>'+
+  '<div class="tree" id="treeBox"></div>';
+}, init:function(){ wireTree(); }},
+
+/* 11 more troubleshooting reference */
+{ ico:ICO.warn, title:["Fault → likely cause","Falla → causa probable"], html:function(){
+  return tit("Field cheat-sheet","Guía rápida de campo")+
+  '<div class="scroll"><table class="tbl"><tr><th>'+X("Symptom","Síntoma")+'</th><th>'+X("Likely cause","Causa probable")+'</th></tr>'+
+    '<tr><td>'+X("No light at all","Nada de luz")+'</td><td>'+X("Dead TX, broken fiber, wrong/again dirty connector, reversed TX/RX.","TX muerto, fibra rota, conector equivocado/sucio, TX/RX invertidos.")+'</td></tr>'+
+    '<tr><td>'+X("RX low","RX baja")+'</td><td>'+X("Dirty/damaged connector, macrobend, bad splice, too long, wrong wavelength.","Conector sucio/dañado, macrobend, mal empalme, muy largo, longitud de onda incorrecta.")+'</td></tr>'+
+    '<tr><td>'+X("RX high / saturation","RX alta / saturación")+'</td><td>'+X("Link too short / TX too strong — add an attenuator.","Enlace muy corto / TX muy fuerte — agrega un atenuador.")+'</td></tr>'+
+    '<tr><td>'+X("CRC / flapping","CRC / intermitencia")+'</td><td>'+X("Marginal power, reflections (RL), dirty connector, speed/FEC mismatch, temperature.","Potencia marginal, reflexiones (RL), conector sucio, velocidad/FEC distinta, temperatura.")+'</td></tr>'+
+    '<tr><td>LOS / LOF</td><td>'+X("Loss of signal/frame — no light or framing/protocol mismatch.","Pérdida de señal/trama — sin luz o framing/protocolo distinto.")+'</td></tr>'+
+    '<tr><td>'+X("BiDi no link","BiDi sin enlace")+'</td><td>'+X("Two same-orientation BiDi modules; install complementary A/B.","Dos módulos BiDi con misma orientación; instala A/B complementarios.")+'</td></tr>'+
+    '<tr><td>'+X("Passes 1310, fails 1550","Pasa 1310, falla 1550")+'</td><td>'+X("Macrobend somewhere on the route.","Un macrobend en algún punto de la ruta.")+'</td></tr>'+
+  '</table></div>';
+}},
+
+/* 12 test report */
+{ ico:ICO.report, title:["Test reports","Reportes de prueba"], html:function(){
+  return tit("If it isn't documented, it didn't happen","Si no está documentado, no pasó")+
+  '<p>'+X("A professional test report is your proof of a good install and your baseline for the next fault. Tap to check off what a complete report includes.",
+          "Un reporte de prueba profesional es tu prueba de una buena instalación y tu base para la próxima falla. Toca para marcar lo que incluye un reporte completo.")+'</p>'+
+  '<div id="repList"></div>'+
+  '<div class="note">'+X("Modern OLTS/OTDR tools export professional PDF reports with pass/fail against the selected standard — attach the trace files too.",
+                          "Las herramientas OLTS/OTDR modernas exportan reportes PDF profesionales con pass/fail contra el estándar elegido — adjunta también los archivos de traza.")+'</div>';
+}, init:function(){ wireReport(); }},
+
+/* 13 quiz */
+{ ico:ICO.quiz, title:["Module 4 quiz","Quiz del Módulo 4"], html:function(){
+  return tit("Check your understanding","Comprueba lo aprendido")+
+  '<p class="lead">'+X("8 questions · 80% (≥7) to pass and unlock Module 5.","8 preguntas · 80% (≥7) para aprobar y desbloquear el Módulo 5.")+'</p>'+
+  '<div id="quizHost"></div><div id="quizResult"></div>';
+}, init:function(){ renderQuiz(); }},
+
+/* 14 summary + references */
+{ ico:ICO.book, title:["Summary & references","Resumen y referencias"], html:function(){
+  return tit("Key takeaways","Puntos clave")+
+  '<div class="grid2">'+
+    bx(ICO.check,"Inspect first","Inspecciona primero","Most ‘test failures’ are dirt or setup. Inspect–Clean–Inspect before every measurement.","La mayoría de las ‘fallas de prueba’ son suciedad o configuración. Inspecciona–Limpia–Inspecciona antes de cada medición.")+
+    bx(ICO.check,"Right tool, right job","Herramienta correcta","VFL = continuity; power meter/OLTS = loss (Tier 1); OTDR = map of events (Tier 2).","VFL = continuidad; power meter/OLTS = pérdida (Tier 1); OTDR = mapa de eventos (Tier 2).")+
+    bx(ICO.check,"Read the trace","Lee la traza","Reflective = connector/mech splice/break; non-reflective = fusion/bend; verify with both wavelengths.","Reflectivo = conector/empalme mecánico/rotura; no reflectivo = fusión/curva; verifica con ambas longitudes de onda.")+
+    bx(ICO.check,"Document everything","Documenta todo","A complete, standard-referenced report is the deliverable.","Un reporte completo y referenciado a norma es el entregable.")+
+  '</div>'+
+  '<h2>'+X("References (primary sources)","Referencias (fuentes primarias)")+'</h2>'+
+  '<div class="ref"><b>ANSI/TIA-526-7 (OFSTP-7)</b> — '+X("Insertion loss of installed single-mode cable plant.","Pérdida de inserción de planta monomodo instalada.")+'</div>'+
+  '<div class="ref"><b>ANSI/TIA-526-14 (OFSTP-14)</b> — '+X("Insertion loss of installed multimode cable plant (encircled flux).","Pérdida de inserción de planta multimodo instalada (flujo circundante).")+'</div>'+
+  '<div class="ref"><b>IEC 61280-4-1 / -4-2</b> — '+X("Installed cable plant attenuation (MMF / SMF).","Atenuación de planta de cable instalada (MMF / SMF).")+'</div>'+
+  '<div class="ref"><b>IEC 61746 / Telcordia GR-196</b> — '+X("OTDR calibration & performance.","Calibración y desempeño del OTDR.")+'</div>'+
+  '<div class="ref"><b>IEC 60825-1</b> — '+X("Laser safety for test sources (see Module 5).","Seguridad láser para fuentes de prueba (ver Módulo 5).")+'</div>'+
+  '<div class="ref"><b>The Fiber Optic Association (FOA)</b> & '+X("instrument vendor app notes (VIAVI, EXFO, Fluke Networks).","notas de aplicación de fabricantes (VIAVI, EXFO, Fluke Networks).")+'</div>'+
+  '<div class="note" style="margin-top:12px">'+X("Procedures and thresholds follow the referenced standards; project acceptance limits and vendor methods vary. IOR ≈1.4677 is a typical SMF value — use the value for your fiber. Consulted 2026-07-13.",
+                                                  "Los procedimientos y umbrales siguen las normas referenciadas; los límites de aceptación del proyecto y los métodos del fabricante varían. IOR ≈1.4677 es un valor típico de SMF — usa el de tu fibra. Consultado 2026-07-13.")+'</div>'+
+  '<div id="doneBox" style="margin-top:14px"></div>';
+}, init:function(){ renderDone(); }}
+];
+
+/* ---------- trace interactive ---------- */
+function wireTrace(){
+  var cv=$("cvTrace"); drawTrace(cv,-1);
+  var host=$("evBtns"); var names=["1","2","3","4","5"];
+  host.innerHTML=TRACE_EVENTS.map(function(ev,i){ return '<button class="evbtn" data-i="'+i+'">'+(i+1)+' · '+X(ev.en[0].split(" = ")[0],ev.es[0].split(" = ")[0])+'</button>'; }).join("");
+  host.querySelectorAll(".evbtn").forEach(function(b){
+    b.onclick=function(){
+      host.querySelectorAll(".evbtn").forEach(function(x){ x.classList.remove("on"); }); b.classList.add("on");
+      var i=+b.getAttribute("data-i"); drawTrace(cv,i);
+      $("evInfo").innerHTML="<b>"+X(TRACE_EVENTS[i].en[0],TRACE_EVENTS[i].es[0])+"</b><br>"+X(TRACE_EVENTS[i].en[1],TRACE_EVENTS[i].es[1]);
+    };
+  });
+}
+/* ---------- troubleshooting trees ---------- */
+var TREES={
+  nolink:{en:["Check DDM: is TX power present at the far end?","Inspect & clean both connectors; verify polarity (swap duplex).","Shoot a VFL / OTDR to find a break or bend.","Confirm SFP compatibility (speed, λ, SMF/MMF, BiDi A/B)."],
+          es:["Revisa DDM: ¿hay potencia TX en el extremo lejano?","Inspecciona y limpia ambos conectores; verifica polaridad (intercambia duplex).","Dispara un VFL / OTDR para hallar rotura o curva.","Confirma compatibilidad del SFP (velocidad, λ, SMF/MMF, BiDi A/B)."]},
+  rxlow:{en:["Clean & re-inspect connectors (dirt is #1).","Compare RX vs expected budget; measure with a power meter.","OTDR the span: look for a macrobend (worse at 1550) or bad splice.","Check length/wavelength and any extra patches."],
+         es:["Limpia y reinspecciona conectores (la suciedad es #1).","Compara RX vs presupuesto esperado; mide con power meter.","Haz OTDR del tramo: busca macrobend (peor a 1550) o mal empalme.","Verifica longitud/longitud de onda y patches extra."]},
+  rxhigh:{en:["Link is too short / TX too strong for the receiver.","Add an inline optical attenuator (e.g., 5–10 dB).","Re-check RX is within the receiver's min/max window."],
+          es:["El enlace es muy corto / TX muy fuerte para el receptor.","Agrega un atenuador óptico en línea (p. ej. 5–10 dB).","Verifica que RX esté dentro del rango mín/máx del receptor."]},
+  flap:{en:["Measure RX — marginal power causes intermittent errors.","Check return loss/reflections (open or UPC where APC belongs).","Clean connectors; reseat SFP; check temperature/DDM alarms.","Confirm both ends agree on speed/FEC/auto-neg."],
+        es:["Mide RX — potencia marginal causa errores intermitentes.","Revisa pérdida de retorno/reflexiones (abierto o UPC donde va APC).","Limpia conectores; reasienta el SFP; revisa temperatura/alarmas DDM.","Confirma que ambos extremos coincidan en velocidad/FEC/auto-neg."]},
+  cpri:{en:["Remember: CPRI ≠ Ethernet — don't test it as Ethernet.","Verify dedicated fiber/wavelength and correct SFP line rate.","Check RX power and reflections; CPRI is timing-sensitive.","For eCPRI, verify PTP/SyncE timing and QoS/latency."],
+        es:["Recuerda: CPRI ≠ Ethernet — no lo pruebes como Ethernet.","Verifica fibra/longitud de onda dedicada y tasa de línea del SFP correcta.","Revisa potencia RX y reflexiones; CPRI es sensible al tiempo.","Para eCPRI, verifica temporización PTP/SyncE y QoS/latencia."]}
+};
+function wireTree(){
+  function render(){
+    var k=$("sym").value; var steps=TREES[k]; var arr=LANG==="es"?steps.es:steps.en;
+    $("treeBox").innerHTML=arr.map(function(s,i){ return '<div class="st"><span class="n">'+(i+1)+'</span><span>'+s+'</span></div>'; }).join("");
+  }
+  $("sym").addEventListener("change",render); render();
+}
+/* ---------- report checklist ---------- */
+var REPORT=[["Site / circuit ID","ID de sitio / circuito"],["Cable & fiber number","Cable y número de fibra"],["Origin → destination","Origen → destino"],["Fiber type & length","Tipo de fibra y longitud"],["Wavelength(s) tested","Longitud(es) de onda probadas"],["Instrument + serial + cal date","Instrumento + serie + fecha de calibración"],["Test setup / reference method","Configuración / método de referencia"],["Results vs limit + Pass/Fail","Resultados vs límite + Pass/Fail"],["Trace files & photos","Archivos de traza y fotos"],["Technician, date & time","Técnico, fecha y hora"]];
+function wireReport(){
+  var host=$("repList");
+  host.innerHTML=REPORT.map(function(r,i){ return '<div class="chk" data-i="'+i+'"><span class="bx">'+ICO.check+'</span><span class="txt"><b>'+X(r[0],r[1])+'</b></span></div>'; }).join("");
+  host.querySelectorAll(".chk").forEach(function(c){ c.onclick=function(){ c.classList.toggle("done"); }; });
+}
+
+/* ---------- quiz ---------- */
+var QUIZ=[
+ { q:["Which instrument shows WHERE a fault is along the fiber?","¿Qué instrumento muestra DÓNDE está una falla a lo largo de la fibra?"],
+   o:[["Power meter","Power meter"],["OTDR","OTDR"],["VFL only","Solo VFL"],["OLTS","OLTS"]], a:1,
+   e:["The OTDR maps events vs distance. OLTS gives total loss but not location.","El OTDR mapea eventos vs distancia. El OLTS da pérdida total pero no ubicación."] },
+ { q:["An OTDR measures distance using…","Un OTDR mide distancia usando…"],
+   o:[["The fiber color","El color de la fibra"],["Round-trip time and the IOR","El tiempo de ida-vuelta y el IOR"],["The connector type","El tipo de conector"],["dBm only","Solo dBm"]], a:1,
+   e:["Distance = c×time / (2×IOR); a wrong IOR gives wrong distances.","Distancia = c×tiempo / (2×IOR); un IOR incorrecto da distancias incorrectas."] },
+ { q:["A sharp spike on an OTDR trace is a…","Un pico agudo en una traza OTDR es un…"],
+   o:[["Non-reflective event (fusion splice)","Evento no reflectivo (empalme por fusión)"],["Reflective event (connector / break)","Evento reflectivo (conector / rotura)"],["Gainer","Gainer"],["Ghost only","Solo ghost"]], a:1,
+   e:["Fresnel reflections (connectors, mechanical splices, breaks) show as spikes.","Las reflexiones de Fresnel (conectores, empalmes mecánicos, roturas) aparecen como picos."] },
+ { q:["A ‘gainer’ on a unidirectional OTDR trace is caused by…","Un ‘gainer’ en una traza OTDR unidireccional se debe a…"],
+   o:[["A real optical amplifier","Un amplificador óptico real"],["Mode-field-diameter mismatch — use bidirectional averaging","Desajuste de MFD — usa promedio bidireccional"],["A dirty connector","Un conector sucio"],["Wrong wavelength","Longitud de onda incorrecta"]], a:1,
+   e:["Different backscatter/MFD makes a splice look like a gain; average both directions.","Diferente backscatter/MFD hace que un empalme parezca ganancia; promedia ambas direcciones."] },
+ { q:["A launch cable on an OTDR is used to…","Un cable de lanzamiento en un OTDR sirve para…"],
+   o:[["Increase TX power","Aumentar la potencia TX"],["Move the first connector out of the dead zone","Sacar el primer conector de la zona muerta"],["Change the wavelength","Cambiar la longitud de onda"],["Clean the fiber","Limpiar la fibra"]], a:1,
+   e:["It lets the OTDR see the first connector past its initial dead zone.","Permite al OTDR ver el primer conector más allá de su zona muerta inicial."] },
+ { q:["For Tier 1 insertion-loss certification you use…","Para certificar pérdida de inserción Tier 1 usas…"],
+   o:[["An OTDR only","Solo un OTDR"],["A light source + power meter (OLTS)","Una fuente de luz + power meter (OLTS)"],["A VFL","Un VFL"],["A microscope","Un microscopio"]], a:1,
+   e:["Tier 1 = OLTS (source + meter) for total end-to-end loss.","Tier 1 = OLTS (fuente + medidor) para pérdida total extremo a extremo."] },
+ { q:["An event loses far more at 1550 nm than at 1310 nm. It is most likely…","Un evento pierde mucho más a 1550 nm que a 1310 nm. Es más probable que sea…"],
+   o:[["A clean connector","Un conector limpio"],["A macrobend","Un macrobend"],["A ghost","Un ghost"],["Normal fiber loss","Pérdida normal de la fibra"]], a:1,
+   e:["Macrobends are more lossy at longer wavelengths (1550 > 1310).","Los macrobends pierden más a longitudes de onda largas (1550 > 1310)."] },
+ { q:["RX power is far ABOVE the receiver maximum. You should…","La potencia RX está muy POR ENCIMA del máximo del receptor. Debes…"],
+   o:[["Add an optical attenuator","Agregar un atenuador óptico"],["Increase TX power","Aumentar la potencia TX"],["Add another splice loss","Agregar otro empalme con pérdida"],["Do nothing","No hacer nada"]], a:0,
+   e:["Too much light saturates the RX — insert an attenuator to bring it into range.","Demasiada luz satura el RX — inserta un atenuador para volver al rango."] }
+];
+var quizAnswered=0, quizCorrect=0, quizDone=false;
+function renderQuiz(){
+  var host=$("quizHost"); if(!host) return;
+  quizAnswered=0; quizCorrect=0; quizDone=false;
+  host.innerHTML=QUIZ.map(function(item,qi){
+    var opts=item.o.map(function(o,oi){ return '<button class="opt" data-q="'+qi+'" data-o="'+oi+'">'+X(o[0],o[1])+'</button>'; }).join("");
+    return '<div class="q"><h3>'+(qi+1)+'. '+X(item.q[0],item.q[1])+'</h3>'+opts+'<div class="explain" id="ex'+qi+'"></div></div>';
+  }).join("");
+  host.querySelectorAll(".opt").forEach(function(btn){
+    btn.onclick=function(){
+      var qi=+btn.getAttribute("data-q"), oi=+btn.getAttribute("data-o");
+      var group=host.querySelectorAll('.opt[data-q="'+qi+'"]');
+      if(group[0].disabled) return;
+      var a=QUIZ[qi].a;
+      group.forEach(function(g){ g.disabled=true; });
+      if(oi===a){ btn.classList.add("correct"); quizCorrect++; }
+      else { btn.classList.add("wrong"); group[a].classList.add("correct"); }
+      var ex=$("ex"+qi); ex.textContent=X(QUIZ[qi].e[0],QUIZ[qi].e[1]); ex.classList.add("show");
+      quizAnswered++;
+      if(quizAnswered===QUIZ.length) finishQuiz();
+    };
+  });
+  $("quizResult").innerHTML="";
+}
+function finishQuiz(){
+  if(quizDone) return; quizDone=true;
+  var pct=Math.round((quizCorrect/QUIZ.length)*100);
+  var pass=pct>=80;
+  if(window.FOT) FOT.recordQuiz(MODULE_ID,pct);
+  var host=$("quizResult");
+  host.innerHTML='<div class="score"><span class="verdict '+(pass?"ok":"no")+'">'+(pass?ICO.check:"")+' '+quizCorrect+'/'+QUIZ.length+' — '+pct+'%</span></div>'+
+    '<p style="text-align:center;color:var(--sub);font-size:13.5px">'+
+      (pass? X("Passed! Module 5 is now unlocked on the dashboard.","¡Aprobado! El Módulo 5 quedó desbloqueado en el panel.")
+           : X("You need 80% to pass. Review and try again.","Necesitas 80% para aprobar. Repasa e inténtalo de nuevo."))+'</p>'+
+    '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:6px">'+
+      '<button class="btn ghost" id="retry">'+X("Retry quiz","Reintentar quiz")+'</button>'+
+      '<a class="btn" href="../index.html" target="_top">'+X("Back to dashboard","Volver al panel")+'</a></div>';
+  $("retry").onclick=function(){ renderQuiz(); };
+}
+function renderDone(){
+  var box=$("doneBox"); if(!box||!window.FOT) return;
+  var rec=FOT.moduleRecord(MODULE_ID);
+  if(rec.completedAt){
+    box.innerHTML='<div class="note good"><b>'+X("Module 4 complete","Módulo 4 completado")+'</b> — '+X("Best score","Mejor nota")+': '+rec.best+'%. '+X("Module 5 is unlocked.","El Módulo 5 está desbloqueado.")+'</div>'+
+      '<div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn" href="../index.html" target="_top">'+X("Back to dashboard","Volver al panel")+'</a>'+
+      '<a class="btn ghost" href="../module-05-safety/index.html" target="_top">'+X("Go to Module 5","Ir al Módulo 5")+'</a></div>';
+  } else {
+    box.innerHTML='<div class="note warn">'+X("Take the quiz (80%) to complete this module and unlock Module 5.","Haz el quiz (80%) para completar este módulo y desbloquear el Módulo 5.")+'</div>'+
+      '<a class="btn" href="#" id="goQuiz">'+X("Go to the quiz","Ir al quiz")+'</a>';
+    var g=$("goQuiz"); if(g) g.onclick=function(e){ e.preventDefault(); go(STEPS.length-2); };
+  }
+}
+
+/* ---------------- Engine ---------------- */
+var cur=0, seen={}, tStart=Date.now();
+function applyTheme(){ document.documentElement.setAttribute("data-theme",THEME);
+  $("temaIco").innerHTML=THEME==="dark"?ICO.sun:ICO.moon; $("temaTxt").textContent=THEME==="dark"?X("Light","Claro"):X("Dark","Oscuro"); }
+function chrome(){
+  document.documentElement.lang=LANG;
+  $("brand").textContent=X(CONFIG.brand[0],CONFIG.brand[1]);
+  $("brandsub").textContent=X(CONFIG.subtitle[0],CONFIG.subtitle[1]);
+  $("homeTxt").textContent=X("Dashboard","Panel");
+  $("prev").innerHTML="‹ "+X("Back","Atrás");
+  $("lang").querySelectorAll("button").forEach(function(b){ b.classList.toggle("on",b.getAttribute("data-l")===LANG); });
+  applyTheme();
+}
+function render(){
+  stopAnim(); seen[cur]=true;
+  var st=STEPS[cur];
+  $("card").innerHTML=st.html();
+  $("mStep").textContent=X("Lesson","Lección")+" "+(cur+1)+" / "+STEPS.length;
+  $("mDur").textContent=CONFIG.duration;
+  $("progbar").style.width=((cur+1)/STEPS.length*100)+"%";
+  $("dots").innerHTML=STEPS.map(function(_,i){ return '<button class="dot '+(i===cur?"on":(seen[i]?"seen":""))+'" data-i="'+i+'"></button>'; }).join("");
+  $("dots").querySelectorAll(".dot").forEach(function(d){ d.onclick=function(){ go(+d.getAttribute("data-i")); }; });
+  $("prev").style.visibility=cur===0?"hidden":"visible";
+  $("next").innerHTML=(cur===STEPS.length-1?X("Finish","Terminar"):X("Next","Siguiente"))+" ›";
+  if(st.init) try{ st.init(); }catch(e){}
+  if(window.FOT) FOT.recordProgress(MODULE_ID,cur,STEPS.length);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function go(i){ if(i<0||i>=STEPS.length) return; cur=i; render(); }
+$("prev").onclick=function(){ go(cur-1); };
+$("next").onclick=function(){ if(cur===STEPS.length-1){ location.href="../index.html"; } else go(cur+1); };
+$("tema").onclick=function(){ THEME=THEME==="dark"?"light":"dark"; if(window.FOT)FOT.setTheme(THEME); applyTheme(); };
+$("lang").querySelectorAll("button").forEach(function(b){ b.onclick=function(){ LANG=b.getAttribute("data-l"); if(window.FOT)FOT.setLang(LANG); chrome(); render(); }; });
+document.addEventListener("keydown",function(e){ if(e.key==="ArrowRight")go(cur+1); if(e.key==="ArrowLeft")go(cur-1); });
+window.addEventListener("resize",function(){ if(STEPS[cur].init){ stopAnim(); try{STEPS[cur].init();}catch(e){} } });
+function flushTime(){ if(window.FOT){ FOT.recordTime(MODULE_ID, Date.now()-tStart); tStart=Date.now(); } }
+document.addEventListener("visibilitychange",function(){ if(document.hidden) flushTime(); });
+window.addEventListener("pagehide",flushTime); window.addEventListener("beforeunload",flushTime);
+
+chrome(); render();
+</script>
+</body>
+</html>

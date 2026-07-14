@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 5 — Fiber Safety / Seguridad con fibra óptica</title>
+<!--
+  TELECOM (azul) — Fiber Optic Training · Módulo 5: Seguridad al trabajar con fibra óptica.
+  Fuentes / Sources: IEC 60825-1 (laser safety classes), ANSI Z136.1/.2 (laser safety, fiber);
+  OSHA 1910.146 (confined spaces), OSHA 1910.147 (LOTO), OSHA 1926 (construction/traffic), MUTCD;
+  fiber cleaning IPA SDS; FOA / TIA safety guidance. No se dan procedimientos médicos improvisados.
+  Motor de módulos + guardado de progreso vía ../scripts/progress.js.
+-->
+<style>
+  :root{
+    --pg:#f3f6fc; --card:#ffffff; --ink:#0c1c34; --sub:#51618a; --line:#dde5f3;
+    --bar:#0b2e59; --accent:#2563EB; --tint:rgba(37,99,235,.10);
+    --ok:#15803D; --okt:rgba(21,128,61,.10); --bad:#dc2626; --badt:rgba(220,38,38,.10);
+    --amber:#b45309; --ambt:rgba(180,83,9,.12); --radius:14px;
+    --shadow:0 1px 2px rgba(12,28,52,.05),0 10px 26px rgba(12,28,52,.08);
+  }
+  html[data-theme="dark"]{
+    --pg:#0a1120; --card:#141d30; --ink:#e9f0ff; --sub:#9db0d6; --line:#243149;
+    --bar:#0a1526; --accent:#4d8bff; --tint:rgba(77,139,255,.14);
+    --ok:#4ade80; --okt:rgba(74,222,128,.14); --bad:#f87171; --badt:rgba(248,113,113,.14);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  .shell{max-width:940px;margin:0 auto;padding:14px 16px 34px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0 8px;box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:600;display:block;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+  .prog{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:6px 0 4px}
+  .prog>i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);gap:8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;min-height:380px}
+  .step-ico{width:44px;height:44px;border-radius:12px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+  h1{font-size:clamp(20px,3.3vw,26px);margin:0 0 8px;font-weight:700;line-height:1.2}
+  h2{font-size:15.5px;margin:16px 0 8px;font-weight:600}
+  p{margin:0 0 12px}
+  .lead{color:var(--sub);font-size:15px}
+  ul,ol{margin:6px 0 12px;padding-left:20px}
+  li{margin:6px 0}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:8px 0}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin:8px 0}
+  .box{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:13px}
+  .box h3{margin:0 0 6px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px}
+  .box p{margin:0;font-size:12.5px;color:var(--sub)}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:var(--accent);color:#fff;font-weight:800;font-size:14px;flex:none}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;min-height:42px;display:inline-flex;align-items:center;gap:7px;justify-content:center;text-decoration:none}
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;flex:1}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line);border:0;cursor:pointer;padding:0}
+  .dot.on{background:var(--accent);transform:scale(1.3)}
+  .dot.seen{background:var(--sub)}
+  .note{font-size:13px;color:var(--sub);border-left:3px solid var(--accent);background:var(--tint);padding:9px 12px;margin:12px 0;border-radius:0 8px 8px 0}
+  .warn{border-left-color:var(--amber);color:var(--amber);background:var(--ambt)}
+  .bad{border-left-color:var(--bad);color:var(--bad);background:var(--badt)}
+  .good{border-left-color:var(--ok);color:var(--ink);background:var(--okt)}
+  .good b{color:var(--ok)}
+  .illus{position:relative;aspect-ratio:16/10;background:#071120;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .illus canvas,.illus svg{width:100%;height:100%;display:block}
+  .mcap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);margin:8px 2px 2px;justify-content:center;text-align:center}
+  table.tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin:8px 0;border-radius:10px;overflow:hidden}
+  table.tbl th,table.tbl td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+  table.tbl th{background:var(--tint);color:var(--ink);font-weight:700;font-size:11.5px}
+  table.tbl td b{color:var(--accent)}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px}
+  .steps .st{display:flex;gap:12px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin:6px 0}
+  .steps .st .txt b{font-size:13.5px}.steps .st .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .do{display:flex;gap:10px;align-items:flex-start;margin:6px 0;font-size:13px}
+  .do .ic{width:22px;height:22px;border-radius:6px;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;margin-top:1px}
+  .do.yes .ic{background:var(--ok)} .do.no .ic{background:var(--bad)}
+  .chk{display:flex;gap:11px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin:7px 0;cursor:pointer}
+  .chk .bx{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;margin-top:1px}
+  .chk.done .bx{background:var(--ok);border-color:var(--ok)}
+  .chk.done .txt b{text-decoration:line-through;opacity:.7}
+  .chk .txt b{font-size:13.5px}.chk .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:11px 14px;border-radius:10px;margin:7px 0;cursor:pointer;font-size:14px;font-family:inherit}
+  .opt.correct{border-color:var(--ok);background:var(--okt);color:var(--ok);font-weight:600}
+  .opt.wrong{border-color:var(--bad);background:var(--badt);color:var(--bad)}
+  .opt:disabled{cursor:default}
+  .q{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:12px}
+  .q h3{margin:0 0 10px;font-size:14px}
+  .explain{font-size:12.5px;color:var(--sub);margin-top:8px;padding:9px 11px;border-left:3px solid var(--accent);background:var(--tint);border-radius:0 8px 8px 0;display:none}
+  .explain.show{display:block}
+  .score{font-size:16px;font-weight:700;text-align:center;padding:10px}
+  .verdict{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;font-weight:700;font-size:15px}
+  .verdict.ok{background:var(--okt);color:var(--ok)}
+  .verdict.no{background:var(--badt);color:var(--bad)}
+  .ref{font-size:12.5px;color:var(--sub);border-bottom:1px solid var(--line);padding:8px 0}
+  .ref b{color:var(--ink)}
+  .obj{display:flex;gap:10px;align-items:flex-start;margin:7px 0;font-size:13.5px}
+  .obj svg{color:var(--accent);flex:none;margin-top:2px}
+  @media(max-width:520px){ .card{padding:15px} .shell{padding:12px 12px 28px} .brand small{display:none} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+  <div class="top">
+    <div class="brand">
+      <span class="logo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg></span>
+      <div><b id="brand"></b><small id="brandsub"></small></div>
+    </div>
+    <div class="tools">
+      <a class="tbtn" id="home" href="../index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span id="homeTxt"></span></a>
+      <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+      <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+    </div>
+  </div>
+  <div class="prog"><i id="progbar"></i></div>
+  <div class="meta"><span id="mStep"></span><span id="mDur"></span></div>
+  </div>
+  <div class="card" id="card"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev"></button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="next"></button>
+  </div>
+</div>
+
+<script src="../scripts/progress.js"></script>
+<script>
+var MODULE_ID="m5";
+var CONFIG={ brand:["Module 5 · Fiber Safety","Módulo 5 · Seguridad con fibra"],
+  subtitle:["Fiber Optic Training · Telecom","Fiber Optic Training · Telecom"], duration:"≈ 25–35 min" };
+var LANG=(window.FOT?FOT.getLang():"en");
+var THEME=(window.FOT?FOT.getTheme():"light");
+function X(en,es){ return LANG==="es"?es:en; }
+function $(id){ return document.getElementById(id); }
+function tit(en,es){ return '<div class="step-ico">'+STEPS[cur].ico+'</div><h1>'+X(en,es)+'</h1>'; }
+
+var ICO={
+  shield:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>',
+  hazard:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.6 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+  laser:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>',
+  trash:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>',
+  ppe:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 16 0M2 12h20M7 12v5M17 12v5"/><circle cx="12" cy="8" r="1"/></svg>',
+  chem:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-9V3"/><path d="M7 14h10"/></svg>',
+  tool:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0 5 5l-8 8a2.1 2.1 0 0 1-3-3z"/></svg>',
+  field:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M6 20V8l6-4 6 4v12M9 20v-5h6v5"/></svg>',
+  aid:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M12 10v6M9 13h6"/></svg>',
+  check:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  x:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  clip:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 11l2 2 4-4"/></svg>',
+  flag:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15V4h13l-2 4 2 4H4M4 22v-7"/></svg>',
+  quiz:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.1 9a3 3 0 1 1 4.2 2.7c-.8.4-1.3 1-1.3 2M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>',
+  book:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h9a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-1a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h2z"/></svg>',
+  sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+};
+function bx(icon,tEn,tEs,dEn,dEs){ return '<div class="box"><h3>'+icon+X(tEn,tEs)+'</h3><p>'+X(dEn,dEs)+'</p></div>'; }
+function objRow(en,es){ return '<div class="obj">'+ICO.check+'<span>'+X(en,es)+'</span></div>'; }
+function stepRow(n,en,es,den,des){ return '<div class="st"><span class="num">'+n+'</span><span class="txt"><b>'+X(en,es)+'</b><span>'+X(den,des)+'</span></span></div>'; }
+function doRow(yes,en,es){ return '<div class="do '+(yes?"yes":"no")+'"><span class="ic">'+(yes?ICO.check:ICO.x)+'</span><span>'+X(en,es)+'</span></div>'; }
+
+/* ---------------- Canvas engine ---------------- */
+var anims=[];
+function stopAnim(){ anims.forEach(function(id){ cancelAnimationFrame(id); }); anims=[]; }
+function fitCanvas(cv){ var r=cv.getBoundingClientRect(); var dpr=Math.min(window.devicePixelRatio||1,2);
+  cv.width=Math.max(2,Math.round(r.width*dpr)); cv.height=Math.max(2,Math.round(r.height*dpr));
+  var ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx:ctx,w:r.width,h:r.height}; }
+function bgGrid(ctx,w,h){ ctx.fillStyle="#071120"; ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle="rgba(80,120,190,.16)"; ctx.lineWidth=1;
+  for(var x=0;x<=w;x+=26){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+  for(var y=0;y<=h;y+=26){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); } }
+function label(ctx,x,y,txt,col){ ctx.fillStyle=col||"#9fb6e6"; ctx.font="11px system-ui,Segoe UI,Arial"; ctx.fillText(txt,x,y); }
+
+/* Laser safety animation: invisible IR from an open connector + eye */
+function animLaser(cv){
+  var d=fitCanvas(cv),ctx=d.ctx,w=d.w,h=d.h,t=0;
+  function frame(){
+    bgGrid(ctx,w,h);
+    var y=h*0.5, cx=w*0.22;
+    // connector
+    ctx.fillStyle="#16233c"; ctx.strokeStyle="#c9d8f5"; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.roundRect(cx-30,y-12,40,24,4); ctx.fill(); ctx.stroke();
+    label(ctx,cx-34,y-20,X("open connector","conector abierto"),"#c9d8f5");
+    // invisible IR beam (faint dashed)
+    var pulse=0.35+0.25*Math.abs(Math.sin(t*0.08));
+    ctx.strokeStyle="rgba(255,80,80,"+pulse+")"; ctx.lineWidth=6; ctx.setLineDash([2,7]);
+    ctx.beginPath(); ctx.moveTo(cx+10,y); ctx.lineTo(w*0.72,y); ctx.stroke(); ctx.setLineDash([]);
+    label(ctx,w*0.34,y-14,X("INVISIBLE infrared — no blink reflex","INFRARROJO invisible — sin reflejo de parpadeo"),"#ff8a8a");
+    // eye (danger)
+    var ex=w*0.82;
+    ctx.strokeStyle="#ff6b6b"; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.ellipse(ex,y,20,12,0,0,7); ctx.stroke();
+    ctx.beginPath(); ctx.arc(ex,y,5,0,7); ctx.fillStyle="#ff6b6b"; ctx.fill();
+    // no-symbol
+    ctx.strokeStyle="#ff3b3b"; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(ex,y,26,0,7); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ex-18,y-18); ctx.lineTo(ex+18,y+18); ctx.stroke();
+    label(ctx,20,24,X("Never look into a fiber or connector — verify it's dark with a power meter","Nunca mires una fibra o conector — verifica que esté apagada con un power meter"),"#9fb6e6");
+    t++; anims.push(requestAnimationFrame(frame));
+  }
+  frame();
+}
+
+/* ------------------------------------------------------------------ */
+var STEPS=[
+/* 0 cover */
+{ ico:ICO.flag, title:["Fiber Safety","Seguridad con fibra óptica"], html:function(){
+  return tit("Module 5 — Go home the same way you came","Módulo 5 — Regresa a casa como llegaste")+
+  '<p class="lead">'+X("Fiber work has quiet hazards: microscopic glass shards, invisible laser light, chemicals, sharp tools, and the field environment (heights, confined spaces, traffic). This module is how to stay safe.",
+                      "El trabajo con fibra tiene peligros silenciosos: fragmentos microscópicos de vidrio, luz láser invisible, químicos, herramientas filosas, y el entorno de campo (alturas, espacios confinados, tráfico). Este módulo es cómo mantenerte seguro.")+'</p>'+
+  '<div class="note">'+X("Estimated time","Tiempo estimado")+': '+CONFIG.duration+' · '+X("Passing score","Nota para aprobar")+': <b>80%</b> · '+X("Completing this unlocks the final exam","Completarlo desbloquea el examen final")+'</div>'+
+  '<h2>'+X("You will be able to","Podrás")+'</h2>'+
+  objRow("Recognize the main hazards of fiber work.","Reconocer los peligros principales del trabajo con fibra.")+
+  objRow("Apply laser-safety rules and never view a live fiber.","Aplicar reglas de seguridad láser y nunca ver una fibra activa.")+
+  objRow("Handle fiber shards, chemicals and tools safely.","Manejar fragmentos de fibra, químicos y herramientas de forma segura.")+
+  objRow("Follow field-safety practices (JSA, work zones, confined spaces).","Seguir prácticas de seguridad de campo (JSA, zonas de trabajo, espacios confinados).")+
+  objRow("Respond to an incident by following the company emergency plan.","Responder a un incidente siguiendo el plan de emergencia de la empresa.")+
+  '<div class="note warn">'+X("This module teaches safe practices — it is not medical advice. Always follow your company's safety program and local regulations.",
+                               "Este módulo enseña prácticas seguras — no es consejo médico. Sigue siempre el programa de seguridad de tu empresa y las regulaciones locales.")+'</div>';
+}},
+
+/* 1 hazards */
+{ ico:ICO.hazard, title:["Main hazards","Peligros principales"], html:function(){
+  return tit("What can hurt you","Lo que puede lastimarte")+
+  '<div class="grid3">'+
+    bx(ICO.hazard,"Glass shards","Fragmentos de vidrio","Tiny cleaved fiber ends are like invisible splinters — dangerous to eyes and skin, and can't be felt until they hurt.","Los extremos cortados son como astillas invisibles — peligrosos para ojos y piel, y no se sienten hasta que duelen.")+
+    bx(ICO.laser,"Invisible laser","Láser invisible","Infrared light you cannot see and that triggers no blink reflex. High-power/amplified systems are worse.","Luz infrarroja que no ves y que no dispara el reflejo de parpadeo. Los sistemas de alta potencia/amplificados son peores.")+
+    bx(ICO.chem,"Chemicals","Químicos","Isopropyl alcohol (IPA) is flammable; adhesives/cleaners need ventilation and care.","El alcohol isopropílico (IPA) es inflamable; adhesivos/limpiadores requieren ventilación y cuidado.")+
+    bx(ICO.tool,"Sharp tools","Herramientas filosas","Strippers, cleavers, scissors and Kevlar shears cut skin easily.","Peladoras, cortadoras, tijeras y cortadoras de Kevlar cortan la piel fácilmente.")+
+    bx(ICO.hazard,"Splicer arc","Arco de empalmadora","The fusion splicer produces a high-voltage electric arc — keep fingers clear.","La empalmadora por fusión produce un arco eléctrico de alto voltaje — mantén los dedos lejos.")+
+    bx(ICO.field,"The environment","El entorno","Heights, confined spaces, hand holes, water, traffic, nearby power and RF, weather, night work.","Alturas, espacios confinados, hand holes, agua, tráfico, energía y RF cercanos, clima, trabajo nocturno.")+
+  '</div>';
+}},
+
+/* 2 laser safety */
+{ ico:ICO.laser, title:["Laser safety","Seguridad láser"], html:function(){
+  return tit("You can't see it — respect it","No la ves — respétala")+
+  '<p>'+X("Telecom light is infrared (850/1310/1550 nm): invisible, with no blink reflex to protect you. Per IEC 60825, most enclosed fiber systems are Class 1/1M — but a disconnected or broken fiber, or amplified/DWDM systems, can expose hazardous levels.",
+          "La luz de telecom es infrarroja (850/1310/1550 nm): invisible, sin reflejo de parpadeo que te proteja. Según IEC 60825, la mayoría de los sistemas de fibra cerrados son Clase 1/1M — pero una fibra desconectada o rota, o sistemas amplificados/DWDM, pueden exponer niveles peligrosos.")+'</p>'+
+  '<div class="illus"><canvas id="cvLaser"></canvas></div>'+
+  '<div class="mcap">'+ICO.laser+X("Never put your eye to a fiber, connector or adapter","Nunca acerques el ojo a una fibra, conector o adaptador")+'</div>'+
+  '<div class="do yes"><span class="ic">'+ICO.check+'</span><span>'+X("Assume every fiber is live until a power meter proves it's dark.","Asume que toda fibra está activa hasta que un power meter demuestre que está apagada.")+'</span></div>'+
+  '<div class="do yes"><span class="ic">'+ICO.check+'</span><span>'+X("Cap connectors; disconnect/turn down the source before working; post laser signage.","Tapa conectores; desconecta/apaga la fuente antes de trabajar; coloca señalización láser.")+'</span></div>'+
+  '<div class="do no"><span class="ic">'+ICO.x+'</span><span>'+X("Never inspect a live fiber with a microscope — Class 1M light is hazardous through magnifying optics.","Nunca inspecciones una fibra activa con microscopio — la luz Clase 1M es peligrosa a través de ópticas de aumento.")+'</span></div>'+
+  '<div class="note warn">'+X("Fiber inspection scopes with an IR-detection or filtered mode help protect you — but the rule stands: verify dark first.",
+                               "Los microscopios de inspección con detección IR o modo filtrado ayudan a protegerte — pero la regla sigue: verifica que esté apagada primero.")+'</div>';
+}, init:function(){ animLaser($("cvLaser")); }},
+
+/* 3 fiber waste */
+{ ico:ICO.trash, title:["Handling fiber scraps","Manejo de residuos de fibra"], html:function(){
+  return tit("Every shard is accounted for","Cada fragmento se controla")+
+  '<p>'+X("Cleaved fiber offcuts are sharp, nearly invisible, and easily get into skin — or worse. Treat them like sharps waste with a strict routine.",
+          "Los recortes de fibra cortada son filosos, casi invisibles, y se meten fácil en la piel — o peor. Trátalos como residuos punzocortantes con una rutina estricta.")+'</p>'+
+  '<div class="steps">'+
+    stepRow(1,"Work on a controlled surface","Superficie de trabajo controlada","Use a dark work mat so shards are visible; keep food/drinks away.","Usa un tapete oscuro para ver los fragmentos; nada de comida/bebida cerca.")+
+    stepRow(2,"Collect every offcut","Recoge cada recorte","Drop each scrap into a dedicated, labeled container (e.g., a scrap bottle) — never on the floor, table or your clothes.","Deposita cada recorte en un recipiente dedicado y etiquetado — nunca en el piso, mesa o tu ropa.")+
+    stepRow(3,"Never touch with bare fingers","Nunca toques con los dedos","Use tape or tweezers to pick up stray pieces; press tape on the mat to lift fines.","Usa cinta o pinzas para piezas sueltas; presiona cinta en el tapete para levantar los finos.")+
+    stepRow(4,"No compressed air","Sin aire comprimido","Never blow shards around; don't brush them with bare hands.","Nunca soples fragmentos; no los barras con las manos.")+
+    stepRow(5,"Clean & inspect the area","Limpia e inspecciona el área","Wipe the workspace, then check tools, gloves and clothing before leaving.","Limpia el área, luego revisa herramientas, guantes y ropa antes de irte.")+
+    stepRow(6,"Dispose per company policy","Desecha según la política","Seal and dispose of the sharps container as your company requires.","Sella y desecha el recipiente de punzocortantes como lo exija tu empresa.")+
+  '</div>';
+}},
+
+/* 4 PPE */
+{ ico:ICO.ppe, title:["Personal protective equipment","Equipo de protección personal"], html:function(){
+  return tit("Wear it every time","Úsalo siempre")+
+  '<div class="grid3">'+
+    bx(ICO.ppe,"Safety glasses","Lentes de seguridad","Protect eyes from flying shards. (They are not laser goggles — they don't make it safe to view fiber.)","Protegen los ojos de fragmentos. (No son gafas láser — no vuelven seguro ver la fibra.)")+
+    bx(ICO.ppe,"Gloves / clothing","Guantes / ropa","Appropriate gloves and work clothing; avoid loose sleeves near the splicer.","Guantes apropiados y ropa de trabajo; evita mangas sueltas cerca de la empalmadora.")+
+    bx(ICO.ppe,"Footwear","Calzado","Safety boots for the site.","Botas de seguridad para el sitio.")+
+    bx(ICO.ppe,"Hi-vis vest","Chaleco alta visibilidad","Near traffic or moving equipment (ANSI/ISEA 107).","Cerca de tráfico o equipos en movimiento (ANSI/ISEA 107).")+
+    bx(ICO.ppe,"Hard hat","Casco","Where overhead or struck-by hazards exist.","Donde haya peligros aéreos o de golpe.")+
+    bx(ICO.ppe,"Height / confined-space PPE","EPP altura / espacio confinado","Fall protection for tower/lift work; gas monitor & retrieval for confined spaces.","Protección contra caídas para torre/plataforma; monitor de gas y rescate para espacios confinados.")+
+  '</div>'+
+  '<div class="note">'+X("Wash your hands before eating, drinking or touching your face — this is the #1 way to keep glass shards out of your body.",
+                          "Lávate las manos antes de comer, beber o tocarte la cara — es la forma #1 de mantener los fragmentos fuera de tu cuerpo.")+'</div>';
+}},
+
+/* 5 chemicals */
+{ ico:ICO.chem, title:["Chemical safety","Seguridad química"], html:function(){
+  return tit("Alcohol and cleaners","Alcohol y limpiadores")+
+  '<div class="grid2">'+
+    bx(ICO.chem,"Isopropyl alcohol (IPA)","Alcohol isopropílico (IPA)","Flammable — keep away from the splicer arc, heat oven and any flame. Use small amounts, close the container.","Inflamable — lejos del arco de la empalmedora, el horno y cualquier flama. Usa poca cantidad, cierra el envase.")+
+    bx(ICO.chem,"Ventilation & skin","Ventilación y piel","Work with ventilation; avoid prolonged skin contact; follow the product SDS.","Trabaja con ventilación; evita contacto prolongado con la piel; sigue la SDS del producto.")+
+  '</div>'+
+  '<div class="do yes"><span class="ic">'+ICO.check+'</span><span>'+X("Use fiber-grade wipes and pre-saturated cleaners designed for optics.","Usa toallitas de grado de fibra y limpiadores pre-saturados diseñados para óptica.")+'</span></div>'+
+  '<div class="do no"><span class="ic">'+ICO.x+'</span><span>'+X("Don't strike the splicer arc with alcohol still wet on the fiber.","No dispares el arco con alcohol aún húmedo en la fibra.")+'</span></div>'+
+  '<div class="note warn">'+X("Know where the SDS and fire extinguisher are before you open any chemical.",
+                               "Conoce dónde están la SDS y el extintor antes de abrir cualquier químico.")+'</div>';
+}},
+
+/* 6 tool safety */
+{ ico:ICO.tool, title:["Tool safety","Seguridad de herramientas"], html:function(){
+  return tit("Sharp, hot and high-voltage","Filoso, caliente y de alto voltaje")+
+  '<div class="scroll"><table class="tbl"><tr><th>'+X("Tool","Herramienta")+'</th><th>'+X("Safe use","Uso seguro")+'</th></tr>'+
+    '<tr><td><b>'+X("Stripper","Peladora")+'</b></td><td>'+X("Cut away from your body; keep blades sharp and aligned.","Corta lejos del cuerpo; mantén filos afilados y alineados.")+'</td></tr>'+
+    '<tr><td><b>'+X("Cleaver","Cortadora")+'</b></td><td>'+X("Close the lid; collect the offcut into the scrap bin immediately.","Cierra la tapa; recoge el recorte al bote de inmediato.")+'</td></tr>'+
+    '<tr><td><b>'+X("Scissors / Kevlar shears","Tijeras / corta-Kevlar")+'</b></td><td>'+X("Very sharp — cut deliberately, store closed.","Muy filosas — corta con cuidado, guárdalas cerradas.")+'</td></tr>'+
+    '<tr><td><b>'+X("Fusion splicer","Empalmadora")+'</b></td><td>'+X("High-voltage arc — never put fingers near electrodes; power down to service.","Arco de alto voltaje — nunca acerques dedos a los electrodos; apaga para dar servicio.")+'</td></tr>'+
+    '<tr><td><b>'+X("Heat-shrink oven","Horno termocontraíble")+'</b></td><td>'+X("Gets hot — avoid burns, let it cool before storing.","Se calienta — evita quemaduras, déjalo enfriar antes de guardar.")+'</td></tr>'+
+    '<tr><td><b>VFL / OTDR</b></td><td>'+X("Laser sources — treat outputs like live fiber; cap when idle.","Fuentes láser — trata las salidas como fibra activa; tápalas al no usar.")+'</td></tr>'+
+  '</table></div>';
+}},
+
+/* 7 field safety */
+{ ico:ICO.field, title:["Field safety","Seguridad de campo"], html:function(){
+  return tit("The site is the biggest hazard","El sitio es el mayor peligro")+
+  '<div class="grid2">'+
+    bx(ICO.clip,"Plan the work","Planea el trabajo","Do a Job Safety Analysis (JSA) and a tailboard/toolbox talk. Identify hazards before you start.","Haz un Análisis de Seguridad del Trabajo (JSA) y una charla previa. Identifica peligros antes de empezar.")+
+    bx(ICO.field,"Work zone / traffic","Zona de trabajo / tráfico","Set up traffic control (MUTCD): cones, signs, taper, buffer. Wear hi-vis; watch for moving equipment.","Monta control de tráfico (MUTCD): conos, señales, taper, buffer. Usa alta visibilidad; cuidado con equipos en movimiento.")+
+    bx(ICO.hazard,"Hand holes / vaults","Hand holes / cámaras","Test the atmosphere; pump out water; watch for sharp objects, insects and animals.","Prueba la atmósfera; achica el agua; cuidado con objetos filosos, insectos y animales.")+
+    bx(ICO.hazard,"Confined spaces","Espacios confinados","Follow the confined-space program: permit, gas monitoring, ventilation, attendant, retrieval (OSHA 1910.146).","Sigue el programa de espacio confinado: permiso, monitoreo de gases, ventilación, vigía, rescate (OSHA 1910.146).")+
+    bx(ICO.field,"Heights & lifts","Alturas y plataformas","Tower/bucket/ladder work needs fall protection and rescue plans (see Safety modules).","Torre/canasta/escalera requiere protección contra caídas y planes de rescate (ver módulos de Seguridad).")+
+    bx(ICO.hazard,"Power, RF & LOTO","Energía, RF y LOTO","Beware nearby power and RF; apply Lockout/Tagout where energy control is needed (OSHA 1910.147).","Cuidado con energía y RF cercanas; aplica bloqueo/etiquetado donde se requiera control de energía (OSHA 1910.147).")+
+  '</div>'+
+  '<div class="note">'+X("Night work needs lighting and extra visibility. When conditions change, stop and re-assess.",
+                          "El trabajo nocturno requiere iluminación y visibilidad extra. Si cambian las condiciones, detente y reevalúa.")+'</div>';
+}},
+
+/* 8 incident response */
+{ ico:ICO.aid, title:["Incident response","Respuesta ante incidentes"], html:function(){
+  return tit("If something goes wrong","Si algo sale mal")+
+  '<p>'+X("Know the plan before you need it: emergency numbers, first-aid location, muster point and how to report. The steps below are general awareness — <b>always follow your company's emergency plan and seek professional medical help</b>.",
+          "Conoce el plan antes de necesitarlo: números de emergencia, ubicación del botiquín, punto de reunión y cómo reportar. Los puntos de abajo son conciencia general — <b>sigue siempre el plan de emergencia de tu empresa y busca ayuda médica profesional</b>.")+'</p>'+
+  '<div class="scroll"><table class="tbl"><tr><th>'+X("Situation","Situación")+'</th><th>'+X("General guidance","Guía general")+'</th></tr>'+
+    '<tr><td>'+X("Glass shard in skin","Fragmento en la piel")+'</td><td>'+X("Don't rub it in further; follow first-aid procedure and get medical help — some shards need removal by a professional.","No lo frotes más adentro; sigue el procedimiento de primeros auxilios y busca ayuda médica — algunos fragmentos requieren extracción profesional.")+'</td></tr>'+
+    '<tr><td>'+X("Something in the eye","Algo en el ojo")+'</td><td>'+X("Do not rub. Seek medical attention immediately — eye injuries are an emergency.","No te frotes. Busca atención médica de inmediato — las lesiones oculares son una emergencia.")+'</td></tr>'+
+    '<tr><td>'+X("Chemical exposure","Exposición química")+'</td><td>'+X("Follow the product SDS and your first-aid plan; get medical help as directed.","Sigue la SDS del producto y tu plan de primeros auxilios; busca ayuda médica según se indique.")+'</td></tr>'+
+    '<tr><td>'+X("Cut or burn","Corte o quemadura")+'</td><td>'+X("Apply first aid per your training; escalate to medical care when needed.","Aplica primeros auxilios según tu capacitación; escala a atención médica cuando sea necesario.")+'</td></tr>'+
+    '<tr><td>'+X("Suspected laser exposure","Sospecha de exposición láser")+'</td><td>'+X("Stop work, report it, and seek medical evaluation.","Detén el trabajo, repórtalo y busca evaluación médica.")+'</td></tr>'+
+  '</table></div>'+
+  '<div class="note bad">'+X("Do not attempt improvised medical procedures. Report every incident — even ‘minor’ ones — per your company's process so it can be treated and prevented.",
+                              "No intentes procedimientos médicos improvisados. Reporta todo incidente — incluso los ‘menores’ — según el proceso de tu empresa para que se atienda y prevenga.")+'</div>';
+}},
+
+/* 9 checklist */
+{ ico:ICO.clip, title:["Pre-job safety checklist","Checklist de seguridad previo"], html:function(){
+  return tit("Tick before you start","Marca antes de empezar")+
+  '<div id="chkList"></div>'+
+  '<div class="note">'+X("If you can't check every box, stop and resolve it before working.","Si no puedes marcar cada casilla, detente y resuélvelo antes de trabajar.")+'</div>';
+}, init:function(){ wireChecklist(); }},
+
+/* 10 quiz */
+{ ico:ICO.quiz, title:["Module 5 quiz","Quiz del Módulo 5"], html:function(){
+  return tit("Check your understanding","Comprueba lo aprendido")+
+  '<p class="lead">'+X("8 questions · 80% (≥7) to pass. Passing completes all modules and unlocks the final exam.","8 preguntas · 80% (≥7) para aprobar. Al aprobar completas todos los módulos y desbloqueas el examen final.")+'</p>'+
+  '<div id="quizHost"></div><div id="quizResult"></div>';
+}, init:function(){ renderQuiz(); }},
+
+/* 11 summary + references */
+{ ico:ICO.book, title:["Summary & references","Resumen y referencias"], html:function(){
+  return tit("Key takeaways","Puntos clave")+
+  '<div class="grid2">'+
+    bx(ICO.check,"Assume it's live","Asume que está activa","Never view a fiber/connector; verify dark with a power meter. Invisible IR has no blink reflex.","Nunca veas una fibra/conector; verifica apagado con power meter. El IR invisible no tiene reflejo de parpadeo.")+
+    bx(ICO.check,"Control every shard","Controla cada fragmento","Dark mat, dedicated container, no compressed air, no bare fingers, wash hands.","Tapete oscuro, recipiente dedicado, sin aire comprimido, sin dedos, lávate las manos.")+
+    bx(ICO.check,"Respect tools & chemicals","Respeta herramientas y químicos","Sharp blades, splicer arc, hot oven, flammable IPA — plan and stay clear.","Filos, arco de empalmadora, horno caliente, IPA inflamable — planea y mantente lejos.")+
+    bx(ICO.check,"Plan the site","Planea el sitio","JSA, work zone, confined-space and height programs; follow the emergency plan.","JSA, zona de trabajo, programas de espacio confinado y altura; sigue el plan de emergencia.")+
+  '</div>'+
+  '<h2>'+X("References (primary sources)","Referencias (fuentes primarias)")+'</h2>'+
+  '<div class="ref"><b>IEC 60825-1</b> — '+X("Safety of laser products — classification & requirements.","Seguridad de productos láser — clasificación y requisitos.")+'</div>'+
+  '<div class="ref"><b>ANSI Z136.1 / Z136.2</b> — '+X("Safe use of lasers & optical fiber communication systems.","Uso seguro de láseres y sistemas de comunicación por fibra.")+'</div>'+
+  '<div class="ref"><b>OSHA 29 CFR 1910.146</b> — '+X("Permit-required confined spaces.","Espacios confinados que requieren permiso.")+'</div>'+
+  '<div class="ref"><b>OSHA 29 CFR 1910.147</b> — '+X("Control of hazardous energy (Lockout/Tagout).","Control de energía peligrosa (bloqueo/etiquetado).")+'</div>'+
+  '<div class="ref"><b>OSHA 29 CFR 1926 / MUTCD</b> — '+X("Construction safety & temporary traffic control (work zones).","Seguridad en construcción y control temporal de tráfico (zonas de trabajo).")+'</div>'+
+  '<div class="ref"><b>ANSI/ISEA 107</b> — '+X("High-visibility safety apparel.","Ropa de seguridad de alta visibilidad.")+'</div>'+
+  '<div class="ref"><b>Product SDS</b> & <b>FOA / TIA</b> — '+X("Chemical safety data sheets and fiber safety guidance.","Hojas de datos de seguridad y guías de seguridad de fibra.")+'</div>'+
+  '<div class="note" style="margin-top:12px">'+X("This is safety awareness training aligned to the referenced standards — not a substitute for your employer's safety program, hands-on training, or medical advice. Consulted 2026-07-13.",
+                                                  "Esta es capacitación de conciencia de seguridad alineada a las normas referenciadas — no sustituye el programa de seguridad de tu empleador, la capacitación práctica ni el consejo médico. Consultado 2026-07-13.")+'</div>'+
+  '<div id="doneBox" style="margin-top:14px"></div>';
+}, init:function(){ renderDone(); }}
+];
+
+/* ---------- checklist ---------- */
+var CHK=[["JSA / tailboard done, hazards identified","JSA / charla hecha, peligros identificados"],
+  ["Emergency plan, first-aid & muster point known","Plan de emergencia, botiquín y punto de reunión conocidos"],
+  ["PPE on (glasses, gloves, hi-vis as needed)","EPP puesto (lentes, guantes, alta visibilidad según haga falta)"],
+  ["Fiber assumed live — verified dark with power meter","Fibra asumida activa — verificada apagada con power meter"],
+  ["Scrap container & dark work mat ready","Recipiente de residuos y tapete oscuro listos"],
+  ["Chemicals: ventilation, SDS & extinguisher located","Químicos: ventilación, SDS y extintor ubicados"],
+  ["Confined space / height / traffic controls in place","Controles de espacio confinado / altura / tráfico en su lugar"],
+  ["Tools inspected; splicer & oven area clear","Herramientas revisadas; área de empalmadora y horno despejada"]];
+function wireChecklist(){
+  var host=$("chkList");
+  host.innerHTML=CHK.map(function(c,i){ return '<div class="chk" data-i="'+i+'"><span class="bx">'+ICO.check+'</span><span class="txt"><b>'+X(c[0],c[1])+'</b></span></div>'; }).join("");
+  host.querySelectorAll(".chk").forEach(function(c){ c.onclick=function(){ c.classList.toggle("done"); }; });
+}
+
+/* ---------- quiz ---------- */
+var QUIZ=[
+ { q:["Why is telecom laser light especially dangerous to the eye?","¿Por qué la luz láser de telecom es especialmente peligrosa para el ojo?"],
+   o:[["It is very bright and visible","Es muy brillante y visible"],["It is invisible infrared with no blink reflex","Es infrarrojo invisible sin reflejo de parpadeo"],["It is the same as sunlight","Es igual que la luz solar"],["It only affects skin","Solo afecta la piel"]], a:1,
+   e:["850/1310/1550 nm is invisible IR — no blink reflex to protect you.","850/1310/1550 nm es IR invisible — sin reflejo de parpadeo que te proteja."] },
+ { q:["Before working on a fiber you believe is dark, you should…","Antes de trabajar en una fibra que crees apagada, debes…"],
+   o:[["Look into it to check","Mirarla para verificar"],["Verify it's dark with a power meter","Verificar que esté apagada con un power meter"],["Assume it's safe","Asumir que es segura"],["Shine a flashlight in it","Alumbrarla con una linterna"]], a:1,
+   e:["Assume every fiber is live until a power meter proves otherwise. Never look in.","Asume que toda fibra está activa hasta que un power meter demuestre lo contrario. Nunca mires."] },
+ { q:["The correct way to dispose of cleaved fiber offcuts is…","La forma correcta de desechar recortes de fibra es…"],
+   o:[["Brush them off the table","Barrerlos de la mesa"],["Blow them away with compressed air","Soplarlos con aire comprimido"],["Into a dedicated, labeled scrap container","En un recipiente dedicado y etiquetado"],["In your pocket","En tu bolsillo"]], a:2,
+   e:["Collect every shard in a dedicated container; never bare hands or compressed air.","Recoge cada fragmento en un recipiente dedicado; nunca con las manos ni aire comprimido."] },
+ { q:["Isopropyl alcohol (IPA) near a fusion splicer is a concern because it is…","El alcohol isopropílico (IPA) cerca de una empalmadora preocupa porque es…"],
+   o:[["Corrosive to glass","Corrosivo para el vidrio"],["Flammable","Inflamable"],["Radioactive","Radiactivo"],["Magnetic","Magnético"]], a:1,
+   e:["IPA is flammable — keep it away from the arc/flame and let fiber dry before arcing.","El IPA es inflamable — lejos del arco/flama y deja secar la fibra antes del arco."] },
+ { q:["Inspecting a LIVE fiber with a microscope is dangerous because…","Inspeccionar una fibra ACTIVA con microscopio es peligroso porque…"],
+   o:[["The microscope breaks the fiber","El microscopio rompe la fibra"],["Magnifying optics concentrate hazardous (Class 1M) light into the eye","Las ópticas de aumento concentran luz peligrosa (Clase 1M) en el ojo"],["It cleans the connector","Limpia el conector"],["It has no risk","No tiene riesgo"]], a:1,
+   e:["Class 1M light is hazardous through magnifying optics — verify dark first.","La luz Clase 1M es peligrosa a través de ópticas de aumento — verifica apagado primero."] },
+ { q:["A permit-required confined space (e.g., a vault) requires…","Un espacio confinado con permiso (p. ej. una cámara) requiere…"],
+   o:[["Just a flashlight","Solo una linterna"],["Atmospheric testing, ventilation, attendant and rescue plan","Prueba atmosférica, ventilación, vigía y plan de rescate"],["Nothing special","Nada especial"],["Only gloves","Solo guantes"]], a:1,
+   e:["Follow the confined-space program (OSHA 1910.146): test, ventilate, attendant, retrieval.","Sigue el programa de espacio confinado (OSHA 1910.146): prueba, ventila, vigía, rescate."] },
+ { q:["Something gets into your eye on the job. You should…","Algo entra en tu ojo en el trabajo. Debes…"],
+   o:[["Rub it hard to remove it","Frotarlo fuerte para sacarlo"],["Do not rub; seek medical attention immediately","No frotar; buscar atención médica de inmediato"],["Ignore it","Ignorarlo"],["Rinse with alcohol","Enjuagar con alcohol"]], a:1,
+   e:["Never rub an eye injury — it's an emergency; get medical help and follow your plan.","Nunca frotes una lesión ocular — es una emergencia; busca ayuda médica y sigue tu plan."] },
+ { q:["The best first step to control hazards on any job is…","El mejor primer paso para controlar peligros en cualquier trabajo es…"],
+   o:[["Start immediately to save time","Empezar de inmediato para ahorrar tiempo"],["A Job Safety Analysis / tailboard talk","Un Análisis de Seguridad del Trabajo / charla previa"],["Skip PPE if it's quick","Omitir el EPP si es rápido"],["Work alone","Trabajar solo"]], a:1,
+   e:["Plan first: JSA + tailboard identifies hazards before work starts.","Planea primero: JSA + charla identifican los peligros antes de empezar."] }
+];
+var quizAnswered=0, quizCorrect=0, quizDone=false;
+function renderQuiz(){
+  var host=$("quizHost"); if(!host) return;
+  quizAnswered=0; quizCorrect=0; quizDone=false;
+  host.innerHTML=QUIZ.map(function(item,qi){
+    var opts=item.o.map(function(o,oi){ return '<button class="opt" data-q="'+qi+'" data-o="'+oi+'">'+X(o[0],o[1])+'</button>'; }).join("");
+    return '<div class="q"><h3>'+(qi+1)+'. '+X(item.q[0],item.q[1])+'</h3>'+opts+'<div class="explain" id="ex'+qi+'"></div></div>';
+  }).join("");
+  host.querySelectorAll(".opt").forEach(function(btn){
+    btn.onclick=function(){
+      var qi=+btn.getAttribute("data-q"), oi=+btn.getAttribute("data-o");
+      var group=host.querySelectorAll('.opt[data-q="'+qi+'"]');
+      if(group[0].disabled) return;
+      var a=QUIZ[qi].a;
+      group.forEach(function(g){ g.disabled=true; });
+      if(oi===a){ btn.classList.add("correct"); quizCorrect++; }
+      else { btn.classList.add("wrong"); group[a].classList.add("correct"); }
+      var ex=$("ex"+qi); ex.textContent=X(QUIZ[qi].e[0],QUIZ[qi].e[1]); ex.classList.add("show");
+      quizAnswered++;
+      if(quizAnswered===QUIZ.length) finishQuiz();
+    };
+  });
+  $("quizResult").innerHTML="";
+}
+function finishQuiz(){
+  if(quizDone) return; quizDone=true;
+  var pct=Math.round((quizCorrect/QUIZ.length)*100);
+  var pass=pct>=80;
+  if(window.FOT) FOT.recordQuiz(MODULE_ID,pct);
+  var examOpen=window.FOT?FOT.finalExamUnlocked():false;
+  var host=$("quizResult");
+  host.innerHTML='<div class="score"><span class="verdict '+(pass?"ok":"no")+'">'+(pass?ICO.check:"")+' '+quizCorrect+'/'+QUIZ.length+' — '+pct+'%</span></div>'+
+    '<p style="text-align:center;color:var(--sub);font-size:13.5px">'+
+      (pass? (examOpen? X("Passed! All five modules complete — the final exam is unlocked.","¡Aprobado! Los cinco módulos completos — el examen final está desbloqueado.")
+                      : X("Passed! Finish any remaining modules to unlock the final exam.","¡Aprobado! Termina los módulos restantes para desbloquear el examen final."))
+           : X("You need 80% to pass. Review and try again.","Necesitas 80% para aprobar. Repasa e inténtalo de nuevo."))+'</p>'+
+    '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:6px">'+
+      '<button class="btn ghost" id="retry">'+X("Retry quiz","Reintentar quiz")+'</button>'+
+      (pass&&examOpen?'<a class="btn" href="../assessments/final-exam.html" target="_top">'+X("Final exam","Examen final")+'</a>':'')+
+      '<a class="btn'+(pass&&examOpen?' ghost':'')+'" href="../index.html" target="_top">'+X("Back to dashboard","Volver al panel")+'</a></div>';
+  $("retry").onclick=function(){ renderQuiz(); };
+}
+function renderDone(){
+  var box=$("doneBox"); if(!box||!window.FOT) return;
+  var rec=FOT.moduleRecord(MODULE_ID);
+  var examOpen=FOT.finalExamUnlocked();
+  if(rec.completedAt){
+    box.innerHTML='<div class="note good"><b>'+X("Module 5 complete","Módulo 5 completado")+'</b> — '+X("Best score","Mejor nota")+': '+rec.best+'%. '+
+      (examOpen?X("All modules done — the final exam is unlocked.","Todos los módulos hechos — el examen final está desbloqueado."):X("Finish the other modules to unlock the final exam.","Termina los demás módulos para desbloquear el examen final."))+'</div>'+
+      '<div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn" href="../index.html" target="_top">'+X("Back to dashboard","Volver al panel")+'</a>'+
+      (examOpen?'<a class="btn ghost" href="../assessments/final-exam.html" target="_top">'+X("Go to final exam","Ir al examen final")+'</a>':'')+'</div>';
+  } else {
+    box.innerHTML='<div class="note warn">'+X("Take the quiz (80%) to complete this module.","Haz el quiz (80%) para completar este módulo.")+'</div>'+
+      '<a class="btn" href="#" id="goQuiz">'+X("Go to the quiz","Ir al quiz")+'</a>';
+    var g=$("goQuiz"); if(g) g.onclick=function(e){ e.preventDefault(); go(STEPS.length-2); };
+  }
+}
+
+/* ---------------- Engine ---------------- */
+var cur=0, seen={}, tStart=Date.now();
+function applyTheme(){ document.documentElement.setAttribute("data-theme",THEME);
+  $("temaIco").innerHTML=THEME==="dark"?ICO.sun:ICO.moon; $("temaTxt").textContent=THEME==="dark"?X("Light","Claro"):X("Dark","Oscuro"); }
+function chrome(){
+  document.documentElement.lang=LANG;
+  $("brand").textContent=X(CONFIG.brand[0],CONFIG.brand[1]);
+  $("brandsub").textContent=X(CONFIG.subtitle[0],CONFIG.subtitle[1]);
+  $("homeTxt").textContent=X("Dashboard","Panel");
+  $("prev").innerHTML="‹ "+X("Back","Atrás");
+  $("lang").querySelectorAll("button").forEach(function(b){ b.classList.toggle("on",b.getAttribute("data-l")===LANG); });
+  applyTheme();
+}
+function render(){
+  stopAnim(); seen[cur]=true;
+  var st=STEPS[cur];
+  $("card").innerHTML=st.html();
+  $("mStep").textContent=X("Lesson","Lección")+" "+(cur+1)+" / "+STEPS.length;
+  $("mDur").textContent=CONFIG.duration;
+  $("progbar").style.width=((cur+1)/STEPS.length*100)+"%";
+  $("dots").innerHTML=STEPS.map(function(_,i){ return '<button class="dot '+(i===cur?"on":(seen[i]?"seen":""))+'" data-i="'+i+'"></button>'; }).join("");
+  $("dots").querySelectorAll(".dot").forEach(function(d){ d.onclick=function(){ go(+d.getAttribute("data-i")); }; });
+  $("prev").style.visibility=cur===0?"hidden":"visible";
+  $("next").innerHTML=(cur===STEPS.length-1?X("Finish","Terminar"):X("Next","Siguiente"))+" ›";
+  if(st.init) try{ st.init(); }catch(e){}
+  if(window.FOT) FOT.recordProgress(MODULE_ID,cur,STEPS.length);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function go(i){ if(i<0||i>=STEPS.length) return; cur=i; render(); }
+$("prev").onclick=function(){ go(cur-1); };
+$("next").onclick=function(){ if(cur===STEPS.length-1){ location.href="../index.html"; } else go(cur+1); };
+$("tema").onclick=function(){ THEME=THEME==="dark"?"light":"dark"; if(window.FOT)FOT.setTheme(THEME); applyTheme(); };
+$("lang").querySelectorAll("button").forEach(function(b){ b.onclick=function(){ LANG=b.getAttribute("data-l"); if(window.FOT)FOT.setLang(LANG); chrome(); render(); }; });
+document.addEventListener("keydown",function(e){ if(e.key==="ArrowRight")go(cur+1); if(e.key==="ArrowLeft")go(cur-1); });
+window.addEventListener("resize",function(){ if(STEPS[cur].init){ stopAnim(); try{STEPS[cur].init();}catch(e){} } });
+function flushTime(){ if(window.FOT){ FOT.recordTime(MODULE_ID, Date.now()-tStart); tStart=Date.now(); } }
+document.addEventListener("visibilitychange",function(){ if(document.hidden) flushTime(); });
+window.addEventListener("pagehide",flushTime); window.addEventListener("beforeunload",flushTime);
+
+chrome(); render();
+</script>
+</body>
+</html>

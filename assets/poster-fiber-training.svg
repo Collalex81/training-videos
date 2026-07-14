@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720" role="img" aria-label="Fiber Optic Telecommunications Training">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b2e59"/>
+      <stop offset="0.55" stop-color="#12356b"/>
+      <stop offset="1" stop-color="#1e3a8a"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#7fc4ff" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#7fc4ff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="core" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7fc4ff"/>
+      <stop offset="0.5" stop-color="#eaf3ff"/>
+      <stop offset="1" stop-color="#4d8bff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <!-- subtle grid -->
+  <g stroke="#4d8bff" stroke-opacity="0.10" stroke-width="1">
+    <path d="M0 120 H1280 M0 240 H1280 M0 360 H1280 M0 480 H1280 M0 600 H1280"/>
+    <path d="M160 0 V720 M320 0 V720 M480 0 V720 M640 0 V720 M800 0 V720 M960 0 V720 M1120 0 V720"/>
+  </g>
+  <!-- fiber strands sweeping across -->
+  <g fill="none" stroke-linecap="round">
+    <path d="M-40 470 C 300 430, 520 560, 900 470 S 1320 430, 1340 470" stroke="#274574" stroke-width="26"/>
+    <path d="M-40 470 C 300 430, 520 560, 900 470 S 1320 430, 1340 470" stroke="url(#core)" stroke-width="6"/>
+    <path d="M-40 540 C 280 610, 560 470, 920 560 S 1320 610, 1340 560" stroke="#274574" stroke-width="20"/>
+    <path d="M-40 540 C 280 610, 560 470, 920 560 S 1320 610, 1340 560" stroke="#37c7c7" stroke-width="4" stroke-opacity="0.85"/>
+  </g>
+  <!-- light pulses -->
+  <circle cx="520" cy="503" r="60" fill="url(#glow)"/>
+  <circle cx="900" cy="470" r="46" fill="url(#glow)"/>
+  <circle cx="520" cy="503" r="7" fill="#eaf3ff"/>
+  <circle cx="900" cy="470" r="6" fill="#eaf3ff"/>
+  <!-- connector end-face emblem -->
+  <g transform="translate(1030,190)">
+    <circle r="86" fill="#0e2038" stroke="#274574" stroke-width="3"/>
+    <circle r="60" fill="#12294a" stroke="#3b5c93" stroke-width="2"/>
+    <circle r="30" fill="#173458" stroke="#4d8bff" stroke-width="2"/>
+    <circle r="10" fill="#7fc4ff"/>
+  </g>
+  <!-- text -->
+  <g font-family="Segoe UI, system-ui, Arial, sans-serif">
+    <rect x="120" y="150" width="196" height="34" rx="17" fill="#2563EB"/>
+    <text x="218" y="173" font-size="17" fill="#eaf3ff" text-anchor="middle" letter-spacing="2" font-weight="700">TELECOM · 5 MODULES</text>
+    <text x="120" y="270" font-size="72" fill="#ffffff" font-weight="800">Fiber Optic</text>
+    <text x="120" y="342" font-size="72" fill="#ffffff" font-weight="800">Training</text>
+    <text x="122" y="392" font-size="26" fill="#c9d8f5">Telecommunications · Layer 1 → Safety</text>
+    <text x="122" y="632" font-size="20" fill="#9db8e6">Progressive · Bilingual EN/ES · Field-oriented · Certified</text>
+  </g>
+</svg>

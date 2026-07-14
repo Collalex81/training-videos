@@ -59,6 +59,25 @@
   {
     "area": "telecom",
     "titulo": {
+      "es": "Entrenamiento de Fibra Óptica (plataforma de 5 módulos)",
+      "en": "Fiber Optic Training (5-module platform)"
+    },
+    "descripcion": {
+      "es": "Plataforma progresiva y bilingüe para técnicos e ingenieros: Layer 1 y componentes, física óptica, transporte/SFP/WDM/protocolos, pruebas y troubleshooting (OTDR), y seguridad. Los 5 módulos con animaciones interactivas, calculadoras y evaluaciones (≥80%). Con panel de progreso, desbloqueo por módulo, examen final y certificado.",
+      "en": "Progressive, bilingual platform for technicians and engineers: Layer 1 & components, optical physics, transport/SFP/WDM/protocols, testing & troubleshooting (OTDR), and safety. All 5 modules with interactive animations, calculators and assessments (≥80%). Includes a progress dashboard, per-module unlocking, a final exam and a certificate."
+    },
+    "categoria": {
+      "es": "Programa",
+      "en": "Program"
+    },
+    "duracion": "5 mód.",
+    "video": "telecom/fiber-optic-training/index.html",
+    "poster": "assets/poster-fiber-training.svg",
+    "tipo": "animacion"
+  },
+  {
+    "area": "telecom",
+    "titulo": {
       "es": "Prueba de PIM en torres (equipo Kaelus)",
       "en": "PIM testing on towers (Kaelus gear)"
     },

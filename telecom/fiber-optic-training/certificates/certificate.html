@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Certificate — Fiber Optic Telecommunications Training</title>
+<!--
+  Certificado. Se emite sólo tras aprobar el examen final (FOT.certificateReady()).
+  Editable: cambia [Company Name] y [Trainer / Approver] por los datos reales.
+  Certificate. Issued only after passing the final exam. Company / approver are editable placeholders.
+-->
+<style>
+  :root{--pg:#eef2f9;--card:#fff;--ink:#0c1c34;--sub:#51618a;--line:#dde5f3;--accent:#2563EB;--gold:#b8860b;--tint:rgba(37,99,235,.10)}
+  html[data-theme="dark"]{--pg:#0a1120;--card:#0f1830;--ink:#e9f0ff;--sub:#9db0d6;--line:#243149;--accent:#4d8bff;--gold:#e5c35c;--tint:rgba(77,139,255,.14)}
+  *{box-sizing:border-box}body{margin:0;background:var(--pg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;min-height:100vh;padding:22px}
+  .bar{max-width:900px;margin:0 auto 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:38px;padding:0 14px;border-radius:9px;font-size:13px;display:inline-flex;align-items:center;gap:7px;font-family:inherit}
+  .tbtn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .lang button{background:none;border:0;color:var(--accent);cursor:pointer;text-decoration:underline;font-family:inherit;font-size:13px}
+  /* Certificate sheet */
+  .cert{max-width:900px;margin:0 auto;background:var(--card);border-radius:8px;box-shadow:0 14px 40px rgba(12,28,52,.16);position:relative;overflow:hidden;aspect-ratio:1.414/1;display:flex}
+  .frame{position:absolute;inset:16px;border:2px solid var(--gold);border-radius:4px;pointer-events:none}
+  .frame:before{content:"";position:absolute;inset:6px;border:1px solid var(--gold);opacity:.55;border-radius:3px}
+  .inner{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6% 9%}
+  .seal{position:absolute;right:9%;bottom:14%;width:96px;height:96px;border-radius:50%;border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;color:var(--gold);flex-direction:column;font-size:8px;font-weight:700;letter-spacing:.08em;text-align:center;transform:rotate(-8deg);opacity:.92}
+  .kick{letter-spacing:.32em;font-size:12px;text-transform:uppercase;color:var(--accent);font-weight:700}
+  .logo{display:flex;align-items:center;gap:9px;margin-bottom:8px;color:var(--accent)}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(24px,4.4vw,40px);margin:10px 0 4px;font-weight:700;letter-spacing:.01em}
+  .awarded{color:var(--sub);font-size:13px;margin:14px 0 4px}
+  .name{font-family:Georgia,serif;font-size:clamp(22px,4vw,34px);font-weight:700;color:var(--ink);border-bottom:2px solid var(--gold);padding:0 18px 6px;margin:2px 0 2px}
+  .desc{color:var(--sub);font-size:13.5px;max-width:80%;margin:12px auto 0;line-height:1.55}
+  .meta{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;margin-top:18px}
+  .meta .m{font-size:12px;color:var(--sub)}.meta .m b{display:block;color:var(--ink);font-size:14px;font-variant-numeric:tabular-nums}
+  .sigs{display:flex;gap:60px;justify-content:center;margin-top:26px;flex-wrap:wrap}
+  .sig{min-width:180px}.sig .ln{border-top:1.5px solid var(--sub);margin-bottom:5px}.sig small{color:var(--sub);font-size:11px}
+  .edit{outline:none;border-radius:3px}.edit:focus{box-shadow:0 0 0 2px var(--tint)}
+  .locked{max-width:560px;margin:6vh auto 0;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:34px;box-shadow:0 10px 26px rgba(12,28,52,.08)}
+  .locked .ic{width:60px;height:60px;border-radius:14px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+  .locked p{color:var(--sub)}
+  .hint{max-width:900px;margin:12px auto 0;font-size:11.5px;color:var(--sub);text-align:center}
+  @media print{
+    body{background:#fff;padding:0}.bar,.hint{display:none}
+    .cert{box-shadow:none;max-width:100%;border-radius:0}
+  }
+</style>
+</head>
+<body>
+<div class="bar">
+  <a class="tbtn" href="../index.html" target="_top">← <span id="b">Dashboard</span></a>
+  <div style="display:flex;gap:8px;align-items:center">
+    <span class="lang"><button data-l="en">EN</button> · <button data-l="es">ES</button></span>
+    <button class="tbtn" id="print"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg><span id="printTxt">Print / PDF</span></button>
+  </div>
+</div>
+
+<div id="stage"></div>
+<div class="hint" id="hint"></div>
+
+<script src="../scripts/progress.js"></script>
+<script>
+(function(){
+  var L=FOT.getLang(); document.documentElement.setAttribute("data-theme",FOT.getTheme());
+  function X(en,es){ return L==="es"?es:en; }
+  function esc(s){return (s||"").replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});}
+  function set(){
+    document.documentElement.lang=L;
+    document.getElementById("b").textContent=X("Dashboard","Panel");
+    document.getElementById("printTxt").textContent=X("Print / PDF","Imprimir / PDF");
+    render();
+  }
+  function render(){
+    var stage=document.getElementById("stage");
+    if(!FOT.certificateReady()){
+      stage.innerHTML='<div class="locked"><div class="ic"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>'+
+        '<h2 style="margin:0 0 6px">'+X("Certificate locked","Certificado bloqueado")+'</h2>'+
+        '<p>'+X("Complete the five modules and pass the final exam (80%) to unlock and download your certificate.",
+                "Completa los cinco módulos y aprueba el examen final (80%) para desbloquear y descargar tu certificado.")+'</p>'+
+        '<a class="tbtn pri" href="../index.html" style="margin-top:6px">'+X("Back to dashboard","Volver al panel")+'</a></div>';
+      document.getElementById("hint").textContent="";
+      return;
+    }
+    var c=FOT.issueCertificate();
+    var dateStr=new Date(c.date+"T00:00:00").toLocaleDateString(L==="es"?"es":"en",{year:"numeric",month:"long",day:"numeric"});
+    stage.innerHTML=
+      '<div class="cert"><div class="frame"></div><div class="inner">'+
+        '<div class="logo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/></svg>'+
+          '<b contenteditable="true" class="edit" title="'+X("Click to edit company name","Clic para editar el nombre de la empresa")+'">[Company Name]</b></div>'+
+        '<div class="kick">'+X("Certificate of Completion","Certificado de finalización")+'</div>'+
+        '<h1>Fiber Optic Telecommunications Training</h1>'+
+        '<div class="awarded">'+X("This certifies that","Se certifica que")+'</div>'+
+        '<div class="name">'+esc(c.name||X("Trainee","Participante"))+'</div>'+
+        '<div class="desc">'+X(
+           "has successfully completed the five-module Fiber Optic Telecommunications Training program, covering the physical layer, optical physics, optical transport & protocols, testing & troubleshooting, and safety — and passed the cumulative final exam.",
+           "ha completado exitosamente el programa de cinco módulos de Entrenamiento de Fibra Óptica para Telecomunicaciones, que cubre la capa física, la física óptica, el transporte y protocolos ópticos, las pruebas y el troubleshooting, y la seguridad — y aprobó el examen final acumulativo.")+'</div>'+
+        '<div class="meta"><div class="m">'+X("Final score","Nota final")+'<b>'+c.score+'%</b></div>'+
+          '<div class="m">'+X("Date","Fecha")+'<b>'+dateStr+'</b></div>'+
+          '<div class="m">'+X("Certificate No.","Certificado N.º")+'<b>'+c.number+'</b></div></div>'+
+        '<div class="sigs">'+
+          '<div class="sig"><div class="ln"></div><small contenteditable="true" class="edit">[Trainer / Approver]</small></div>'+
+          '<div class="sig"><div class="ln"></div><small>'+X("Date","Fecha")+': '+dateStr+'</small></div>'+
+        '</div>'+
+        '<div class="seal">'+X("VERIFIED","VERIFICADO")+'<br>'+c.number+'</div>'+
+      '</div></div>';
+    document.getElementById("hint").textContent=X(
+      "Tip: click “[Company Name]” and “[Trainer / Approver]” to type real values, then Print / PDF.",
+      "Tip: haz clic en “[Company Name]” y “[Trainer / Approver]” para escribir los datos reales, luego Imprimir / PDF.");
+  }
+  document.getElementById("print").onclick=function(){ window.print(); };
+  document.querySelectorAll(".lang button").forEach(function(x){x.onclick=function(){L=x.getAttribute("data-l");FOT.setLang(L);set();};});
+  set();
+})();
+</script>
+</body>
+</html>
