@@ -5,10 +5,14 @@
    Almacena todo en localStorage (sin backend; funciona en GitHub Pages).
    Stores everything in localStorage (no backend; works on GitHub Pages).
 
+   Opcional: sincroniza eventos de progreso a un Google Sheet mediante un
+   Apps Script Web App (ver bloque SYNC más abajo). Optional: syncs progress
+   events to a Google Sheet through an Apps Script Web App (see SYNC block).
+
    Expone un objeto global: FOT
    - FOT.MODULES, FOT.PASS
    - FOT.get() / FOT.save(state)
-   - FOT.setEmployee(name) / FOT.hasEmployee()
+   - FOT.setEmployee(name, email) / FOT.hasEmployee() / FOT.isValidEmail(e)
    - FOT.setLang(l) / FOT.getLang() / FOT.setTheme(t) / FOT.getTheme()
    - FOT.statusOf(id)  -> 'locked'|'available'|'in_progress'|'completed'
    - FOT.recordProgress(id, lessonIndex, total)
@@ -25,6 +29,32 @@
 
   var KEY  = "fot_progress_v1";
   var PASS = 80; // % mínimo para aprobar / minimum passing score
+
+  // ==========================================================================
+  // SYNC — Guardado opcional a Google Sheets vía Apps Script Web App.
+  // SYNC — Optional save to Google Sheets through an Apps Script Web App.
+  // --------------------------------------------------------------------------
+  // EN: Paste your Apps Script Web App "/exec" URL between the quotes below to
+  //     enable saving progress to your Google Sheet. Leave it empty ("") to
+  //     keep all progress only in this browser (localStorage). You can also
+  //     define window.FOT_SYNC_URL before this script loads to override it.
+  // ES: Pega la URL "/exec" de tu Web App de Apps Script entre las comillas de
+  //     abajo para guardar el progreso en tu Google Sheet. Déjala vacía ("")
+  //     para mantener el progreso solo en este navegador (localStorage).
+  //     También puedes definir window.FOT_SYNC_URL antes de cargar este script.
+  var SYNC_URL = ""; // <-- OWNER: paste your /exec URL here / pega aquí tu URL /exec
+  var SYNC_QUEUE_KEY = "fot_sync_queue_v1";
+
+  // URL efectiva: prioriza el override global window.FOT_SYNC_URL.
+  // Effective URL: honors the window.FOT_SYNC_URL override first.
+  function effectiveSyncUrl() {
+    try {
+      if (typeof global.FOT_SYNC_URL === "string" && global.FOT_SYNC_URL) {
+        return global.FOT_SYNC_URL;
+      }
+    } catch (e) {}
+    return SYNC_URL || "";
+  }
 
   // Orden de módulos y metadatos. Las rutas son relativas al dashboard
   // (telecom/fiber-optic-training/index.html).
@@ -63,15 +93,24 @@
 
   function nowISO() { return new Date().toISOString(); }
 
+  function isValidEmail(e) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((e || "").trim());
+  }
+
+  function genClientId() {
+    return "c-" + Date.now() + "-" + Math.random().toString(36).slice(2, 10);
+  }
+
   function blank() {
     return {
       version: 1,
-      employee: { name: "", startedAt: "" },
+      employee: { name: "", email: "", startedAt: "" },
       lang: "en",
       theme: "light",
+      clientId: "",
       modules: {},   // id -> record
       finalExam: { attempts: [], best: 0, passed: false, completedAt: "" },
-      certificate: { issued: false, number: "", date: "", name: "", score: 0 }
+      certificate: { issued: false, number: "", date: "", name: "", email: "", score: 0 }
     };
   }
 
@@ -84,12 +123,17 @@
     var s;
     try { s = JSON.parse(localStorage.getItem(KEY)); } catch (e) { s = null; }
     if (!s || typeof s !== "object") s = blank();
-    if (!s.employee) s.employee = { name: "", startedAt: "" };
+    if (!s.employee) s.employee = { name: "", email: "", startedAt: "" };
+    // normaliza registros antiguos sin email / normalize older records missing email
+    if (typeof s.employee.email !== "string") s.employee.email = "";
     if (!s.modules)  s.modules = {};
     if (!s.finalExam) s.finalExam = { attempts: [], best: 0, passed: false, completedAt: "" };
-    if (!s.certificate) s.certificate = { issued: false, number: "", date: "", name: "", score: 0 };
+    if (!s.certificate) s.certificate = { issued: false, number: "", date: "", name: "", email: "", score: 0 };
+    if (typeof s.certificate.email !== "string") s.certificate.email = "";
     if (!s.lang)  s.lang = "en";
     if (!s.theme) s.theme = "light";
+    // clientId persistente para identificar el navegador / persistent per-browser id
+    if (!s.clientId) { s.clientId = genClientId(); save(s); }
     // normaliza registros de módulos
     for (var i = 0; i < MODULES.length; i++) {
       var id = MODULES[i].id;
@@ -101,6 +145,97 @@
   function save(s) {
     try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {}
     return s;
+  }
+
+  // ==========================================================================
+  // SYNC — cola en localStorage + envío por HTTP POST (no-cors, opaco).
+  // SYNC — localStorage queue + HTTP POST delivery (no-cors, opaque).
+  // --------------------------------------------------------------------------
+  function loadQueue() {
+    var q;
+    try { q = JSON.parse(localStorage.getItem(SYNC_QUEUE_KEY)); } catch (e) { q = null; }
+    return (Object.prototype.toString.call(q) === "[object Array]") ? q : [];
+  }
+
+  function saveQueue(q) {
+    try { localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(q)); } catch (e) {}
+  }
+
+  function pushEvent(obj) {
+    try {
+      var q = loadQueue();
+      q.push(obj);
+      saveQueue(q);
+    } catch (e) {}
+  }
+
+  // Intenta enviar cada elemento; lo elimina si el fetch se resuelve
+  // (respuesta opaca == éxito) y lo conserva si la red falla.
+  // Tries each queued item; removes it if the fetch resolves (opaque response
+  // == success) and keeps it if the network fails.
+  function flushQueue() {
+    try {
+      var url = effectiveSyncUrl();
+      if (!url) return;               // sin URL: conserva la cola / no URL: keep queue
+      var q = loadQueue();
+      if (!q.length) return;
+      var remaining = q.slice();
+
+      function persist() { saveQueue(remaining); }
+
+      function step(i) {
+        if (i >= q.length) { persist(); return; }
+        var item = q[i];
+        try {
+          fetch(url, {
+            method: "POST",
+            mode: "no-cors",
+            keepalive: true,
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(item)
+          }).then(function () {
+            // resuelto (opaco) => éxito: quita el elemento / resolved => success
+            var idx = remaining.indexOf(item);
+            if (idx >= 0) remaining.splice(idx, 1);
+            persist();
+            step(i + 1);
+          }).catch(function () {
+            // fallo de red => conserva y detiene por ahora / keep & stop for now
+            persist();
+          });
+        } catch (e) {
+          persist();
+        }
+      }
+
+      step(0);
+    } catch (e) {}
+  }
+
+  // Construye el payload desde el estado actual + extra, encola y vacía.
+  // Builds the payload from current state + extra, enqueues and flushes.
+  function sendEvent(event, extra) {
+    try {
+      var s = load();
+      extra = extra || {};
+      var payload = {
+        ts: nowISO(),
+        event: event,
+        name: s.employee.name || "",
+        email: s.employee.email || "",
+        moduleId: ("moduleId" in extra) ? extra.moduleId : "",
+        module: ("module" in extra) ? extra.module : "",
+        score: ("score" in extra) ? extra.score : "",
+        passed: ("passed" in extra) ? extra.passed : "",
+        attempts: ("attempts" in extra) ? extra.attempts : "",
+        certificate: ("certificate" in extra) ? extra.certificate : "",
+        clientId: s.clientId || "",
+        lang: s.lang || "en",
+        startedAt: s.employee.startedAt || ""
+      };
+      pushEvent(payload);
+      flushQueue();
+    } catch (e) {}
   }
 
   function idxOf(id) {
@@ -147,12 +282,21 @@
     scorePct = Math.round(scorePct);
     rec.attempts.push({ score: scorePct, date: nowISO(), pass: scorePct >= PASS });
     if (scorePct > rec.best) rec.best = scorePct;
+    var justPassed = false;
     if (rec.best >= PASS && !rec.completedAt) {
       rec.completedAt = nowISO();
       rec.status = "completed";
       rec.percent = 100;
+      justPassed = true;
     }
     save(s);
+    // Sólo dispara en la transición de aprobado (no en cada intento).
+    // Fire only on the passing transition (not on every attempt).
+    if (justPassed) {
+      var mi = idxOf(id);
+      var title = (mi >= 0 ? MODULES[mi].title.en : "");
+      sendEvent("module_pass", { moduleId: id, module: title, score: rec.best, passed: true, attempts: rec.attempts.length });
+    }
     return { best: rec.best, passed: rec.best >= PASS, attempts: rec.attempts.length };
   }
 
@@ -182,6 +326,7 @@
       s.finalExam.completedAt = nowISO();
     }
     save(s);
+    sendEvent("final_exam", { score: scorePct, passed: (scorePct >= PASS), attempts: s.finalExam.attempts.length });
     return { best: s.finalExam.best, passed: s.finalExam.passed, attempts: s.finalExam.attempts.length };
   }
 
@@ -202,22 +347,31 @@
       s.certificate.number = "FOT-" + yr + "-" + serial;
       s.certificate.date   = d.toISOString().slice(0, 10);
       s.certificate.name   = s.employee.name || "";
+      s.certificate.email  = s.employee.email || "";
       s.certificate.score  = s.finalExam.best;
       save(s);
+      sendEvent("certificate", { certificate: s.certificate.number, score: s.certificate.score });
     }
     return s.certificate;
   }
 
   function certRecord() { return load().certificate; }
 
-  function setEmployee(name) {
+  function setEmployee(name, email) {
     var s = load();
     s.employee.name = (name || "").trim();
+    // Backward tolerant: si email es undefined, se trata como "".
+    // Backward tolerant: if email is undefined, treat it as "".
+    s.employee.email = (email === undefined || email === null) ? "" : (email + "").trim();
     if (!s.employee.startedAt) s.employee.startedAt = nowISO();
     save(s);
+    sendEvent("register", {});
     return s.employee;
   }
-  function hasEmployee() { return !!(load().employee.name); }
+  function hasEmployee() {
+    var e = load().employee;
+    return !!(e && (e.name || "").trim().length >= 2 && isValidEmail(e.email));
+  }
   function employee() { return load().employee; }
 
   function setLang(l)  { var s = load(); s.lang  = (l === "es" ? "es" : "en"); save(s); return s.lang; }
@@ -231,12 +385,17 @@
     KEY: KEY, PASS: PASS, MODULES: MODULES,
     get: load, save: save,
     setEmployee: setEmployee, hasEmployee: hasEmployee, employee: employee,
+    isValidEmail: isValidEmail,
     setLang: setLang, getLang: getLang, setTheme: setTheme, getTheme: getTheme,
     statusOf: statusOf, moduleRecord: moduleRecord,
     recordProgress: recordProgress, recordTime: recordTime, recordQuiz: recordQuiz,
     overallPercent: overallPercent, allModulesCompleted: allModulesCompleted,
     finalExamUnlocked: finalExamUnlocked, recordFinalExam: recordFinalExam,
     certificateReady: certificateReady, issueCertificate: issueCertificate, certRecord: certRecord,
+    sendEvent: sendEvent, flushQueue: flushQueue,
     reset: reset
   };
+
+  // Reintenta cualquier evento pendiente al cargar / retry pending events on load.
+  try { flushQueue(); } catch (e) {}
 })(window);

@@ -28,6 +28,7 @@
   h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(24px,4.4vw,40px);margin:10px 0 4px;font-weight:700;letter-spacing:.01em}
   .awarded{color:var(--sub);font-size:13px;margin:14px 0 4px}
   .name{font-family:Georgia,serif;font-size:clamp(22px,4vw,34px);font-weight:700;color:var(--ink);border-bottom:2px solid var(--gold);padding:0 18px 6px;margin:2px 0 2px}
+  .email{font-size:12.5px;color:var(--sub);margin:8px 0 0}.email b{color:var(--ink);font-weight:600}
   .desc{color:var(--sub);font-size:13.5px;max-width:80%;margin:12px auto 0;line-height:1.55}
   .meta{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;margin-top:18px}
   .meta .m{font-size:12px;color:var(--sub)}.meta .m b{display:block;color:var(--ink);font-size:14px;font-variant-numeric:tabular-nums}
@@ -80,6 +81,7 @@
       return;
     }
     var c=FOT.issueCertificate();
+    var email=(c.email||FOT.employee().email||"");
     var dateStr=new Date(c.date+"T00:00:00").toLocaleDateString(L==="es"?"es":"en",{year:"numeric",month:"long",day:"numeric"});
     stage.innerHTML=
       '<div class="cert"><div class="frame"></div><div class="inner">'+
@@ -89,6 +91,7 @@
         '<h1>Fiber Optic Telecommunications Training</h1>'+
         '<div class="awarded">'+X("This certifies that","Se certifica que")+'</div>'+
         '<div class="name">'+esc(c.name||X("Trainee","Participante"))+'</div>'+
+        (email? '<div class="email">'+X("Email","Email")+': <b>'+esc(email)+'</b></div>' : '')+
         '<div class="desc">'+X(
            "has successfully completed the five-module Fiber Optic Telecommunications Training program, covering the physical layer, optical physics, optical transport & protocols, testing & troubleshooting, and safety — and passed the cumulative final exam.",
            "ha completado exitosamente el programa de cinco módulos de Entrenamiento de Fibra Óptica para Telecomunicaciones, que cubre la capa física, la física óptica, el transporte y protocolos ópticos, las pruebas y el troubleshooting, y la seguridad — y aprobó el examen final acumulativo.")+'</div>'+

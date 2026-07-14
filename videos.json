@@ -2,39 +2,20 @@
   {
     "area": "induccion",
     "titulo": {
-      "es": "Bienvenida y cómo usar este entrenamiento",
-      "en": "Welcome and how to use this training"
+      "es": "Bienvenida y cómo usar esta plataforma",
+      "en": "Welcome and how to use this training platform"
     },
     "descripcion": {
-      "es": "Video de introducción. Explica qué encontrarás en esta serie y cómo navegar los módulos.",
-      "en": "Intro video. Explains what you'll find in this series and how to navigate the modules."
+      "es": "Guía interactiva de inducción: cómo está organizada la galería por áreas, cómo funcionan los módulos, la plataforma de fibra (desbloqueo, evaluaciones ≥80%, examen y certificado), los laboratorios y el glosario, y cómo registrarte y guardar tu progreso.",
+      "en": "Interactive onboarding guide: how the gallery is organized by area, how the modules work, the fiber platform (unlocking, ≥80% quizzes, final exam and certificate), the labs and glossary, and how to register and save your progress."
     },
     "categoria": {
-      "es": "Introducción",
-      "en": "Introduction"
+      "es": "Inducción",
+      "en": "Onboarding"
     },
-    "duracion": "1:20",
-    "video": "videos/ejemplo.mp4",
+    "duracion": "2:00",
+    "video": "animations/welcome-how-to-use.html",
     "poster": "assets/poster-intro.svg",
-    "tipo": "video"
-  },
-  {
-    "area": "induccion",
-    "titulo": {
-      "es": "Animación de ejemplo (hecha con código)",
-      "en": "Sample animation (made with code)"
-    },
-    "descripcion": {
-      "es": "Ejemplo de una animación creada con HTML/CSS/JS. Ábrela, grábala o expórtala como clip de entrenamiento.",
-      "en": "Example of an animation built with HTML/CSS/JS. Open it, record it, or export it as a training clip."
-    },
-    "categoria": {
-      "es": "Plantillas",
-      "en": "Templates"
-    },
-    "duracion": "0:15",
-    "video": "animations/ejemplo-intro.html",
-    "poster": "assets/poster-anim.svg",
     "tipo": "animacion"
   },
   {

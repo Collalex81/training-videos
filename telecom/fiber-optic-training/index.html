@@ -61,6 +61,13 @@
   .who .info b{font-size:15px}
   .who .info span{display:block;font-size:12px;color:var(--sub)}
   .who input{flex:1;min-width:180px;border:1px solid var(--line);background:var(--pg);color:var(--ink);border-radius:9px;padding:10px 12px;font-size:14px;font-family:inherit}
+  .who input.err{border-color:var(--bad);box-shadow:0 0 0 2px var(--badt)}
+  /* Registration form: name + email + button + consent, responsive */
+  .reg{flex:1;min-width:220px;display:flex;flex-direction:column;gap:8px}
+  .reg .fields{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start}
+  .reg .fields input{flex:1;min-width:150px}
+  .reg .ferr{font-size:12px;color:var(--bad);min-height:0;margin:-2px 0 0}
+  .reg .consent{font-size:11.5px;color:var(--sub);line-height:1.45}
   .who .bigprog{flex:1;min-width:220px}
   .who .bigprog .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);margin-bottom:5px}
   .prog{height:8px;background:var(--line);border-radius:999px;overflow:hidden}
@@ -241,21 +248,37 @@
 
   function renderWho(pct, doneCount){
     var emp = FOT.employee();
-    if(!emp.name){
+    if(!FOT.hasEmployee()){
       $("who").innerHTML =
         '<div class="av">'+ICO_person()+'</div>'+
         '<div class="info"><b>'+X("Welcome — let’s begin","Bienvenido — empecemos")+'</b>'+
-        '<span>'+X("Enter your name to start and track your progress.","Escribe tu nombre para iniciar y guardar tu progreso.")+'</span></div>'+
-        '<input id="empName" placeholder="'+X("Your full name","Tu nombre completo")+'" autocomplete="name">'+
-        '<button class="btn sm" id="empStart">'+X("Start","Iniciar")+'</button>';
-      var go=function(){ var v=$("empName").value.trim(); if(v.length<2){$("empName").focus();return;} FOT.setEmployee(v); render(); };
+        '<span>'+X("Enter your name and email to start and track your progress.","Escribe tu nombre y email para iniciar y guardar tu progreso.")+'</span></div>'+
+        '<div class="reg">'+
+          '<div class="fields">'+
+            '<input id="empName" placeholder="'+X("Your full name","Tu nombre completo")+'" autocomplete="name" value="'+esc(emp.name||"")+'">'+
+            '<input id="empEmail" type="email" placeholder="'+X("Your email","Tu email")+'" autocomplete="email" value="'+esc(emp.email||"")+'">'+
+            '<button class="btn sm" id="empStart">'+X("Start","Iniciar")+'</button>'+
+          '</div>'+
+          '<div class="ferr" id="empErr"></div>'+
+          '<div class="consent">'+X("Your name, email and course progress are saved for training records.","Tu nombre, email y progreso del curso se guardan para fines de capacitación.")+'</div>'+
+        '</div>';
+      var go=function(){
+        var name=$("empName").value.trim(), email=$("empEmail").value.trim();
+        $("empName").classList.remove("err"); $("empEmail").classList.remove("err"); $("empErr").textContent="";
+        if(name.length<2){ $("empName").classList.add("err"); $("empErr").textContent=X("Enter your full name","Escribe tu nombre completo"); $("empName").focus(); return; }
+        if(!FOT.isValidEmail(email)){ $("empEmail").classList.add("err"); $("empErr").textContent=X("Enter a valid email","Escribe un email válido"); $("empEmail").focus(); return; }
+        FOT.setEmployee(name, email); render();
+      };
       $("empStart").onclick=go;
-      $("empName").addEventListener("keydown",function(e){ if(e.key==="Enter") go(); });
+      $("empName").addEventListener("keydown",function(e){ if(e.key==="Enter") $("empEmail").focus(); });
+      $("empEmail").addEventListener("keydown",function(e){ if(e.key==="Enter") go(); });
     } else {
       var start = emp.startedAt ? new Date(emp.startedAt).toLocaleDateString(LANG==="es"?"es":"en") : "—";
       $("who").innerHTML =
         '<div class="av">'+initials(emp.name)+'</div>'+
-        '<div class="info"><b>'+esc(emp.name)+'</b><span>'+X("Started","Inicio")+': '+start+'</span></div>'+
+        '<div class="info"><b>'+esc(emp.name)+'</b>'+
+          '<span>'+X("Started","Inicio")+': '+start+'</span>'+
+          (emp.email? '<span>'+X("Email","Email")+': '+esc(emp.email)+'</span>' : '')+'</div>'+
         '<div class="bigprog"><div class="lbl"><span>'+X("Overall progress","Progreso general")+'</span><span>'+pct+'%</span></div>'+
         '<div class="prog"><i style="width:'+pct+'%"></i></div></div>';
     }
