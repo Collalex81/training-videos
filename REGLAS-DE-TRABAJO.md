@@ -23,6 +23,12 @@
    - **Figma:** para **leer** maquetas/diagramas del usuario y convertirlos al HTML/CSS del **motor de módulos** del proyecto (no crear desde cero). Sirve también para screenshots y diagramas.
    - Estas herramientas **complementan**, no reemplazan, el flujo actual: código a mano (HTML/CSS/JS/SVG) + **ffmpeg** para capturas y compresión de video.
    - Sigue aplicando la regla 3 (preguntar antes de editar archivos existentes) y la regla 4 (versionado).
+9. **Uso de agentes (subagentes) — preferirlos siempre que aporten.** Para cualquier tarea que no sea trivial, usa agentes de forma proactiva y en paralelo:
+   - **Construcciones grandes o de varios archivos** y **trabajo independiente/paralelizable:** lanza varios agentes a la vez, cada uno con el **mismo contrato de diseño** (tokens de color por área, motor de módulos, bilingüe ES/EN, responsivo) y su especificación clara. Ejemplo: los 4 laboratorios de fibra se construyeron en paralelo, un agente por lab.
+   - **Búsqueda amplia y exploración** del proyecto: delega a un agente en vez de leer todo en el chat principal (mantiene el contexto limpio).
+   - **Verificación final:** cierra cada trabajo relevante con un agente que valide (sintaxis con `node --check`, revisión de lógica, pruebas). No marcar algo como terminado sin esta pasada.
+   - Reserva el trabajo directo (sin agente) solo para ediciones pequeñas, preguntas rápidas o cambios de un archivo corto donde coordinar un agente costaría más de lo que ahorra.
+   - Los agentes **deben respetar las reglas 1–8** (bilingüe, estructura, preguntar antes de editar, versionado antes de reemplazar, responsivo, y actualizar `ESTADO-DEL-PROYECTO.md`).
 
 ## EN — Rules
 
@@ -42,3 +48,9 @@
    - **Figma:** to **read** the user's mockups/diagrams and convert them into the project's **module-engine** HTML/CSS (not create from scratch). Also useful for screenshots and diagrams.
    - These tools **complement**, not replace, the current flow: hand-written code (HTML/CSS/JS/SVG) + **ffmpeg** for video screenshots and compression.
    - Rules 3 (ask before editing existing files) and 4 (versioning) still apply.
+9. **Use of agents (subagents) — prefer them whenever they help.** For any non-trivial task, use agents proactively and in parallel:
+   - **Large or multi-file builds** and **independent/parallelizable work:** launch several agents at once, each with the **same design contract** (per-area color tokens, module engine, bilingual ES/EN, responsive) and a clear spec. Example: the 4 fiber labs were built in parallel, one agent per lab.
+   - **Broad search and exploration** of the project: delegate to an agent instead of reading everything in the main chat (keeps context clean).
+   - **Final verification:** close every meaningful piece of work with an agent that validates it (syntax via `node --check`, logic review, tests). Do not mark something done without this pass.
+   - Reserve direct work (no agent) for small edits, quick questions, or short single-file changes where coordinating an agent would cost more than it saves.
+   - Agents **must follow rules 1–8** (bilingual, structure, ask before editing, version before replacing, responsive, and keep `ESTADO-DEL-PROYECTO.md` updated).

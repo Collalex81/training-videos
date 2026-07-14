@@ -3,19 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Connector & Color Trainer — Lab</title>
-<!-- TELECOM (azul) — Lab: flashcards de conectores, pulido y color TIA-598-C. Refuerza Módulo 1. -->
+<title>Connector & End-Face Trainer — Lab</title>
+<!-- TELECOM (azul) — Lab: microscopio de inspección de cara de fibra (IEC 61300-3-35) + escenarios de decisión. Refuerza Módulo 1. -->
 <style>
   :root{
     --pg:#f3f6fc; --card:#ffffff; --ink:#0c1c34; --sub:#51618a; --line:#dde5f3;
     --accent:#2563EB; --tint:rgba(37,99,235,.10);
     --ok:#15803D; --okt:rgba(21,128,61,.12); --bad:#dc2626; --badt:rgba(220,38,38,.12);
+    --amber:#b45309; --ambt:rgba(180,83,9,.14);
     --radius:16px; --shadow:0 1px 2px rgba(12,28,52,.05),0 10px 26px rgba(12,28,52,.08);
   }
   html[data-theme="dark"]{
     --pg:#0a1120; --card:#141d30; --ink:#e9f0ff; --sub:#9db0d6; --line:#243149;
     --accent:#4d8bff; --tint:rgba(77,139,255,.14);
     --ok:#4ade80; --okt:rgba(74,222,128,.16); --bad:#f87171; --badt:rgba(248,113,113,.16);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.16);
     --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
   }
   *{box-sizing:border-box}
@@ -23,7 +25,7 @@
   body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
   svg{display:block}
   a{color:inherit;text-decoration:none}
-  .shell{max-width:720px;margin:0 auto;padding:14px 18px 60px}
+  .shell{max-width:900px;margin:0 auto;padding:14px 18px 60px}
   .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0}
   .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
   .brand{display:flex;align-items:center;gap:11px;min-width:0}
@@ -38,27 +40,91 @@
   .lang button.on{background:var(--accent);color:#fff}
 
   h1{font-size:20px;margin:14px 2px 4px}
-  .lead{color:var(--sub);font-size:13.5px;margin:0 2px 14px}
-  .decks{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
-  .chip{border:1px solid var(--line);background:var(--card);color:var(--sub);cursor:pointer;padding:8px 13px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
-  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .lead{color:var(--sub);font-size:13.5px;margin:0 2px 14px;max-width:660px}
 
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+  /* mode toggle */
+  .modeseg{display:inline-flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px;margin:0 0 16px}
+  .modeseg button{border:0;background:transparent;color:var(--sub);cursor:pointer;padding:9px 18px;border-radius:9px;font-size:13.5px;font-weight:700;font-family:inherit;display:flex;align-items:center;gap:7px}
+  .modeseg button.on{background:var(--accent);color:#fff}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+  @media(max-width:720px){ .grid{grid-template-columns:1fr} }
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+  .card h2{font-size:14px;margin:0 0 14px;text-transform:uppercase;letter-spacing:.03em;color:var(--sub)}
+
+  .canvaswrap{display:flex;justify-content:center;margin:0 0 12px}
+  canvas{width:100%;max-width:320px;aspect-ratio:1/1;border-radius:14px;background:radial-gradient(circle at 50% 45%,#10151c,#05070b);border:1px solid var(--line)}
+
+  .legend{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:12px}
+  .lg{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--sub);border:1px solid var(--line);border-radius:999px;padding:3px 9px}
+  .lg i{width:11px;height:11px;border-radius:3px;flex:none}
+
+  .ctrl{margin-bottom:14px}
+  .ctrl .row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+  .ctrl label{font-size:13px;font-weight:600}
+  .ctrl .val{font-size:13px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--accent);height:26px}
+  .hint{font-size:11.5px;color:var(--sub);margin-top:2px}
+  .clab{font-size:13px;font-weight:600;margin:0 0 6px}
+
+  .seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .seg button{border:1px solid var(--line);background:var(--pg);color:var(--ink);cursor:pointer;padding:8px 12px;border-radius:9px;font-size:12.5px;font-family:inherit;font-weight:600}
+  .seg button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .seg button .dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px;border:1px solid rgba(0,0,0,.25)}
+
+  .verdict{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:13.5px;padding:8px 14px;border-radius:999px;margin:0 0 12px}
+  .verdict.ok{background:var(--okt);color:var(--ok)}
+  .verdict.no{background:var(--badt);color:var(--bad)}
+  .verdict.amb{background:var(--ambt);color:var(--amber)}
+
+  .zrow{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line)}
+  .zrow:last-child{border-bottom:0}
+  .zbadge{flex:none;width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff}
+  .zbody{flex:1;min-width:0}
+  .zbody .zt{font-size:13px;font-weight:700;display:flex;justify-content:space-between;gap:8px;align-items:center}
+  .zbody .zr{font-size:11.5px;color:var(--sub);margin-top:1px}
+  .pill{font-size:10.5px;font-weight:800;letter-spacing:.03em;padding:2px 8px;border-radius:999px;flex:none;text-transform:uppercase}
+  .pill.ok{background:var(--okt);color:var(--ok)}
+  .pill.no{background:var(--badt);color:var(--bad)}
+  .pill.na{background:var(--tint);color:var(--sub)}
+
+  .note{font-size:12px;color:var(--sub);margin-top:12px;border-left:3px solid var(--accent);padding-left:11px}
+  .note.warn{border-left-color:var(--amber)}
+
+  .cleanrow{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:10px 16px;border-radius:10px;font-size:13.5px;font-weight:600;font-family:inherit;min-height:42px;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+  .btn[disabled]{opacity:.45;cursor:not-allowed}
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .btn.ghost:hover{background:var(--tint)}
+  .btn.sub{border-color:var(--line);color:var(--ink);background:var(--pg)}
+
+  /* reference */
+  .ref{font-size:13px}
+  .ref .rrow{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line)}
+  .ref .rrow:last-child{border-bottom:0}
+  .ref .rk{color:var(--sub)} .ref .rv{font-weight:600;text-align:right}
+  .swrow{display:flex;align-items:center;gap:10px;margin:0 0 10px}
+  .swbig{width:44px;height:44px;border-radius:10px;border:1px solid var(--line);flex:none}
+  .tia{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:10px}
+  .tia .tc{display:flex;align-items:center;gap:7px;font-size:11.5px}
+  .tia .tc i{width:15px;height:15px;border-radius:4px;border:1px solid rgba(0,0,0,.2);flex:none}
+
+  /* scenarios */
   .qcat{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:var(--tint);padding:3px 9px;border-radius:999px;display:inline-block;margin-bottom:12px}
-  .swatch{width:100%;height:64px;border-radius:12px;border:1px solid var(--line);margin-bottom:14px;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;color:rgba(0,0,0,.55)}
-  .qtext{font-size:17px;font-weight:700;line-height:1.35;margin-bottom:14px}
+  .scncap{font-size:12px;color:var(--sub);text-align:center;margin:0 0 12px}
+  .qtext{font-size:16.5px;font-weight:700;line-height:1.35;margin-bottom:14px}
   .opts{display:grid;gap:9px}
-  .opt{border:1px solid var(--line);background:var(--pg);color:var(--ink);cursor:pointer;padding:12px 14px;border-radius:11px;font-size:14.5px;font-family:inherit;text-align:left}
+  .opt{border:1px solid var(--line);background:var(--pg);color:var(--ink);cursor:pointer;padding:12px 14px;border-radius:11px;font-size:14px;font-family:inherit;text-align:left}
   .opt:hover{border-color:var(--accent)}
   .opt.correct{border-color:var(--ok);background:var(--okt);color:var(--ok);font-weight:600}
   .opt.wrong{border-color:var(--bad);background:var(--badt);color:var(--bad);font-weight:600}
   .opt[disabled]{cursor:default}
   .fb{margin-top:13px;font-size:13px;color:var(--sub);border-left:3px solid var(--accent);padding-left:11px;display:none}
   .fb.show{display:block} .fb b{color:var(--ink)}
-  .row{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+  .fb .trap{display:block;margin-top:7px;color:var(--amber);font-weight:600}
+  .row{display:flex;justify-content:space-between;align-items:center;margin-top:16px;gap:8px;flex-wrap:wrap}
   .score{font-size:13px;color:var(--sub)} .score b{color:var(--ink)}
-  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;min-height:42px;display:inline-flex;align-items:center;gap:7px;justify-content:center}
-  .btn[disabled]{opacity:.5;cursor:not-allowed}
+
   .foot{margin-top:24px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--sub);text-align:center}
 </style>
 </head>
@@ -80,15 +146,90 @@
 
   <h1 id="title"></h1>
   <p class="lead" id="lead"></p>
-  <div class="decks" id="decks"></div>
+  <div class="modeseg" id="modeseg"></div>
 
-  <div class="card">
-    <span class="qcat" id="qcat"></span>
-    <div class="swatch" id="swatch" style="display:none"></div>
-    <div class="qtext" id="qtext"></div>
-    <div class="opts" id="opts"></div>
-    <div class="fb" id="fb"></div>
-    <div class="row"><span class="score" id="score"></span><button class="btn" id="next"></button></div>
+  <!-- ===================== SANDBOX ===================== -->
+  <div id="sandbox">
+    <div class="grid">
+      <div class="card">
+        <h2 id="scopeTitle"></h2>
+        <div class="canvaswrap"><canvas id="face" width="300" height="300"></canvas></div>
+        <div class="legend" id="legend"></div>
+        <div class="cleanrow">
+          <button class="btn ghost" id="cleanBtn"></button>
+          <button class="btn sub" id="resetBtn"></button>
+        </div>
+        <div class="note warn" id="cleanNote"></div>
+      </div>
+
+      <div class="card">
+        <h2 id="ctrlTitle"></h2>
+
+        <div class="clab" id="lConn"></div>
+        <div class="seg" id="connSeg"></div>
+
+        <div class="clab" id="lPol"></div>
+        <div class="seg" id="polSeg"></div>
+
+        <div class="ctrl">
+          <div class="row"><label id="lNScr"></label><span class="val" id="vNScr"></span></div>
+          <input type="range" id="nScr" min="0" max="8" step="1" value="0">
+        </div>
+        <div class="ctrl">
+          <div class="row"><label id="lWScr"></label><span class="val" id="vWScr"></span></div>
+          <input type="range" id="wScr" min="0.5" max="8" step="0.5" value="2">
+          <div class="hint" id="hWScr"></div>
+        </div>
+        <div class="ctrl">
+          <div class="row"><label id="lNDig"></label><span class="val" id="vNDig"></span></div>
+          <input type="range" id="nDig" min="0" max="8" step="1" value="0">
+        </div>
+        <div class="ctrl">
+          <div class="row"><label id="lSDig"></label><span class="val" id="vSDig"></span></div>
+          <input type="range" id="sDig" min="0.5" max="15" step="0.5" value="4">
+          <div class="hint" id="hSDig"></div>
+        </div>
+        <div class="ctrl">
+          <div class="row"><label id="lNDust"></label><span class="val" id="vNDust"></span></div>
+          <input type="range" id="nDust" min="0" max="40" step="1" value="0">
+        </div>
+        <div class="seg" id="toggles"></div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2 id="verdictTitle"></h2>
+        <div id="verdictBox"></div>
+        <div id="zoneBox"></div>
+      </div>
+      <div class="card">
+        <h2 id="refTitle"></h2>
+        <div class="swrow"><span class="swbig" id="polSwatch"></span><div><div style="font-weight:700" id="polName"></div><div class="hint" id="polSub"></div></div></div>
+        <div class="ref" id="refBox"></div>
+        <button class="btn sub" id="tiaBtn" style="margin-top:12px;width:100%"></button>
+        <div id="tiaBox" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SCENARIOS ===================== -->
+  <div id="scenarios" style="display:none">
+    <div class="card">
+      <span class="qcat" id="scnCat"></span>
+      <div class="canvaswrap"><canvas id="scnCanvas" width="300" height="300"></canvas></div>
+      <div class="scncap" id="scnCap"></div>
+      <div class="qtext" id="scnPrompt"></div>
+      <div class="opts" id="scnOpts"></div>
+      <div class="fb" id="scnFb"></div>
+      <div class="row">
+        <span class="score" id="scnProg"></span>
+        <span style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn ghost" id="scnRetry"></button>
+          <button class="btn" id="scnNext"></button>
+        </span>
+      </div>
+    </div>
   </div>
 
   <div class="foot" id="foot"></div>
@@ -105,195 +246,536 @@
 
   var ICO={
     sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
-    moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+    moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+    scope:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',
+    brain:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3a3 3 0 0 0-3 3 3 3 0 0 0-1 5 3 3 0 0 0 1 5 3 3 0 0 0 3 3M15 3a3 3 0 0 1 3 3 3 3 0 0 1 1 5 3 3 0 0 1-1 5 3 3 0 0 1-3 3M12 3v18"/></svg>',
+    ok:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+    no:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+    drop:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/></svg>'
   };
 
-  var DECKS=[
-    {k:"all",  t:["All","Todas"]},
-    {k:"conn", t:["Connectors","Conectores"]},
-    {k:"pol",  t:["Polish","Pulido"]},
-    {k:"col",  t:["Color code","Código de color"]}
+  /* ---------- IEC 61300-3-35 geometry (diameters -> radii, µm) ----------
+     Zone A Core   0–25µm   -> r 0–12.5
+     Zone B Clad  25–120µm  -> r 12.5–60
+     Zone C Adh  120–130µm  -> r 60–65
+     Zone D Cont 130–250µm  -> r 65–125                                    */
+  var RA=12.5, RB=60, RC=65, RD=125;
+  var LU=140/RD;                 // logical px per µm (canvas 300, center 150, edge 140)
+  var CX=150, CY=150;
+  function zoneOf(r){ if(r<=RA)return"A"; if(r<=RB)return"B"; if(r<=RC)return"C"; if(r<=RD)return"D"; return null; }
+
+  var ZCOL={A:"#e0533b",B:"#3f86ff",C:"#c98a20",D:"#8aa0bd"};
+
+  /* ---------- connector / polish reference ---------- */
+  var CONN={
+    LC:{n:"LC",ferrule:["1.25 mm ceramic","1.25 mm cerámica"],coupling:["Push-latch (RJ-style)","Pestillo push (tipo RJ)"],use:["SFP/QSFP, high-density","SFP/QSFP, alta densidad"]},
+    SC:{n:"SC",ferrule:["2.5 mm ceramic","2.5 mm cerámica"],coupling:["Push-pull square","Cuadrado push-pull"],use:["Patch panels, GPON/FTTH","Patch panels, GPON/FTTH"]},
+    FC:{n:"FC",ferrule:["2.5 mm ceramic","2.5 mm cerámica"],coupling:["Threaded metal","Roscado metálico"],use:["Test gear, high vibration","Equipos de prueba, vibración"]},
+    ST:{n:"ST",ferrule:["2.5 mm ceramic","2.5 mm cerámica"],coupling:["Bayonet twist-lock","Bayoneta de giro"],use:["Legacy multimode LAN","LAN multimodo antiguo"]},
+    MPO:{n:"MPO",ferrule:["Rectangular multi-fiber","Multifibra rectangular"],coupling:["Push-on, keyed","Push-on, con llave"],use:["8–24 fibers, 40/100G parallel","8–24 fibras, 40/100G paralelo"]}
+  };
+  var POL={
+    PC:{n:"PC",color:"#1a1a1a",rl:["≥ 35 dB","≥ 35 dB"],geo:["Domed physical contact","Contacto físico curvo"],note:["Legacy / multimode","Antiguo / multimodo"]},
+    UPC:{n:"UPC",color:"#2f6fed",rl:["≥ 50 dB","≥ 50 dB"],geo:["Ultra PC, near-flat dome","UPC, cúpula casi plana"],note:["Blue body (single-mode)","Cuerpo azul (monomodo)"]},
+    APC:{n:"APC",color:"#1f9d55",rl:["≥ 60 dB","≥ 60 dB"],geo:["8° angled end-face","Cara angulada 8°"],note:["Green body — never mate to UPC","Cuerpo verde — nunca con UPC"]}
+  };
+  var TIA=[["Blue","Azul","#2f6fed"],["Orange","Naranja","#e8802b"],["Green","Verde","#1f9d55"],["Brown","Café","#7a4a1e"],
+    ["Slate","Gris","#8a8f98"],["White","Blanco","#f3f4f6"],["Red","Rojo","#dc2626"],["Black","Negro","#111827"],
+    ["Yellow","Amarillo","#f2d024"],["Violet","Violeta","#8b5cf6"],["Rose","Rosa","#f7a8c0"],["Aqua","Aqua","#4fd6d6"]];
+
+  /* ---------- sandbox state ---------- */
+  var S={conn:"LC",pol:"UPC",nScr:0,wScr:2,nDig:0,sDig:4,nDust:0,oil:false,overlay:true,
+         scr:[],dig:[],dust:[]};
+  var mode="sandbox";
+
+  function rnd(a,b){ return a+Math.random()*(b-a); }
+  function genScratch(){
+    // 45% cross the core (small perpendicular offset), else land on cladding/edge
+    var off = Math.random()<0.45 ? rnd(-11,11) : rnd(-118,118);
+    return { off:off, ang:rnd(0,Math.PI), len:rnd(120,160) };
+  }
+  function genDig(){ return { r:rnd(2,118), ang:rnd(0,Math.PI*2) }; }
+  function genDust(){ return { r:rnd(4,72), ang:rnd(0,Math.PI*2), s:rnd(1.2,3.2) }; }
+  function fit(arr,n,gen){ while(arr.length<n) arr.push(gen()); arr.length=n; }
+
+  /* ---------- canvas helpers ---------- */
+  function setup(cv){
+    var dpr=window.devicePixelRatio||1, L=300;
+    cv.width=L*dpr; cv.height=L*dpr;
+    var ctx=cv.getContext("2d");
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,L,L);
+    return ctx;
+  }
+
+  function drawFace(ctx,cfg){
+    var pol=cfg.pol||"UPC";
+    // ferrule (zone D) ceramic
+    var gd=ctx.createRadialGradient(CX-20,CY-20,10,CX,CY,RD*LU);
+    gd.addColorStop(0,"#b9c2cc"); gd.addColorStop(1,"#7d8794");
+    ctx.beginPath(); ctx.arc(CX,CY,RD*LU,0,7); ctx.fillStyle=gd; ctx.fill();
+    // adhesive ring (zone C)
+    ctx.beginPath(); ctx.arc(CX,CY,RC*LU,0,7); ctx.fillStyle="#6f7480"; ctx.fill();
+    // cladding glass (zone B)
+    var gb=ctx.createRadialGradient(CX-14,CY-14,4,CX,CY,RB*LU);
+    gb.addColorStop(0,"#39424e"); gb.addColorStop(1,"#232a33");
+    ctx.beginPath(); ctx.arc(CX,CY,RB*LU,0,7); ctx.fillStyle=gb; ctx.fill();
+    // core (zone A)
+    var gc=ctx.createRadialGradient(CX-3,CY-3,1,CX,CY,RA*LU);
+    gc.addColorStop(0,"#5b6b86"); gc.addColorStop(1,"#38475f");
+    ctx.beginPath(); ctx.arc(CX,CY,RA*LU,0,7); ctx.fillStyle=gc; ctx.fill();
+    // APC tilt hint: directional sheen across the glass
+    if(pol==="APC"){
+      ctx.save(); ctx.beginPath(); ctx.arc(CX,CY,RB*LU,0,7); ctx.clip();
+      var lg=ctx.createLinearGradient(CX-RB*LU,CY-RB*LU,CX+RB*LU,CY+RB*LU);
+      lg.addColorStop(0,"rgba(120,220,150,.16)"); lg.addColorStop(.5,"rgba(0,0,0,0)"); lg.addColorStop(1,"rgba(0,0,0,.22)");
+      ctx.fillStyle=lg; ctx.fillRect(CX-RB*LU,CY-RB*LU,RB*LU*2,RB*LU*2); ctx.restore();
+    }
+
+    // permanent scratches
+    (cfg.scr||[]).forEach(function(s){
+      var d=[Math.cos(s.ang),Math.sin(s.ang)], n=[-Math.sin(s.ang),Math.cos(s.ang)];
+      var fx=CX+n[0]*s.off*LU, fy=CY+n[1]*s.off*LU;
+      var w=Math.max(1,(cfg.wScr||2)*LU);
+      ctx.save(); ctx.beginPath(); ctx.arc(CX,CY,RD*LU,0,7); ctx.clip();
+      ctx.lineCap="round";
+      ctx.strokeStyle="rgba(0,0,0,.5)"; ctx.lineWidth=w+1.5;
+      ctx.beginPath(); ctx.moveTo(fx-d[0]*s.len,fy-d[1]*s.len); ctx.lineTo(fx+d[0]*s.len,fy+d[1]*s.len); ctx.stroke();
+      ctx.strokeStyle="rgba(225,235,245,.85)"; ctx.lineWidth=w;
+      ctx.beginPath(); ctx.moveTo(fx-d[0]*s.len,fy-d[1]*s.len); ctx.lineTo(fx+d[0]*s.len,fy+d[1]*s.len); ctx.stroke();
+      ctx.restore();
+    });
+    // permanent digs / pits
+    (cfg.dig||[]).forEach(function(g){
+      var x=CX+Math.cos(g.ang)*g.r*LU, y=CY+Math.sin(g.ang)*g.r*LU;
+      var rad=Math.max(2.2,(cfg.sDig||4)*LU/2);
+      var pg=ctx.createRadialGradient(x,y,0.5,x,y,rad);
+      pg.addColorStop(0,"#02040a"); pg.addColorStop(.7,"#0a0f16"); pg.addColorStop(1,"rgba(20,26,34,0)");
+      ctx.beginPath(); ctx.arc(x,y,rad,0,7); ctx.fillStyle=pg; ctx.fill();
+    });
+    // contamination: oil / fingerprint smear
+    if(cfg.oil){
+      ctx.save(); ctx.beginPath(); ctx.arc(CX,CY,RB*LU,0,7); ctx.clip();
+      var o=ctx.createRadialGradient(CX+8,CY+6,4,CX+8,CY+6,RB*LU*0.9);
+      o.addColorStop(0,"rgba(210,170,80,.34)"); o.addColorStop(.6,"rgba(180,150,90,.20)"); o.addColorStop(1,"rgba(150,130,90,0)");
+      ctx.fillStyle=o; ctx.beginPath(); ctx.ellipse(CX+6,CY+4,RB*LU*0.85,RB*LU*0.6,0.6,0,7); ctx.fill();
+      ctx.restore();
+    }
+    // contamination: dust specks
+    (cfg.dust||[]).forEach(function(u){
+      var x=CX+Math.cos(u.ang)*u.r*LU, y=CY+Math.sin(u.ang)*u.r*LU;
+      ctx.beginPath(); ctx.arc(x,y,u.s,0,7); ctx.fillStyle="rgba(235,225,205,.75)"; ctx.fill();
+      ctx.beginPath(); ctx.arc(x+0.5,y+0.5,u.s*0.6,0,7); ctx.fillStyle="rgba(0,0,0,.25)"; ctx.fill();
+    });
+
+    // zone overlay
+    if(cfg.overlay){
+      var rings=[["A",RA],["B",RB],["C",RC],["D",RD]];
+      ctx.setLineDash([4,4]); ctx.lineWidth=1.4;
+      rings.forEach(function(z){
+        ctx.beginPath(); ctx.arc(CX,CY,z[1]*LU,0,7); ctx.strokeStyle=ZCOL[z[0]]; ctx.stroke();
+      });
+      ctx.setLineDash([]);
+      ctx.font="700 12px system-ui,sans-serif"; ctx.textAlign="center";
+      ctx.fillStyle=ZCOL.A; ctx.fillText("A",CX,CY+4);
+      ctx.fillStyle="#dfe7f0";
+      ctx.fillText("B",CX,CY-RA*LU-8*0+ (RA*LU+ (RB-RA)*LU*0.5));
+      // clean B/C/D labels along top axis
+      ctx.fillStyle=ZCOL.B; ctx.fillText("B",CX,CY-(RA+RB)/2*LU);
+      ctx.fillStyle=ZCOL.C; ctx.fillText("C",CX+(RB+RC)/2*LU*0.72,CY-(RB+RC)/2*LU*0.72);
+      ctx.fillStyle=ZCOL.D; ctx.fillText("D",CX,CY-(RC+RD)/2*LU);
+    }
+  }
+
+  /* ---------- IEC grading (simplified single-mode ≥45 dB) ---------- */
+  function grade(){
+    var zs={A:{s:[],d:[]},B:{s:[],d:[]},C:{s:[],d:[]},D:{s:[],d:[]}};
+    S.scr.forEach(function(s){ var z=zoneOf(Math.abs(s.off)); if(z) zs[z].s.push(S.wScr); });
+    S.dig.forEach(function(g){ var z=zoneOf(g.r); if(z) zs[z].d.push(S.sDig); });
+
+    function big(arr,th){ return arr.filter(function(v){return v>th;}).length; }
+    function band(arr,a,b){ return arr.filter(function(v){return v>=a&&v<=b;}).length; }
+
+    var zones=[];
+    // Zone A — Core
+    (function(){ var z=zs.A, f=[];
+      if(big(z.s,3)>0) f.push(X("scratch > 3 µm across core","rayón > 3 µm sobre el núcleo"));
+      if(z.d.length>0) f.push(X("defect in the core","defecto en el núcleo"));
+      zones.push({z:"A",pass:f.length===0,ns:z.s.length,nd:z.d.length,fail:f,na:false}); })();
+    // Zone B — Cladding
+    (function(){ var z=zs.B, f=[];
+      if(big(z.s,3)>0) f.push(X("scratch > 3 µm","rayón > 3 µm"));
+      if(big(z.d,5)>0) f.push(X("defect > 5 µm","defecto > 5 µm"));
+      if(band(z.d,2,5)>5) f.push(X("more than 5 defects 2–5 µm","más de 5 defectos 2–5 µm"));
+      zones.push({z:"B",pass:f.length===0,ns:z.s.length,nd:z.d.length,fail:f,na:false}); })();
+    // Zone C — Adhesive
+    zones.push({z:"C",pass:true,ns:zs.C.s.length,nd:zs.C.d.length,fail:[],na:true});
+    // Zone D — Contact
+    (function(){ var z=zs.D, f=[];
+      if(big(z.d,9.999)>0) f.push(X("defect ≥ 10 µm","defecto ≥ 10 µm"));
+      zones.push({z:"D",pass:f.length===0,ns:z.s.length,nd:z.d.length,fail:f,na:false}); })();
+
+    var dirty = S.dust.length>0 || S.oil;
+    var permFail = zones.some(function(z){return !z.pass;});
+    var status = dirty ? "dirty" : (permFail ? "fail" : "pass");
+    return { zones:zones, status:status, dirty:dirty, permFail:permFail };
+  }
+
+  var ZR={  // human-readable rule per zone
+    A:["No scratches > 3 µm · no defects","Sin rayones > 3 µm · sin defectos"],
+    B:["No scratches > 3 µm · defects: none > 5 µm, max 5 of 2–5 µm","Sin rayones > 3 µm · defectos: ninguno > 5 µm, máx 5 de 2–5 µm"],
+    C:["Adhesive — no requirement","Adhesivo — sin requisito"],
+    D:["Contact — no defects ≥ 10 µm","Contacto — sin defectos ≥ 10 µm"]
+  };
+  var ZN={ A:["Zone A · Core","Zona A · Núcleo"],B:["Zone B · Cladding","Zona B · Revestimiento"],
+           C:["Zone C · Adhesive","Zona C · Adhesivo"],D:["Zone D · Contact","Zona D · Contacto"] };
+
+  /* ---------- render sandbox ---------- */
+  function drawSandboxFace(){
+    var ctx=setup($("face"));
+    drawFace(ctx,{pol:S.pol,scr:S.scr,wScr:S.wScr,dig:S.dig,sDig:S.sDig,dust:S.dust,oil:S.oil,overlay:S.overlay});
+  }
+
+  function renderVerdict(){
+    var g=grade();
+    var v=$("verdictBox"), cls, txt;
+    if(g.status==="pass"){ cls="ok"; txt=X("PASS — meets IEC 61300-3-35","APROBADO — cumple IEC 61300-3-35"); }
+    else if(g.status==="dirty"){ cls="amb"; txt=X("CONTAMINATED — clean, then re-inspect","CONTAMINADO — limpia y vuelve a inspeccionar"); }
+    else { cls="no"; txt=X("FAIL — permanent damage, re-terminate","FALLA — daño permanente, reterminar"); }
+    var ic = g.status==="pass"?ICO.ok:(g.status==="dirty"?ICO.drop:ICO.no);
+    v.innerHTML='<span class="verdict '+cls+'">'+ic+' '+txt+'</span>';
+
+    var html="";
+    g.zones.forEach(function(z){
+      var pill = z.na ? '<span class="pill na">'+X("N/A","N/A")+'</span>'
+                      : (z.pass? '<span class="pill ok">'+X("Pass","OK")+'</span>'
+                               : '<span class="pill no">'+X("Fail","Falla")+'</span>');
+      var counts=X("Scr","Ray")+" "+z.ns+" · "+X("Def","Def")+" "+z.nd;
+      var reason = z.fail.length? '<div class="zr" style="color:var(--bad)">'+esc(z.fail.join("; "))+'</div>' : "";
+      html+='<div class="zrow">'+
+        '<span class="zbadge" style="background:'+ZCOL[z.z]+'">'+z.z+'</span>'+
+        '<div class="zbody"><div class="zt"><span>'+X(ZN[z.z][0],ZN[z.z][1])+'</span>'+pill+'</div>'+
+        '<div class="zr">'+X(ZR[z.z][0],ZR[z.z][1])+' — <b style="color:var(--ink)">'+counts+'</b></div>'+
+        reason+'</div></div>';
+    });
+    // contamination line
+    if(g.dirty){
+      var parts=[]; if(S.dust.length>0) parts.push(S.dust.length+" "+X("dust particles","partículas de polvo")); if(S.oil) parts.push(X("oil / fingerprint","aceite / huella"));
+      html+='<div class="note warn" style="margin-top:12px">'+ICO.drop+' '+
+        X("Contamination present ("+parts.join(", ")+"). You cannot grade a dirty end-face — clean it and inspect again (Inspect–Clean–Inspect).",
+          "Hay contaminación ("+parts.join(", ")+"). No se puede evaluar una cara sucia — límpiala e inspecciona de nuevo (Inspeccionar–Limpiar–Inspeccionar).")+'</div>';
+    } else if(g.permFail){
+      html+='<div class="note" style="margin-top:12px">'+X("These are permanent scratches/digs — cleaning will not remove them. Replace or re-terminate the connector.",
+          "Son rayones/picaduras permanentes — la limpieza no los quita. Reemplaza o retermina el conector.")+'</div>';
+    } else {
+      html+='<div class="note" style="margin-top:12px">'+X("Clean end-face within limits. In the field, confirm with the microscope before every mating.",
+          "Cara limpia dentro de límites. En campo, confirma con el microscopio antes de cada acople.")+'</div>';
+    }
+    $("zoneBox").innerHTML=html;
+  }
+
+  function renderRef(){
+    var c=CONN[S.conn], p=POL[S.pol];
+    $("polSwatch").style.background=p.color;
+    $("polName").textContent=c.n+" · "+p.n+(p.n==="APC"?" (8°)":"");
+    $("polSub").textContent=X("Body color","Color del cuerpo")+": "+(p.n==="APC"?X("green","verde"):p.n==="UPC"?X("blue","azul"):X("black/beige","negro/beige"));
+    var rows=[
+      [X("Ferrule","Férula"),X(c.ferrule[0],c.ferrule[1])],
+      [X("Coupling","Acople"),X(c.coupling[0],c.coupling[1])],
+      [X("Typical use","Uso típico"),X(c.use[0],c.use[1])],
+      [X("Polish","Pulido"),X(p.geo[0],p.geo[1])],
+      [X("Return loss","Pérdida de retorno"),X(p.rl[0],p.rl[1])],
+      [X("Note","Nota"),X(p.note[0],p.note[1])]
+    ];
+    $("refBox").innerHTML=rows.map(function(r){
+      return '<div class="rrow"><span class="rk">'+esc(r[0])+'</span><span class="rv">'+esc(r[1])+'</span></div>';
+    }).join("");
+  }
+
+  function renderSegs(){
+    $("connSeg").innerHTML=Object.keys(CONN).map(function(k){
+      return '<button data-c="'+k+'" class="'+(k===S.conn?"on":"")+'">'+k+'</button>';
+    }).join("");
+    $("connSeg").querySelectorAll("button").forEach(function(b){
+      b.onclick=function(){ S.conn=b.getAttribute("data-c"); renderSegs(); renderRef(); };
+    });
+    $("polSeg").innerHTML=Object.keys(POL).map(function(k){
+      return '<button data-p="'+k+'" class="'+(k===S.pol?"on":"")+'"><span class="dot" style="background:'+POL[k].color+'"></span>'+k+'</button>';
+    }).join("");
+    $("polSeg").querySelectorAll("button").forEach(function(b){
+      b.onclick=function(){ S.pol=b.getAttribute("data-p"); renderSegs(); renderRef(); drawSandboxFace(); };
+    });
+    $("toggles").innerHTML=
+      '<button data-t="oil" class="'+(S.oil?"on":"")+'">'+ICO.drop+' '+X("Oil / fingerprint","Aceite / huella")+'</button>'+
+      '<button data-t="ov" class="'+(S.overlay?"on":"")+'">'+X("Zone overlay","Superponer zonas")+'</button>';
+    $("toggles").querySelectorAll("button").forEach(function(b){
+      b.onclick=function(){
+        var t=b.getAttribute("data-t");
+        if(t==="oil") S.oil=!S.oil; else S.overlay=!S.overlay;
+        renderSegs(); drawSandboxFace(); renderVerdict();
+      };
+    });
+  }
+
+  function renderLegend(){
+    $("legend").innerHTML=[["A",ZN.A],["B",ZN.B],["C",ZN.C],["D",ZN.D]].map(function(z){
+      return '<span class="lg"><i style="background:'+ZCOL[z[0]]+'"></i>'+X(z[1][0],z[1][1])+'</span>';
+    }).join("");
+  }
+
+  function syncSliders(){
+    $("nScr").value=S.nScr; $("wScr").value=S.wScr; $("nDig").value=S.nDig;
+    $("sDig").value=S.sDig; $("nDust").value=S.nDust;
+    $("vNScr").textContent=S.nScr;
+    $("vWScr").textContent=S.wScr.toFixed(1)+" µm";
+    $("vNDig").textContent=S.nDig;
+    $("vSDig").textContent=S.sDig.toFixed(1)+" µm";
+    $("vNDust").textContent=S.nDust;
+  }
+
+  function updateSandbox(){ syncSliders(); drawSandboxFace(); renderVerdict(); }
+
+  function wireSliders(){
+    $("nScr").addEventListener("input",function(){ S.nScr=+this.value; fit(S.scr,S.nScr,genScratch); updateSandbox(); });
+    $("wScr").addEventListener("input",function(){ S.wScr=+this.value; updateSandbox(); });
+    $("nDig").addEventListener("input",function(){ S.nDig=+this.value; fit(S.dig,S.nDig,genDig); updateSandbox(); });
+    $("sDig").addEventListener("input",function(){ S.sDig=+this.value; updateSandbox(); });
+    $("nDust").addEventListener("input",function(){ S.nDust=+this.value; fit(S.dust,S.nDust,genDust); updateSandbox(); });
+    $("cleanBtn").onclick=function(){ S.dust=[]; S.nDust=0; S.oil=false; renderSegs(); updateSandbox(); };
+    $("resetBtn").onclick=function(){ S.nScr=0;S.nDig=0;S.nDust=0;S.oil=false;S.scr=[];S.dig=[];S.dust=[];S.wScr=2;S.sDig=4; renderSegs(); updateSandbox(); };
+    $("tiaBtn").onclick=function(){
+      var box=$("tiaBox"); var open=box.style.display!=="none";
+      box.style.display=open?"none":"block";
+      $("tiaBtn").textContent=(open?X("Show TIA-598-C color code","Ver código de color TIA-598-C"):X("Hide TIA-598-C color code","Ocultar código TIA-598-C"));
+    };
+  }
+
+  function renderTIA(){
+    var swatches=TIA.map(function(t,i){
+      return '<div class="tc"><i style="background:'+t[2]+'"></i>#'+(i+1)+' '+X(t[0],t[1])+'</div>';
+    }).join("");
+    var jackets='<div class="rrow"><span class="rk">'+X("Single-mode","Monomodo")+'</span><span class="rv">'+X("Yellow","Amarillo")+'</span></div>'+
+      '<div class="rrow"><span class="rk">OM1 / OM2</span><span class="rv">'+X("Orange","Naranja")+'</span></div>'+
+      '<div class="rrow"><span class="rk">OM3 / OM4</span><span class="rv">Aqua</span></div>'+
+      '<div class="rrow"><span class="rk">OM5</span><span class="rv">'+X("Lime green","Verde lima")+'</span></div>';
+    $("tiaBox").innerHTML='<div class="hint" style="margin-top:12px">'+X("Fiber order (TIA-598-C)","Orden de fibras (TIA-598-C)")+'</div>'+
+      '<div class="tia">'+swatches+'</div>'+
+      '<div class="hint" style="margin:12px 0 4px">'+X("Jacket color","Color de chaqueta")+'</div>'+
+      '<div class="ref">'+jackets+'</div>';
+  }
+
+  /* ===================== SCENARIOS ===================== */
+  // draw helpers for scenarios
+  function drawMate(ctx,colL,colR,touch){
+    ctx.clearRect(0,0,300,300);
+    ctx.fillStyle="rgba(255,255,255,.02)"; ctx.fillRect(0,0,300,300);
+    function body(x,dir,col){
+      ctx.fillStyle=col; roundRect(ctx,x,110,70,80,10); ctx.fill();
+      ctx.fillStyle="rgba(0,0,0,.25)"; ctx.fillRect(dir>0?x+62:x, 128, 8, 44); // boot line
+      // ferrule
+      ctx.fillStyle="#e7ebf0";
+      var fx = dir>0 ? x+70 : x;
+      ctx.fillRect(dir>0?fx:fx-24, 138, 24, 24);
+      ctx.fillStyle="#9aa4b2"; ctx.beginPath();
+      ctx.arc(dir>0?fx+ (touch?24:24):fx-(touch?24:24), 150, 11, 0,7); ctx.fill();
+    }
+    body(45,1,colL);
+    body(185,-1,colR);
+    // gap / warning spark
+    ctx.strokeStyle="#f2d024"; ctx.lineWidth=2; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(150,120); ctx.lineTo(150,180); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle="#f2d024"; ctx.font="700 26px system-ui"; ctx.textAlign="center";
+    ctx.fillText("!",150,158);
+  }
+  function drawBulkhead(ctx){
+    ctx.clearRect(0,0,300,300);
+    // adapter
+    ctx.fillStyle="#2b3442"; roundRect(ctx,110,100,80,100,10); ctx.fill();
+    ctx.fillStyle="#1b2230"; ctx.fillRect(140,100,20,100);
+    // inserted connector (left, visible/clean)
+    ctx.fillStyle="#2f6fed"; roundRect(ctx,20,120,90,60,9); ctx.fill();
+    ctx.fillStyle="#e7ebf0"; ctx.fillRect(110,140,20,20);
+    // far side hidden — dust specks
+    for(var i=0;i<14;i++){ var x=200+Math.random()*70,y=120+Math.random()*60;
+      ctx.beginPath(); ctx.arc(x,y,1.6,0,7); ctx.fillStyle="rgba(235,225,205,.85)"; ctx.fill(); }
+    ctx.fillStyle="#8aa0bd"; ctx.font="700 34px system-ui"; ctx.textAlign="center";
+    ctx.fillText("?",235,162);
+    ctx.fillStyle="#8aa0bd"; ctx.font="600 11px system-ui";
+    ctx.fillText(X("hidden side","lado oculto"),235,190);
+  }
+  function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+  function faceCfg(o){ return {pol:o.pol||"UPC",scr:o.scr||[],wScr:o.wScr||2,dig:o.dig||[],sDig:o.sDig||4,dust:o.dust||[],oil:!!o.oil,overlay:true}; }
+
+  var SCN=[
+    { cat:["Inspect–Clean–Inspect","Inspeccionar–Limpiar–Inspeccionar"],
+      render:function(ctx){ var dust=[]; for(var i=0;i<10;i++){var a=rnd(0,6.3),r=rnd(22,55);dust.push({r:r,ang:a,s:rnd(1.4,3)});} drawFace(ctx,faceCfg({dust:dust})); },
+      cap:["Dust particles sit only on the cladding (zone B). Core is clear.","Partículas de polvo solo en el revestimiento (zona B). El núcleo está limpio."],
+      prompt:["You inspect and see contamination in zone B. What do you do?","Inspeccionas y ves contaminación en la zona B. ¿Qué haces?"],
+      opts:[["Clean, then re-inspect","Limpia y vuelve a inspeccionar"],["Replace the connector","Reemplaza el conector"],["Mate it as-is","Acóplalo tal cual"],["Nothing — dust is harmless","Nada — el polvo es inofensivo"]],
+      correct:0,
+      why:["Contamination is removable. Follow Inspect–Clean–Inspect: clean (dry first, wet only if needed) and inspect again to confirm it is gone before mating.",
+           "La contaminación se puede quitar. Aplica Inspeccionar–Limpiar–Inspeccionar: limpia (seco primero, húmedo solo si hace falta) e inspecciona otra vez antes de acoplar."],
+      trap:["Trap: replacing a connector that only needs cleaning wastes time and material.","Trampa: reemplazar un conector que solo necesita limpieza desperdicia tiempo y material."] },
+
+    { cat:["Permanent damage","Daño permanente"],
+      render:function(ctx){ drawFace(ctx,faceCfg({scr:[{off:2,ang:0.7,len:150}],wScr:4})); },
+      cap:["A single scratch, ~4 µm wide, runs straight across the core (zone A).","Un rayón de ~4 µm cruza el núcleo (zona A)."],
+      prompt:["A scratch crosses the core. Best action?","Un rayón cruza el núcleo. ¿Mejor acción?"],
+      opts:[["Clean and re-inspect","Limpia y reinspecciona"],["Replace / re-terminate the connector","Reemplaza / retermina el conector"],["Mate it — one scratch is fine","Acóplalo — un rayón está bien"],["Add index-matching gel","Agrega gel de acople de índice"]],
+      correct:1,
+      why:["A scratch is physical damage, not dirt — cleaning cannot remove it. IEC 61300-3-35 allows no scratch over 3 µm in the core. Replace or re-terminate.",
+           "Un rayón es daño físico, no suciedad — la limpieza no lo quita. IEC 61300-3-35 no permite rayones > 3 µm en el núcleo. Reemplaza o retermina."],
+      trap:["Trap: cleaning a scratched face forever — it will never pass because the damage is permanent.","Trampa: limpiar sin fin una cara rayada — nunca pasará porque el daño es permanente."] },
+
+    { cat:["Polish mismatch","Pulido incompatible"],
+      render:function(ctx){ drawMate(ctx,"#1f9d55","#2f6fed",false); },
+      cap:["Left connector body is GREEN (APC, 8°). Right is BLUE (UPC, flat).","El conector izquierdo es VERDE (APC, 8°). El derecho es AZUL (UPC, plano)."],
+      prompt:["You are about to mate green APC to blue UPC. What now?","Vas a acoplar APC verde con UPC azul. ¿Qué haces?"],
+      opts:[["Mate them — they fit the same adapter","Acóplalos — usan el mismo adaptador"],["STOP — polish mismatch","ALTO — pulido incompatible"],["Clean both, then mate","Limpia ambos y acopla"],["Swap the polarity","Cambia la polaridad"]],
+      correct:1,
+      why:["An 8° angled face cannot make contact with a flat face: high insertion loss, terrible return loss, and you can chip both end-faces. Green mates only to green.",
+           "Una cara angulada 8° no hace contacto con una plana: alta pérdida de inserción, mala pérdida de retorno y puedes astillar ambas caras. Verde solo con verde."],
+      trap:["Trap: it physically fits the adapter, so it feels OK — but the geometry is wrong.","Trampa: físicamente entra en el adaptador, así que parece bien — pero la geometría es incorrecta."] },
+
+    { cat:["Inspect both sides","Inspeccionar ambos lados"],
+      render:function(ctx){ drawBulkhead(ctx); },
+      cap:["You cleaned your patch cord, but the bulkhead's far side is hidden inside the adapter.","Limpiaste tu patch cord, pero el lado lejano del bulkhead está oculto dentro del adaptador."],
+      prompt:["You cannot see the port side of a bulkhead. Before mating you should…","No ves el lado del puerto de un bulkhead. Antes de acoplar debes…"],
+      opts:[["Inspect BOTH sides first","Inspecciona AMBOS lados primero"],["Just mate — your cord is clean","Solo acopla — tu cable está limpio"],["Inspect only your patch cord","Inspecciona solo tu patch cord"],["Blow into the port","Sopla dentro del puerto"]],
+      correct:0,
+      why:["A clean connector mated to a dirty port gets contaminated instantly. Use a bulkhead/port scope to inspect the hidden side too. Never blow on it — breath adds moisture and oil.",
+           "Un conector limpio acoplado a un puerto sucio se contamina al instante. Usa una sonda de puerto para inspeccionar el lado oculto. Nunca soples — el aliento agrega humedad y aceite."],
+      trap:["Trap: assuming a clean cord is enough — the port you cannot see is often the dirty one.","Trampa: creer que basta un cable limpio — el puerto que no ves suele ser el sucio."] },
+
+    { cat:["Still failing after cleaning","Sigue fallando tras limpiar"],
+      render:function(ctx){ drawFace(ctx,faceCfg({dig:[{r:4,ang:1.2}],sDig:6})); },
+      cap:["After several cleanings the face still shows one dark pit in the core (zone A).","Tras varias limpiezas la cara sigue mostrando una picadura oscura en el núcleo (zona A)."],
+      prompt:["It still fails after repeated cleaning. Why, and what next?","Sigue fallando tras limpiar varias veces. ¿Por qué y qué haces?"],
+      opts:[["Clean harder with more alcohol","Limpia más fuerte con más alcohol"],["It is a permanent dig — replace it","Es una picadura permanente — reemplázalo"],["Ignore it and mate","Ignóralo y acopla"],["Re-inspect at lower magnification","Reinspecciona a menor aumento"]],
+      correct:1,
+      why:["If cleaning does not change the image, the flaw is a dig/pit in the glass, not contamination. A defect in the core fails IEC 61300-3-35 — replace or re-terminate.",
+           "Si la limpieza no cambia la imagen, es una picadura en el vidrio, no suciedad. Un defecto en el núcleo reprueba IEC 61300-3-35 — reemplaza o retermina."],
+      trap:["Trap: over-cleaning permanent damage — extra alcohol will not fix broken glass.","Trampa: sobre-limpiar un daño permanente — más alcohol no repara el vidrio."] },
+
+    { cat:["Inspect before mating","Inspeccionar antes de acoplar"],
+      render:function(ctx){ drawMate(ctx,"#2f6fed","#2f6fed",false); },
+      cap:["Two connectors, never inspected, about to be pushed together to save time.","Dos conectores, sin inspeccionar, a punto de unirse para ahorrar tiempo."],
+      prompt:["Under time pressure, you are tempted to mate without inspecting. Do you…","Con prisa, te tienta acoplar sin inspeccionar. ¿Qué haces?"],
+      opts:[["Mate quickly to save time","Acopla rápido para ganar tiempo"],["Inspect first, clean if needed, then mate","Inspecciona, limpia si hace falta, luego acopla"],["Wipe it on your sleeve","Límpialo en la manga"],["Blow on it and mate","Sopla y acopla"]],
+      correct:1,
+      why:["Mating a dirty connector presses debris into both faces, creating permanent pits on two connectors at once. Inspect–Clean–Inspect every time — it is faster than re-terminating two ends.",
+           "Acoplar un conector sucio incrusta partículas en ambas caras, creando picaduras permanentes en dos conectores a la vez. Inspeccionar–Limpiar–Inspeccionar siempre — es más rápido que reterminar dos extremos."],
+      trap:["Trap: 'saving time' by skipping inspection usually costs two connectors and a truck roll.","Trampa: 'ahorrar tiempo' saltando la inspección suele costar dos conectores y una visita."] }
   ];
-  var DL={}; DECKS.forEach(function(d){ DL[d.k]=d.t; });
 
-  // sw = color de swatch (opcional). o = opciones, a = índice correcto, e = explicación
-  var CARDS=[
-    // Connectors
-    {c:"conn", q:["Which connector uses a 1.25 mm ferrule and a small latch, and is the most common in high-density gear?",
-                  "¿Qué conector usa férula de 1.25 mm y un pequeño pestillo, y es el más común en equipos de alta densidad?"],
-     o:[["LC","LC"],["SC","SC"],["ST","ST"],["FC","FC"]], a:0,
-     e:["LC (Lucent Connector) — small 1.25 mm ferrule, push-latch, dominant in modern SFP/QSFP gear.",
-        "LC (Lucent Connector) — férula pequeña de 1.25 mm, con pestillo, dominante en equipos SFP/QSFP modernos."]},
-    {c:"conn", q:["A square 2.5 mm push-pull connector, common in patch panels and older equipment, is the…",
-                  "Un conector cuadrado push-pull de 2.5 mm, común en patch panels y equipos antiguos, es el…"],
-     o:[["LC","LC"],["SC","SC"],["MPO","MPO"],["E2000","E2000"]], a:1,
-     e:["SC (Subscriber Connector) — 2.5 mm ferrule, push-pull square body.",
-        "SC (Subscriber Connector) — férula de 2.5 mm, cuerpo cuadrado push-pull."]},
-    {c:"conn", q:["Which connector carries many fibers (8–24) in one ferrule for 40G/100G parallel optics and trunks?",
-                  "¿Qué conector lleva muchas fibras (8–24) en una férula para óptica paralela 40G/100G y troncales?"],
-     o:[["FC","FC"],["ST","ST"],["MPO / MTP","MPO / MTP"],["LC","LC"]], a:2,
-     e:["MPO/MTP — multi-fiber push-on, used for parallel optics and high-density trunk cabling.",
-        "MPO/MTP — push-on multifibra, para óptica paralela y cableado troncal de alta densidad."]},
-    {c:"conn", q:["A metal connector with a threaded (screw-on) coupling is the…",
-                  "Un conector metálico con acople roscado (a tornillo) es el…"],
-     o:[["FC","FC"],["LC","LC"],["SC","SC"],["MPO","MPO"]], a:0,
-     e:["FC (Ferrule Connector) — threaded metal coupling, once common on test gear and in high-vibration settings.",
-        "FC (Ferrule Connector) — acople metálico roscado, antes común en equipos de prueba y entornos con vibración."]},
+  var scnOrder=[], scnI=0, scnAnswered=false;
+  function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; } return a; }
+  function scnBuild(){ scnOrder=shuffle(SCN.map(function(_,i){return i;})); scnI=0; }
 
-    // Polish
-    {c:"pol", q:["A GREEN connector body indicates which end-face polish?","Un cuerpo de conector VERDE indica ¿qué pulido de cara?"],
-     sw:"#1f9d55", swt:["Green","Verde"],
-     o:[["UPC (flat)","UPC (plano)"],["APC (8° angled)","APC (angulado 8°)"],["PC","PC"],["MPO","MPO"]], a:1,
-     e:["Green = APC: an 8° angled end-face with ≥60 dB return loss. Never mate it to a UPC.",
-        "Verde = APC: cara angulada 8° con ≥60 dB de pérdida de retorno. Nunca lo acoples a un UPC."]},
-    {c:"pol", q:["A BLUE single-mode connector body indicates which polish?","Un cuerpo de conector monomodo AZUL indica ¿qué pulido?"],
-     sw:"#2563EB", swt:["Blue","Azul"],
-     o:[["APC","APC"],["UPC (flat, ~50 dB RL)","UPC (plano, ~50 dB RL)"],["Angled 8°","Angulado 8°"],["MTP","MTP"]], a:1,
-     e:["Blue = UPC: an ultra physical-contact flat polish, ~50 dB return loss.",
-        "Azul = UPC: pulido ultra de contacto físico plano, ~50 dB de pérdida de retorno."]},
-    {c:"pol", q:["What happens if you mate an APC connector to a UPC connector?","¿Qué pasa si acoplas un conector APC con uno UPC?"],
-     o:[["Nothing, they're compatible","Nada, son compatibles"],["Better return loss","Mejor pérdida de retorno"],["High loss and possible end-face damage","Alta pérdida y posible daño de la cara"],["Wavelength conversion","Conversión de longitud de onda"]], a:2,
-     e:["The 8° angle vs. flat geometry can't make proper contact — high loss and physical damage.",
-        "La geometría 8° vs. plana no logra buen contacto — alta pérdida y daño físico."]},
-    {c:"pol", q:["Which polish has the HIGHEST (best) return loss?","¿Qué pulido tiene la MAYOR (mejor) pérdida de retorno?"],
-     o:[["PC","PC"],["UPC","UPC"],["APC","APC"],["All equal","Todos iguales"]], a:2,
-     e:["APC ≥60 dB > UPC ~50 dB > PC ~40 dB. Higher return loss = less reflection.",
-        "APC ≥60 dB > UPC ~50 dB > PC ~40 dB. Mayor pérdida de retorno = menos reflexión."]},
+  function renderScenario(){
+    var sc=SCN[scnOrder[scnI]]; scnAnswered=false;
+    $("scnCat").textContent=X(sc.cat[0],sc.cat[1]);
+    var ctx=setup($("scnCanvas")); sc.render(ctx);
+    $("scnCap").textContent=X(sc.cap[0],sc.cap[1]);
+    $("scnPrompt").textContent=X(sc.prompt[0],sc.prompt[1]);
+    var order=shuffle(sc.opts.map(function(_,i){return i;}));
+    $("scnOpts").innerHTML=order.map(function(oi){
+      return '<button class="opt" data-oi="'+oi+'">'+esc(X(sc.opts[oi][0],sc.opts[oi][1]))+'</button>';
+    }).join("");
+    $("scnOpts").querySelectorAll(".opt").forEach(function(b){
+      b.onclick=function(){ scnPick(+b.getAttribute("data-oi")); };
+    });
+    $("scnFb").classList.remove("show"); $("scnFb").innerHTML="";
+    $("scnRetry").style.display="none";
+    $("scnRetry").textContent=X("Retry","Reintentar");
+    $("scnNext").textContent=X("New scenario","Nuevo escenario");
+    $("scnProg").textContent=X("Scenario","Escenario")+" "+(scnI+1)+"/"+SCN.length;
+  }
+  function scnPick(oi){
+    if(scnAnswered) return; scnAnswered=true;
+    var sc=SCN[scnOrder[scnI]];
+    $("scnOpts").querySelectorAll(".opt").forEach(function(b){
+      var bi=+b.getAttribute("data-oi"); b.disabled=true;
+      if(bi===sc.correct) b.classList.add("correct");
+      else if(bi===oi) b.classList.add("wrong");
+    });
+    var right=oi===sc.correct;
+    var html='<b>'+(right?X("Correct.","Correcto."):X("Not the best choice.","No es la mejor opción."))+'</b> '+esc(X(sc.why[0],sc.why[1]));
+    if(!right) html+='<span class="trap">'+esc(X(sc.trap[0],sc.trap[1]))+'</span>';
+    $("scnFb").innerHTML=html; $("scnFb").classList.add("show");
+    $("scnRetry").style.display="inline-flex";
+  }
 
-    // Color code (TIA-598-C)
-    {c:"col", q:["A YELLOW cable jacket most likely means…","Una chaqueta de cable AMARILLA probablemente significa…"],
-     sw:"#f2d024", swt:["Yellow","Amarillo"],
-     o:[["OM3/OM4 multimode","OM3/OM4 multimodo"],["Single-mode (OS1/OS2)","Monomodo (OS1/OS2)"],["OM1 multimode","OM1 multimodo"],["Power cable","Cable de energía"]], a:1,
-     e:["Per TIA-598-C, yellow jacket = single-mode. Always confirm with the printed legend.",
-        "Según TIA-598-C, chaqueta amarilla = monomodo. Confirma siempre con la leyenda impresa."]},
-    {c:"col", q:["An AQUA cable jacket indicates…","Una chaqueta de cable AQUA indica…"],
-     sw:"#4fd6d6", swt:["Aqua","Aqua"],
-     o:[["Single-mode","Monomodo"],["OM3 / OM4 multimode","OM3 / OM4 multimodo"],["OM1 62.5 µm","OM1 62.5 µm"],["Copper","Cobre"]], a:1,
-     e:["Aqua = laser-optimized OM3/OM4 multimode. (Lime green = OM5.)",
-        "Aqua = multimodo OM3/OM4 optimizado para láser. (Verde lima = OM5.)"]},
-    {c:"col", q:["In the TIA-598-C fiber color code, fiber #1 is…","En el código de color TIA-598-C, la fibra #1 es…"],
-     o:[["Orange","Naranja"],["Blue","Azul"],["Green","Verde"],["Brown","Café"]], a:1,
-     e:["The sequence starts Blue, Orange, Green, Brown, Slate, White, Red, Black, Yellow, Violet, Rose, Aqua.",
-        "La secuencia empieza Azul, Naranja, Verde, Café, Gris, Blanco, Rojo, Negro, Amarillo, Violeta, Rosa, Aqua."]},
-    {c:"col", q:["In the TIA-598-C fiber color code, fiber #2 is…","En el código de color TIA-598-C, la fibra #2 es…"],
-     sw:"#e8802b", swt:["Orange","Naranja"],
-     o:[["Green","Verde"],["Orange","Naranja"],["Blue","Azul"],["Slate","Gris"]], a:1,
-     e:["#1 Blue, #2 Orange, #3 Green… a handy memory hook is 'Blue Orange Green'.",
-        "#1 Azul, #2 Naranja, #3 Verde… un truco es recordar 'Azul Naranja Verde'."]},
-    {c:"col", q:["An ORANGE jacket on older multimode usually means…","Una chaqueta NARANJA en multimodo antiguo suele significar…"],
-     sw:"#e8802b", swt:["Orange","Naranja"],
-     o:[["Single-mode","Monomodo"],["OM1/OM2 multimode (62.5/50 µm)","Multimodo OM1/OM2 (62.5/50 µm)"],["OM4","OM4"],["APC patch","Patch APC"]], a:1,
-     e:["Legacy multimode (OM1/OM2) commonly used an orange jacket; OM3/OM4 moved to aqua.",
-        "El multimodo antiguo (OM1/OM2) usaba comúnmente chaqueta naranja; OM3/OM4 pasó a aqua."]}
-  ];
-
-  var deck="all", queue=[], idx=0, answered=false, score=0, done=0;
-
+  /* ===================== chrome / mode ===================== */
   function applyTheme(){ document.documentElement.setAttribute("data-theme",THEME);
     $("temaIco").innerHTML=THEME==="dark"?ICO.sun:ICO.moon;
     $("temaTxt").textContent=THEME==="dark"?X("Light","Claro"):X("Dark","Oscuro"); }
 
-  function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
-
-  function buildQueue(){
-    var pool=CARDS.filter(function(c){ return deck==="all"||c.c===deck; });
-    queue=shuffle(pool); idx=0; score=0; done=0; answered=false;
-  }
-
-  function renderDecks(){
-    $("decks").innerHTML=DECKS.map(function(d){
-      return '<button class="chip'+(d.k===deck?" on":"")+'" data-k="'+d.k+'">'+X(d.t[0],d.t[1])+'</button>';
-    }).join("");
-    $("decks").querySelectorAll(".chip").forEach(function(b){
-      b.onclick=function(){ deck=b.getAttribute("data-k"); renderDecks(); buildQueue(); renderCard(); };
+  function renderModeSeg(){
+    $("modeseg").innerHTML=
+      '<button data-m="sandbox" class="'+(mode==="sandbox"?"on":"")+'">'+ICO.scope+' '+X("Sandbox","Práctica libre")+'</button>'+
+      '<button data-m="scenarios" class="'+(mode==="scenarios"?"on":"")+'">'+ICO.brain+' '+X("Scenarios","Escenarios")+'</button>';
+    $("modeseg").querySelectorAll("button").forEach(function(b){
+      b.onclick=function(){ mode=b.getAttribute("data-m"); showMode(); };
     });
   }
-
-  function renderCard(){
-    if(idx>=queue.length){ renderSummary(); return; }
-    var card=queue[idx]; answered=false;
-    $("qcat").textContent=X(DL[card.c][0],DL[card.c][1]);
-    if(card.sw){ $("swatch").style.display="flex"; $("swatch").style.background=card.sw;
-      $("swatch").textContent=X(card.swt[0],card.swt[1]); }
-    else { $("swatch").style.display="none"; }
-    $("qtext").textContent=X(card.q[0],card.q[1]);
-    // barajar opciones manteniendo el índice correcto
-    var order=shuffle(card.o.map(function(_,i){ return i; }));
-    $("opts").innerHTML=order.map(function(oi){
-      return '<button class="opt" data-oi="'+oi+'">'+esc(X(card.o[oi][0],card.o[oi][1]))+'</button>';
-    }).join("");
-    $("opts").querySelectorAll(".opt").forEach(function(b){
-      b.onclick=function(){ pick(+b.getAttribute("data-oi")); };
-    });
-    $("fb").classList.remove("show"); $("fb").innerHTML="";
-    $("next").textContent=X("Skip","Saltar");
-    $("next").disabled=false;
-    $("next").onclick=advance;
-    updateScore();
-  }
-
-  function pick(oi){
-    if(answered) return;
-    answered=true; done++;
-    var card=queue[idx];
-    $("opts").querySelectorAll(".opt").forEach(function(b){
-      var bi=+b.getAttribute("data-oi"); b.disabled=true;
-      if(bi===card.a) b.classList.add("correct");
-      else if(bi===oi) b.classList.add("wrong");
-    });
-    if(oi===card.a) score++;
-    $("fb").innerHTML='<b>'+(oi===card.a?X("Correct.","Correcto."):X("Not quite.","No exactamente."))+'</b> '+esc(X(card.e[0],card.e[1]));
-    $("fb").classList.add("show");
-    $("next").textContent=(idx<queue.length-1)?X("Next","Siguiente"):X("See results","Ver resultados");
-    updateScore();
-  }
-
-  function advance(){ idx++; renderCard(); }
-
-  function updateScore(){ $("score").innerHTML=X("Score","Puntaje")+': <b>'+score+'/'+done+'</b> · '+
-    (idx<queue.length?X("Card","Tarjeta")+' '+(idx+1)+'/'+queue.length:''); }
-
-  function renderSummary(){
-    var pct=done?Math.round(score/done*100):0;
-    $("qcat").textContent=X("Deck complete","Mazo completo");
-    $("swatch").style.display="none";
-    $("qtext").textContent=X("You scored "+score+"/"+done+" ("+pct+"%).","Obtuviste "+score+"/"+done+" ("+pct+"%).");
-    $("opts").innerHTML="";
-    $("fb").innerHTML='<b>'+X("Nice work.","Buen trabajo.")+'</b> '+X("Practice again or switch decks any time — this lab is ungraded.",
-                                                                        "Practica de nuevo o cambia de mazo cuando quieras — este laboratorio no se califica.");
-    $("fb").classList.add("show");
-    $("score").innerHTML="";
-    $("next").textContent=X("Restart deck","Reiniciar mazo");
-    $("next").disabled=false;
-    $("next").onclick=function(){ buildQueue(); renderCard(); };
+  function showMode(){
+    renderModeSeg();
+    if(mode==="sandbox"){ $("sandbox").style.display=""; $("scenarios").style.display="none";
+      renderSegs(); renderLegend(); renderRef(); renderTIA(); updateSandbox(); }
+    else { $("sandbox").style.display="none"; $("scenarios").style.display="";
+      renderScenario(); }
   }
 
   function chrome(){
     applyTheme(); document.documentElement.lang=LANG;
-    $("brand").textContent=X("Connector Trainer","Entrenador de conectores");
+    $("brand").textContent=X("End-Face Trainer","Entrenador de caras");
     $("brandsub").textContent=X("Lab · Module 1","Lab · Módulo 1");
     $("homeTxt").textContent=X("Labs","Labs");
     $("lang").querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-l")===LANG); });
-    $("title").textContent=X("Connector & color trainer","Entrenador de conectores y colores");
-    $("lead").textContent=X("Flashcards on connector types, PC/UPC/APC polish and the TIA-598-C color code. Pick a deck and go.",
-                           "Flashcards de tipos de conector, pulido PC/UPC/APC y el código de color TIA-598-C. Elige un mazo y empieza.");
-    $("foot").innerHTML=X("Reference: TIA-598-C color coding, IEC 61755 (APC/UPC/PC end-faces).",
-                          "Referencia: código de color TIA-598-C, IEC 61755 (caras APC/UPC/PC).");
-    renderDecks();
+    $("title").textContent=X("Connector & end-face inspection trainer","Entrenador de inspección de conectores y caras");
+    $("lead").textContent=X("Practise fiber end-face inspection to IEC 61300-3-35. Build defects in the Sandbox and read the pass/fail zones, or work real decision Scenarios to master Inspect–Clean–Inspect.",
+                           "Practica la inspección de caras de fibra según IEC 61300-3-35. Crea defectos en la Práctica libre y lee las zonas de aprobado/reprobado, o resuelve Escenarios reales para dominar Inspeccionar–Limpiar–Inspeccionar.");
+
+    // sandbox static labels
+    $("scopeTitle").textContent=X("Inspection microscope","Microscopio de inspección");
+    $("ctrlTitle").textContent=X("Controls","Controles");
+    $("verdictTitle").textContent=X("IEC 61300-3-35 verdict","Veredicto IEC 61300-3-35");
+    $("refTitle").textContent=X("Connector reference","Referencia del conector");
+    $("lConn").textContent=X("Connector type","Tipo de conector");
+    $("lPol").textContent=X("Polish (end-face)","Pulido (cara)");
+    $("lNScr").textContent=X("Scratches","Rayones");
+    $("lWScr").textContent=X("Scratch width","Ancho de rayón");
+    $("hWScr").textContent=X("> 3 µm fails in core & cladding","> 3 µm reprueba en núcleo y revestimiento");
+    $("lNDig").textContent=X("Digs / pits / chips","Picaduras / astillas");
+    $("lSDig").textContent=X("Defect size","Tamaño de defecto");
+    $("hSDig").textContent=X("Any defect in the core fails","Cualquier defecto en el núcleo reprueba");
+    $("lNDust").textContent=X("Contamination — dust","Contaminación — polvo");
+    $("cleanBtn").innerHTML=ICO.drop+' '+X("Clean","Limpiar");
+    $("resetBtn").textContent=X("Reset","Reiniciar");
+    $("cleanNote").innerHTML=X("Clean removes contamination only — dry-clean first (cleaning tool/cassette), wet-clean (99% IPA) only if needed. Scratches and digs are permanent and stay.",
+                              "Limpiar quita solo la contaminación — limpieza en seco primero (herramienta/casete), en húmedo (IPA 99%) solo si hace falta. Rayones y picaduras son permanentes y quedan.");
+    $("tiaBtn").textContent=($("tiaBox").style.display!=="none")?X("Hide TIA-598-C color code","Ocultar código TIA-598-C"):X("Show TIA-598-C color code","Ver código de color TIA-598-C");
+
+    $("foot").innerHTML=X("References: IEC 61300-3-35 (end-face zones &amp; limits), IEC 61755 (APC/UPC/PC), TIA-598-C (color code). Simplified single-mode limits for training.",
+                          "Referencias: IEC 61300-3-35 (zonas y límites de cara), IEC 61755 (APC/UPC/PC), TIA-598-C (código de color). Límites monomodo simplificados para entrenamiento.");
+    renderTIA();
+    showMode();
   }
 
-  $("tema").onclick=function(){ THEME=THEME==="dark"?"light":"dark"; if(window.FOT&&FOT.setTheme)FOT.setTheme(THEME); applyTheme(); };
+  $("tema").onclick=function(){ THEME=THEME==="dark"?"light":"dark"; if(window.FOT&&FOT.setTheme)FOT.setTheme(THEME);
+    applyTheme(); if(mode==="sandbox") drawSandboxFace(); else { var ctx=setup($("scnCanvas")); SCN[scnOrder[scnI]].render(ctx); } };
   $("lang").querySelectorAll("button").forEach(function(b){
-    b.onclick=function(){ LANG=b.getAttribute("data-l"); if(window.FOT&&FOT.setLang)FOT.setLang(LANG);
-      chrome();
-      // re-render tarjeta actual en el nuevo idioma
-      if(idx<queue.length) renderCard(); else renderSummary();
-    };
+    b.onclick=function(){ LANG=b.getAttribute("data-l"); if(window.FOT&&FOT.setLang)FOT.setLang(LANG); chrome(); };
   });
+  $("scnRetry").onclick=function(){ renderScenario(); };
+  $("scnNext").onclick=function(){ scnI=(scnI+1)%scnOrder.length; if(scnI===0) scnOrder=shuffle(scnOrder); renderScenario(); };
 
+  wireSliders();
+  scnBuild();
   chrome();
-  buildQueue();
-  renderCard();
 })();
 </script>
 </body>

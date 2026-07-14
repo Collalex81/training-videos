@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Optical Power Budget — Lab</title>
-<!-- TELECOM (azul) — Lab: calculadora interactiva de presupuesto óptico. Refuerza Módulo 2. -->
+<!-- TELECOM (azul) — Lab: diseñador de enlace + diagnóstico de fallas (SFF-8472 / IEC 61280). Refuerza Módulo 2. -->
 <style>
   :root{
     --pg:#f3f6fc; --card:#ffffff; --ink:#0c1c34; --sub:#51618a; --line:#dde5f3;
@@ -25,7 +25,7 @@
   body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
   svg{display:block}
   a{color:inherit;text-decoration:none}
-  .shell{max-width:900px;margin:0 auto;padding:14px 18px 60px}
+  .shell{max-width:940px;margin:0 auto;padding:14px 18px 60px}
   .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0}
   .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
   .brand{display:flex;align-items:center;gap:11px;min-width:0}
@@ -40,36 +40,103 @@
   .lang button.on{background:var(--accent);color:#fff}
 
   h1{font-size:20px;margin:14px 2px 4px}
-  .lead{color:var(--sub);font-size:13.5px;margin:0 2px 16px;max-width:640px}
-  .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
-  @media(max-width:720px){ .grid{grid-template-columns:1fr} }
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
-  .card h2{font-size:14px;margin:0 0 14px;text-transform:uppercase;letter-spacing:.03em;color:var(--sub)}
+  .lead{color:var(--sub);font-size:13.5px;margin:0 2px 14px;max-width:660px}
 
-  .ctrl{margin-bottom:15px}
-  .ctrl .row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
-  .ctrl label{font-size:13.5px;font-weight:600}
-  .ctrl .val{font-size:13.5px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
-  input[type=range]{width:100%;accent-color:var(--accent);height:26px}
+  .segmode{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:5px;margin:6px 2px 18px;max-width:380px}
+  .segmode button{flex:1;border:0;background:transparent;color:var(--sub);cursor:pointer;padding:9px 12px;border-radius:8px;font-size:13.5px;font-weight:700;font-family:inherit}
+  .segmode button.on{background:var(--accent);color:#fff}
+
+  .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:16px}
+  @media(max-width:740px){ .grid{grid-template-columns:1fr} }
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+  .card+.card{margin-top:16px}
+  .card h2{font-size:14px;margin:0 0 14px;text-transform:uppercase;letter-spacing:.03em;color:var(--sub);display:flex;align-items:center;gap:8px}
+
+  .ctrl{margin-bottom:14px}
+  .ctrl .row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;gap:8px}
+  .ctrl label{font-size:13px;font-weight:600}
+  .ctrl .val{font-size:13px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;white-space:nowrap}
+  input[type=range]{width:100%;accent-color:var(--accent);height:24px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:420px){ .two{grid-template-columns:1fr} }
   .seg{display:flex;gap:6px;flex-wrap:wrap}
   .seg button{border:1px solid var(--line);background:var(--pg);color:var(--ink);cursor:pointer;padding:8px 12px;border-radius:9px;font-size:13px;font-family:inherit;font-weight:600}
   .seg button.on{background:var(--accent);border-color:var(--accent);color:#fff}
   .hint{font-size:11.5px;color:var(--sub);margin-top:3px}
+  .fault{margin-top:6px;border-top:1px dashed var(--line);padding-top:12px}
 
   /* results */
   .big{display:flex;align-items:baseline;gap:8px;margin-bottom:2px}
   .big b{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums}
-  .verdict{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:13px;padding:6px 12px;border-radius:999px;margin:8px 0 14px}
-  .verdict.ok{background:var(--okt);color:var(--ok)} .verdict.no{background:var(--badt);color:var(--bad)}
-  .line{display:flex;justify-content:space-between;font-size:13.5px;padding:7px 0;border-bottom:1px dashed var(--line)}
+  .verdict{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:13px;padding:6px 12px;border-radius:999px;margin:8px 0 12px}
+  .verdict.ok{background:var(--okt);color:var(--ok)}
+  .verdict.no{background:var(--badt);color:var(--bad)}
+  .verdict.warn{background:var(--ambt);color:var(--amber)}
+  .line{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px dashed var(--line);gap:10px}
   .line:last-child{border-bottom:0}
   .line b{font-variant-numeric:tabular-nums}
-  .bar{height:26px;border-radius:8px;background:var(--pg);border:1px solid var(--line);overflow:hidden;display:flex;margin:14px 0 4px}
+  .line.tot{border-top:1px solid var(--line);border-bottom:0;margin-top:2px;padding-top:8px;font-weight:700}
+  .bar{height:24px;border-radius:8px;background:var(--pg);border:1px solid var(--line);overflow:hidden;display:flex;margin:12px 0 4px}
   .bar i{display:block;height:100%}
   .bar .used{background:linear-gradient(90deg,var(--accent),#60a5fa)}
   .bar .marg{background:var(--ok)} .bar .over{background:var(--bad)}
   .barlbl{display:flex;justify-content:space-between;font-size:11.5px;color:var(--sub)}
+
+  /* receiver window gauge */
+  .gwrap{margin-top:20px}
+  .gcap{font-size:11.5px;color:var(--sub);font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin-bottom:26px}
+  .gauge{position:relative;height:28px;border-radius:8px;border:1px solid var(--line);display:flex;overflow:visible}
+  .gauge .z{height:100%}
+  .gauge .z:first-child{border-radius:7px 0 0 7px}
+  .gauge .z:last-child{border-radius:0 7px 7px 0}
+  .gz-lo{background:var(--badt)} .gz-ok{background:var(--okt)} .gz-hi{background:var(--badt)}
+  .gmark{position:absolute;top:-6px;height:40px;border-left:3px solid var(--ink);transform:translateX(-1.5px)}
+  .gval{position:absolute;top:-24px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;white-space:nowrap;color:var(--ink);background:var(--card);border:1px solid var(--line);padding:1px 6px;border-radius:6px}
+  .gticks{display:flex;justify-content:space-between;font-size:11px;color:var(--sub);margin-top:8px}
+
+  /* DDM / DOM panel */
+  .ddm{width:100%;border-collapse:collapse;font-size:13px}
+  .ddm th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--sub);font-weight:700;padding:6px 8px;border-bottom:1px solid var(--line)}
+  .ddm td{padding:8px;border-bottom:1px dashed var(--line);font-variant-numeric:tabular-nums}
+  .ddm td:nth-child(2),.ddm td:nth-child(3),.ddm th:nth-child(2),.ddm th:nth-child(3){text-align:right}
+  .ddm td:last-child,.ddm th:last-child{text-align:center}
+  .ddm tr:last-child td{border-bottom:0}
+  .badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px}
+  .b-ok{background:var(--okt);color:var(--ok)} .b-warn{background:var(--ambt);color:var(--amber)} .b-alarm{background:var(--badt);color:var(--bad)}
+
   .note{font-size:12px;color:var(--sub);margin-top:14px;border-left:3px solid var(--accent);padding-left:11px}
+
+  /* scenarios */
+  .tag{display:inline-block;font-size:11px;font-weight:700;color:var(--accent);background:var(--tint);padding:3px 9px;border-radius:999px;margin-bottom:10px}
+  .scn h3{font-size:17px;margin:0 0 8px}
+  .sym{font-size:13.5px;color:var(--ink);background:var(--pg);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:11px 13px;margin-bottom:6px}
+  .dtl{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--sub);font-weight:700;margin:16px 0 6px}
+  .gdata{width:100%;border-collapse:collapse;font-size:13px}
+  .gdata td{padding:6px 8px;border-bottom:1px dashed var(--line)}
+  .gdata tr:last-child td{border-bottom:0}
+  .gdata td:first-child{color:var(--sub)}
+  .gdata td:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+  .qtxt{font-size:14px;font-weight:700;margin:16px 0 4px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+  .opt{text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;padding:11px 13px;border-radius:10px;font-size:13.5px;font-family:inherit;display:flex;gap:10px;align-items:flex-start;width:100%}
+  .opt:hover{border-color:var(--accent)}
+  .opt .k{flex:none;width:22px;height:22px;border-radius:6px;background:var(--pg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;margin-top:1px}
+  .opt.correct{border-color:var(--ok);background:var(--okt)} .opt.correct .k{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .opt.wrong{border-color:var(--bad);background:var(--badt)} .opt.wrong .k{background:var(--bad);color:#fff;border-color:var(--bad)}
+  .opt:disabled{cursor:default}
+  .fb{margin-top:14px;font-size:13px;border-radius:10px;padding:12px 13px;border:1px solid var(--line)}
+  .fb.good{background:var(--okt);border-color:var(--ok)} .fb.bad{background:var(--badt);border-color:var(--bad)}
+  .fb b{display:block;margin-bottom:4px}
+  .lesson{margin-top:11px;font-size:12.5px;color:var(--sub);border-left:3px solid var(--amber);padding-left:11px}
+  .scnnav{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:8px;flex-wrap:wrap}
+  .dots{display:flex;gap:6px;align-items:center}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line)}
+  .dot.on{background:var(--accent)}
+  .nbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;height:34px;padding:0 13px;border-radius:9px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .nbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .nbtn:disabled{opacity:.4;cursor:default}
+  .nbtn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+
   .foot{margin-top:24px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--sub);text-align:center}
 </style>
 </head>
@@ -92,59 +159,120 @@
   <h1 id="title"></h1>
   <p class="lead" id="lead"></p>
 
-  <div class="grid">
-    <div class="card">
-      <h2 id="inTitle"></h2>
+  <div class="segmode" id="modetog">
+    <button data-m="sandbox"></button>
+    <button data-m="scenarios"></button>
+  </div>
 
-      <div class="ctrl">
-        <div class="row"><label id="lWl"></label></div>
-        <div class="seg" id="wl"></div>
-        <div class="hint" id="hWl"></div>
+  <!-- ===================== SANDBOX ===================== -->
+  <div id="sandbox">
+    <div class="grid">
+      <div class="card">
+        <h2 id="inTitle"></h2>
+
+        <div class="ctrl">
+          <div class="row"><label id="lWl"></label><span class="val" id="hWl"></span></div>
+          <div class="seg" id="wl"></div>
+        </div>
+
+        <div class="two">
+          <div class="ctrl">
+            <div class="row"><label id="lTx"></label><span class="val" id="vTx"></span></div>
+            <input type="range" id="tx" min="-8" max="6" step="0.5">
+          </div>
+          <div class="ctrl">
+            <div class="row"><label id="lLen"></label><span class="val" id="vLen"></span></div>
+            <input type="range" id="len" min="0" max="120" step="1">
+          </div>
+        </div>
+
+        <div class="two">
+          <div class="ctrl">
+            <div class="row"><label id="lRx"></label><span class="val" id="vRx"></span></div>
+            <input type="range" id="rx" min="-40" max="-8" step="0.5">
+          </div>
+          <div class="ctrl">
+            <div class="row"><label id="lRxmax"></label><span class="val" id="vRxmax"></span></div>
+            <input type="range" id="rxmax" min="-14" max="2" step="0.5">
+          </div>
+        </div>
+
+        <div class="two">
+          <div class="ctrl">
+            <div class="row"><label id="lCon"></label><span class="val" id="vCon"></span></div>
+            <input type="range" id="con" min="0" max="12" step="1">
+          </div>
+          <div class="ctrl">
+            <div class="row"><label id="lConl"></label><span class="val" id="vConl"></span></div>
+            <input type="range" id="conl" min="0.1" max="1" step="0.05">
+          </div>
+        </div>
+
+        <div class="two">
+          <div class="ctrl">
+            <div class="row"><label id="lSpl"></label><span class="val" id="vSpl"></span></div>
+            <input type="range" id="spl" min="0" max="30" step="1">
+          </div>
+          <div class="ctrl">
+            <div class="row"><label id="lSpll"></label><span class="val" id="vSpll"></span></div>
+            <input type="range" id="spll" min="0.02" max="0.2" step="0.01">
+          </div>
+        </div>
+
+        <div class="ctrl">
+          <div class="row"><label id="lMar"></label><span class="val" id="vMar"></span></div>
+          <input type="range" id="mar" min="0" max="6" step="0.5">
+          <div class="hint" id="hMar"></div>
+        </div>
+
+        <div class="fault">
+          <div class="ctrl" style="margin-bottom:0">
+            <div class="row"><label id="lMyst"></label><span class="val" id="vMyst"></span></div>
+            <input type="range" id="myst" min="0" max="10" step="0.5">
+            <div class="hint" id="hMyst"></div>
+          </div>
+        </div>
       </div>
 
-      <div class="ctrl">
-        <div class="row"><label id="lTx"></label><span class="val" id="vTx"></span></div>
-        <input type="range" id="tx" min="-10" max="6" step="0.5">
-      </div>
-      <div class="ctrl">
-        <div class="row"><label id="lRx"></label><span class="val" id="vRx"></span></div>
-        <input type="range" id="rx" min="-40" max="-10" step="1">
-      </div>
-      <div class="ctrl">
-        <div class="row"><label id="lLen"></label><span class="val" id="vLen"></span></div>
-        <input type="range" id="len" min="0" max="120" step="1">
-      </div>
-      <div class="ctrl">
-        <div class="row"><label id="lCon"></label><span class="val" id="vCon"></span></div>
-        <input type="range" id="con" min="0" max="12" step="1">
-        <div class="hint" id="hCon"></div>
-      </div>
-      <div class="ctrl">
-        <div class="row"><label id="lSpl"></label><span class="val" id="vSpl"></span></div>
-        <input type="range" id="spl" min="0" max="20" step="1">
-        <div class="hint" id="hSpl"></div>
-      </div>
-      <div class="ctrl">
-        <div class="row"><label id="lMar"></label><span class="val" id="vMar"></span></div>
-        <input type="range" id="mar" min="0" max="6" step="0.5">
-        <div class="hint" id="hMar"></div>
+      <div class="card">
+        <h2 id="outTitle"></h2>
+        <div class="big"><b id="rxpow"></b><span id="rxunit">dBm</span></div>
+        <div id="verdict"></div>
+
+        <div class="line"><span id="labFiber"></span><b id="valFiber"></b></div>
+        <div class="line"><span id="labCon"></span><b id="valCon"></b></div>
+        <div class="line"><span id="labSpl"></span><b id="valSpl"></b></div>
+        <div class="line" id="rowFault"><span id="labFault"></span><b id="valFault"></b></div>
+        <div class="line tot"><span id="labTot"></span><b id="valTot"></b></div>
+        <div class="line"><span id="labBudget"></span><b id="valBudget"></b></div>
+        <div class="line"><span id="labMargin"></span><b id="valMargin"></b></div>
+
+        <div class="barlbl"><span id="barA"></span><span id="barB"></span></div>
+        <div class="bar" id="bar"></div>
+
+        <div class="gwrap">
+          <div class="gcap" id="gcap"></div>
+          <div class="gauge" id="gauge"></div>
+          <div class="gticks"><span id="tickLo"></span><span id="tickHi"></span></div>
+        </div>
+
+        <div class="note" id="note"></div>
       </div>
     </div>
 
     <div class="card">
-      <h2 id="outTitle"></h2>
-      <div class="big"><b id="rxpow"></b><span id="rxunit">dBm</span></div>
-      <div id="verdict"></div>
-
-      <div class="line"><span id="labBudget"></span><b id="valBudget"></b></div>
-      <div class="line"><span id="labLoss"></span><b id="valLoss"></b></div>
-      <div class="line"><span id="labMargin"></span><b id="valMargin"></b></div>
-
-      <div class="barlbl"><span id="barA"></span><span id="barB"></span></div>
-      <div class="bar" id="bar"></div>
-
-      <div class="note" id="note"></div>
+      <h2 id="ddmTitle"></h2>
+      <table class="ddm">
+        <thead><tr><th id="ddH1"></th><th id="ddH2"></th><th id="ddH3"></th><th id="ddH4"></th></tr></thead>
+        <tbody id="ddmBody"></tbody>
+      </table>
+      <div class="note" id="ddmNote"></div>
     </div>
+  </div>
+
+  <!-- ===================== SCENARIOS ===================== -->
+  <div id="scenarios" style="display:none">
+    <div class="card scn" id="scnCard"></div>
   </div>
 
   <div class="foot" id="foot"></div>
@@ -157,52 +285,90 @@
   var LANG=(window.FOT&&FOT.getLang)?FOT.getLang():"en";
   var THEME=(window.FOT&&FOT.getTheme)?FOT.getTheme():"light";
   function X(en,es){ return LANG==="es"?es:en; }
+  function sgn(n){ return (n>=0?"+":"")+n.toFixed(2); }
 
   var ICO={
     sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
     moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
     ok:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
-    no:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>'
+    no:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+    warn:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>'
   };
 
-  // constantes de pérdida (valores de campo típicos)
-  var LOSS_CON=0.5, LOSS_SPL=0.1;      // dB por conector / empalme
-  var ATTEN={ "1310":0.35, "1550":0.22 }; // dB/km típicos G.652
+  var ATTEN={ "1310":0.35, "1550":0.22 };  // dB/km típicos G.652
   var wl="1550";
+  var mode="sandbox";
+
+  /* ---------- DDM thresholds & status ---------- */
+  function statusOf(v,loA,loW,hiW,hiA){
+    if(v<=loA || v>=hiA) return "alarm";
+    if(v<loW || v>hiW) return "warn";
+    return "ok";
+  }
+  function badge(st){
+    var t = st==="ok"?X("Normal","Normal") : st==="warn"?X("Warning","Alerta") : X("Alarm","Alarma");
+    var c = st==="ok"?"b-ok" : st==="warn"?"b-warn" : "b-alarm";
+    return '<span class="badge '+c+'">'+t+'</span>';
+  }
 
   function applyTheme(){ document.documentElement.setAttribute("data-theme",THEME);
     $("temaIco").innerHTML=THEME==="dark"?ICO.sun:ICO.moon;
     $("temaTxt").textContent=THEME==="dark"?X("Light","Claro"):X("Dark","Oscuro"); }
 
+  /* ---------- chrome / language ---------- */
   function chrome(){
     applyTheme(); document.documentElement.lang=LANG;
     $("brand").textContent=X("Optical Budget","Presupuesto óptico");
     $("brandsub").textContent=X("Lab · Module 2","Lab · Módulo 2");
     $("homeTxt").textContent=X("Labs","Labs");
     $("lang").querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-l")===LANG); });
-    $("title").textContent=X("Optical power budget calculator","Calculadora de presupuesto óptico");
-    $("lead").textContent=X("A link works when the available power (TX minus RX sensitivity) is greater than the total loss plus your safety margin. Move the sliders and watch the received power and margin.",
-                           "Un enlace funciona cuando la potencia disponible (TX menos sensibilidad RX) supera la pérdida total más tu margen de seguridad. Mueve los deslizadores y observa la potencia recibida y el margen.");
-    $("inTitle").textContent=X("Inputs","Entradas");
-    $("outTitle").textContent=X("Received power & margin","Potencia recibida y margen");
+    $("title").textContent=X("Optical link designer & fault diagnosis","Diseñador de enlace y diagnóstico de fallas");
+    $("lead").textContent=X("A link only works when the received power lands inside the receiver window — above sensitivity but below overload — with loss and margin under budget. Design a link in Sandbox, then troubleshoot real faults in Scenarios.",
+                           "Un enlace solo funciona cuando la potencia recibida cae dentro de la ventana del receptor — por encima de la sensibilidad pero por debajo de la sobrecarga — con la pérdida y el margen dentro del presupuesto. Diseña un enlace en Sandbox y luego resuelve fallas reales en Escenarios.");
+    $("modetog").querySelectorAll("button").forEach(function(b){
+      var m=b.getAttribute("data-m");
+      b.textContent=m==="sandbox"?X("Sandbox","Sandbox"):X("Scenarios","Escenarios");
+      b.classList.toggle("on", m===mode);
+    });
+    $("foot").innerHTML=X("Reference values (G.652): fiber ≈0.35 dB/km @1310 nm, ≈0.22 dB/km @1550 nm · connector ≈0.3–0.75 dB · fusion splice ≈0.05–0.1 dB · 0 dBm = 1 mW · every 3 dB halves/doubles power. Standards: IEC 61280 (link loss testing), SFF-8472 (digital diagnostic monitoring).",
+                          "Valores de referencia (G.652): fibra ≈0.35 dB/km @1310 nm, ≈0.22 dB/km @1550 nm · conector ≈0.3–0.75 dB · empalme por fusión ≈0.05–0.1 dB · 0 dBm = 1 mW · cada 3 dB reduce/duplica la potencia. Normas: IEC 61280 (prueba de pérdida), SFF-8472 (monitoreo de diagnóstico).");
+
+    if(mode==="sandbox"){ $("sandbox").style.display=""; $("scenarios").style.display="none"; renderSandboxLabels(); compute(); }
+    else { $("sandbox").style.display="none"; $("scenarios").style.display=""; renderScenario(); }
+  }
+
+  function renderSandboxLabels(){
+    $("inTitle").textContent=X("Link design","Diseño del enlace");
+    $("outTitle").textContent=X("Diagnostics","Diagnóstico");
     $("lWl").textContent=X("Wavelength","Longitud de onda");
-    $("lTx").textContent=X("TX power (transmitter)","Potencia TX (transmisor)");
-    $("lRx").textContent=X("RX sensitivity (min.)","Sensibilidad RX (mín.)");
+    $("lTx").textContent=X("TX power","Potencia TX");
     $("lLen").textContent=X("Fiber length","Longitud de fibra");
-    $("lCon").textContent=X("Connectors","Conectores");
-    $("lSpl").textContent=X("Fusion splices","Empalmes por fusión");
+    $("lRx").textContent=X("RX sensitivity (min)","Sensibilidad RX (mín)");
+    $("lRxmax").textContent=X("RX overload (max)","Sobrecarga RX (máx)");
+    $("lCon").textContent=X("# Connectors","N.º conectores");
+    $("lConl").textContent=X("Loss / connector","Pérdida / conector");
+    $("lSpl").textContent=X("# Fusion splices","N.º empalmes");
+    $("lSpll").textContent=X("Loss / splice","Pérdida / empalme");
     $("lMar").textContent=X("Safety margin","Margen de seguridad");
-    $("hCon").textContent=X("~"+LOSS_CON.toFixed(1)+" dB each","~"+LOSS_CON.toFixed(1)+" dB c/u");
-    $("hSpl").textContent=X("~"+LOSS_SPL.toFixed(2)+" dB each","~"+LOSS_SPL.toFixed(2)+" dB c/u");
     $("hMar").textContent=X("Reserve for ageing, repairs, dirt","Reserva por envejecimiento, reparaciones, suciedad");
+    $("lMyst").textContent=X("Fault / mystery loss","Falla / pérdida oculta");
+    $("hMyst").textContent=X("Simulate a fault: dirty connector, bend, bad splice…","Simula una falla: conector sucio, doblez, mal empalme…");
     $("rxunit").textContent="dBm";
-    $("labBudget").textContent=X("Power budget (TX − RX sens.)","Presupuesto (TX − sens. RX)");
-    $("labLoss").textContent=X("Total loss + margin","Pérdida total + margen");
+    $("labFiber").textContent=X("Fiber loss","Pérdida de fibra");
+    $("labCon").textContent=X("Connector loss","Pérdida de conectores");
+    $("labSpl").textContent=X("Splice loss","Pérdida de empalmes");
+    $("labFault").textContent=X("Fault loss","Pérdida por falla");
+    $("labTot").textContent=X("Total insertion loss","Pérdida de inserción total");
+    $("labBudget").textContent=X("Power budget (TX − sens.)","Presupuesto (TX − sens.)");
     $("labMargin").textContent=X("Remaining margin","Margen restante");
+    $("ddmTitle").innerHTML=X("Module diagnostics (DDM / DOM · SFF-8472)","Diagnóstico del módulo (DDM / DOM · SFF-8472)");
+    $("ddH1").textContent=X("Parameter","Parámetro");
+    $("ddH2").textContent=X("Value","Valor");
+    $("ddH3").textContent=X("Normal range","Rango normal");
+    $("ddH4").textContent=X("Status","Estado");
+    $("ddmNote").textContent=X("These are the same registers a real SFP/SFP+ reports over I²C. In the field, read them with your switch CLI (show interface transceiver) to see TX/RX power and laser bias without a power meter.",
+                              "Estos son los mismos registros que un SFP/SFP+ real reporta por I²C. En campo, léelos con la CLI del switch (show interface transceiver) para ver potencia TX/RX y corriente del láser sin power meter.");
     renderWl();
-    compute();
-    $("foot").innerHTML=X("Typical field values: connector ≈0.5 dB, fusion splice ≈0.1 dB, G.652 fiber ≈0.35 dB/km @1310 nm, ≈0.22 dB/km @1550 nm.",
-                          "Valores de campo típicos: conector ≈0.5 dB, empalme por fusión ≈0.1 dB, fibra G.652 ≈0.35 dB/km @1310 nm, ≈0.22 dB/km @1550 nm.");
   }
 
   function renderWl(){
@@ -212,69 +378,406 @@
     $("wl").querySelectorAll("button").forEach(function(b){
       b.onclick=function(){ wl=b.getAttribute("data-w"); renderWl(); compute(); };
     });
-    $("hWl").textContent=X("Attenuation used: "+ATTEN[wl].toFixed(2)+" dB/km",
-                          "Atenuación usada: "+ATTEN[wl].toFixed(2)+" dB/km");
+    $("hWl").textContent=ATTEN[wl].toFixed(2)+" dB/km";
   }
 
+  /* ---------- sandbox compute ---------- */
   function compute(){
-    var tx=+$("tx").value, rx=+$("rx").value, len=+$("len").value,
-        con=+$("con").value, spl=+$("spl").value, mar=+$("mar").value;
+    var tx=+$("tx").value, rx=+$("rx").value, rxmax=+$("rxmax").value, len=+$("len").value,
+        con=+$("con").value, conl=+$("conl").value, spl=+$("spl").value, spll=+$("spll").value,
+        mar=+$("mar").value, myst=+$("myst").value;
+
     $("vTx").textContent=tx.toFixed(1)+" dBm";
-    $("vRx").textContent=rx.toFixed(0)+" dBm";
+    $("vRx").textContent=rx.toFixed(1)+" dBm";
+    $("vRxmax").textContent=rxmax.toFixed(1)+" dBm";
     $("vLen").textContent=len+" km";
     $("vCon").textContent=con;
+    $("vConl").textContent=conl.toFixed(2)+" dB";
     $("vSpl").textContent=spl;
+    $("vSpll").textContent=spll.toFixed(2)+" dB";
     $("vMar").textContent=mar.toFixed(1)+" dB";
+    $("vMyst").textContent=myst.toFixed(1)+" dB";
 
     var fiberLoss=len*ATTEN[wl];
-    var conLoss=con*LOSS_CON;
-    var splLoss=spl*LOSS_SPL;
-    var totalLoss=fiberLoss+conLoss+splLoss;      // pérdida física
+    var conLoss=con*conl;
+    var splLoss=spl*spll;
+    var totalLoss=fiberLoss+conLoss+splLoss+myst;
     var lossPlusMargin=totalLoss+mar;
-    var budget=tx-rx;                              // potencia disponible
-    var rxPow=tx-totalLoss;                        // potencia que llega
-    var margin=budget-lossPlusMargin;             // margen restante
-    var pass=margin>=0 && rxPow>=rx;
+    var budget=tx-rx;
+    var rxPow=tx-totalLoss;
+    var margin=budget-lossPlusMargin;
 
-    $("rxpow").textContent=(rxPow>=0?"+":"")+rxPow.toFixed(2);
-    $("rxpow").style.color = rxPow>=rx ? "var(--ink)" : "var(--bad)";
+    // verdict — three field outcomes plus a marginal warning
+    var state;
+    if(rxPow>rxmax) state="over";
+    else if(rxPow<rx) state="under";
+    else if(margin<0) state="marg";
+    else state="ok";
+
+    $("valFiber").textContent=fiberLoss.toFixed(2)+" dB";
+    $("valCon").textContent=conLoss.toFixed(2)+" dB";
+    $("valSpl").textContent=splLoss.toFixed(2)+" dB";
+    $("rowFault").style.display = myst>0 ? "" : "none";
+    $("valFault").textContent=myst.toFixed(2)+" dB";
+    $("valTot").textContent=totalLoss.toFixed(2)+" dB";
     $("valBudget").textContent=budget.toFixed(2)+" dB";
-    $("valLoss").textContent=lossPlusMargin.toFixed(2)+" dB ("+X("loss","pérd.")+" "+totalLoss.toFixed(2)+" + "+X("margin","margen")+" "+mar.toFixed(1)+")";
-    $("valMargin").textContent=(margin>=0?"+":"")+margin.toFixed(2)+" dB";
+    $("valMargin").textContent=sgn(margin)+" dB";
     $("valMargin").style.color = margin>=0 ? "var(--ok)" : "var(--bad)";
 
-    $("verdict").innerHTML='<span class="verdict '+(pass?"ok":"no")+'">'+(pass?ICO.ok:ICO.no)+' '+
-      (pass?X("Link passes","El enlace pasa"):X("Link fails","El enlace falla"))+'</span>';
+    $("rxpow").textContent=(rxPow>=0?"+":"")+rxPow.toFixed(2);
+    $("rxpow").style.color = (state==="ok"||state==="marg") ? "var(--ink)" : "var(--bad)";
 
-    // barra: presupuesto = 100%. usado = lossPlusMargin, restante = margin (o exceso)
+    var vClass = state==="ok"?"ok" : state==="marg"?"warn" : "no";
+    var vIco = state==="ok"?ICO.ok : state==="marg"?ICO.warn : ICO.no;
+    var vTxt = state==="ok" ? X("Link OK","Enlace OK")
+             : state==="marg" ? X("Marginal — no safety margin","Marginal — sin margen")
+             : state==="under" ? X("FAIL — underpowered","FALLA — sin potencia")
+             : X("FAIL — receiver overloaded","FALLA — receptor saturado");
+    $("verdict").innerHTML='<span class="verdict '+vClass+'">'+vIco+' '+vTxt+'</span>';
+
+    // budget bar
     var b=$("bar"); b.innerHTML="";
     if(budget<=0){ b.innerHTML='<i class="over" style="width:100%"></i>'; }
     else if(margin>=0){
       var usedPct=Math.min(100, lossPlusMargin/budget*100);
-      b.innerHTML='<i class="used" style="width:'+usedPct+'%"></i>'+
-                  '<i class="marg" style="width:'+(100-usedPct)+'%"></i>';
+      b.innerHTML='<i class="used" style="width:'+usedPct+'%"></i><i class="marg" style="width:'+(100-usedPct)+'%"></i>';
     } else {
-      var okPct=Math.max(0, budget/lossPlusMargin*100);
-      b.innerHTML='<i class="used" style="width:'+okPct+'%"></i>'+
-                  '<i class="over" style="width:'+(100-okPct)+'%"></i>';
+      var okPct=Math.max(0, Math.min(100, budget/lossPlusMargin*100));
+      b.innerHTML='<i class="used" style="width:'+okPct+'%"></i><i class="over" style="width:'+(100-okPct)+'%"></i>';
     }
-    $("barA").textContent=X("Used (loss+margin)","Usado (pérdida+margen)");
+    $("barA").textContent=X("Used: loss + margin","Usado: pérdida + margen");
     $("barB").textContent=X("Budget "+budget.toFixed(1)+" dB","Presupuesto "+budget.toFixed(1)+" dB");
 
-    $("note").textContent = pass
-      ? X("Received power is within range and there is spare margin. In the field, verify with an OLTS (source + power meter).",
-          "La potencia recibida está en rango y hay margen de sobra. En campo, verifica con un OLTS (fuente + power meter).")
-      : (rxPow<rx
-          ? X("Received power is below the receiver sensitivity — the receiver can't recover the signal. Reduce loss (shorter fiber, fewer connectors) or use a higher-power/longer-reach optic.",
-              "La potencia recibida está por debajo de la sensibilidad del receptor — no puede recuperar la señal. Reduce pérdida (menos fibra, menos conectores) o usa una óptica de mayor potencia/alcance.")
-          : X("You are inside sensitivity but there is no safety margin left. Any ageing, dirt or repair could drop the link. Add margin.",
-              "Estás dentro de la sensibilidad pero sin margen de seguridad. Cualquier envejecimiento, suciedad o reparación podría caer el enlace. Agrega margen."));
+    // receiver window gauge
+    renderGauge(rx,rxmax,rxPow,state);
+
+    // DDM panel
+    renderDDM(tx,rxPow,rx,rxmax);
+
+    // note
+    var notes={
+      ok:X("Received power lands inside the receiver window with spare margin. Verify in the field with an OLTS (light source + power meter) per IEC 61280.",
+           "La potencia recibida cae dentro de la ventana del receptor con margen de sobra. Verifica en campo con un OLTS (fuente + power meter) según IEC 61280."),
+      marg:X("You are inside the window but the safety margin is gone. Any ageing, dirt or repair could drop the link. Reduce loss or add margin.",
+             "Estás dentro de la ventana pero sin margen de seguridad. Cualquier envejecimiento, suciedad o reparación podría caer el enlace. Reduce pérdida o agrega margen."),
+      under:X("Received power is BELOW sensitivity — the receiver can't recover the signal. Reduce loss (shorter span, fewer/cleaner connectors) or use a higher-power / longer-reach optic.",
+              "La potencia recibida está POR DEBAJO de la sensibilidad — el receptor no puede recuperar la señal. Reduce pérdida (tramo más corto, menos conectores / más limpios) o usa una óptica de mayor potencia/alcance."),
+      over:X("Received power is ABOVE the overload point — the receiver is saturated and will throw errors. The fix is an ATTENUATOR or a lower-power optic — do NOT raise TX power.",
+             "La potencia recibida está POR ENCIMA del punto de sobrecarga — el receptor se satura y generará errores. La solución es un ATENUADOR o una óptica de menor potencia — NO subas la potencia TX.")
+    };
+    $("note").textContent=notes[state];
   }
 
-  // defaults
-  $("tx").value=0; $("rx").value=-23; $("len").value=20; $("con").value=4; $("spl").value=6; $("mar").value=3;
+  function renderGauge(rx,rxmax,rxPow,state){
+    var span=Math.max(1,(rxmax-rx));
+    var lo=rx-span*0.4, hi=rxmax+span*0.4, range=hi-lo;
+    function pct(v){ return Math.max(0,Math.min(100,(v-lo)/range*100)); }
+    var sensPct=pct(rx), maxPct=pct(rxmax), mPct=pct(rxPow);
+    $("gcap").textContent=X("Receiver window (sensitivity → overload)","Ventana del receptor (sensibilidad → sobrecarga)");
+    $("gauge").innerHTML=
+      '<div class="z gz-lo" style="width:'+sensPct+'%"></div>'+
+      '<div class="z gz-ok" style="width:'+(maxPct-sensPct)+'%"></div>'+
+      '<div class="z gz-hi" style="width:'+(100-maxPct)+'%"></div>'+
+      '<div class="gmark" style="left:'+mPct+'%"><span class="gval">'+(rxPow>=0?"+":"")+rxPow.toFixed(1)+' dBm</span></div>';
+    $("tickLo").textContent=X("Sens. ","Sens. ")+rx.toFixed(1)+" dBm";
+    $("tickHi").textContent=X("Overload ","Sobrec. ")+rxmax.toFixed(1)+" dBm";
+  }
 
-  ["tx","rx","len","con","spl","mar"].forEach(function(id){ $(id).addEventListener("input",compute); });
+  function renderDDM(tx,rxPow,rx,rxmax){
+    // module telemetry — TX/RX power react to the design; temp/Vcc steady; bias tracks output
+    var temp=41.0, vcc=3.31;
+    var bias=6.4 + Math.max(0,(tx+4))*0.45;         // mA, tracks TX drive
+    var rows=[
+      { l:X("Temperature","Temperatura"), v:temp.toFixed(1), u:"°C", rg:"0 – 70",
+        st:statusOf(temp,-5,0,70,75) },
+      { l:X("Supply Vcc","Alim. Vcc"), v:vcc.toFixed(2), u:"V", rg:"3.15 – 3.45",
+        st:statusOf(vcc,3.10,3.15,3.45,3.50) },
+      { l:X("TX bias","Corriente láser"), v:bias.toFixed(1), u:"mA", rg:"3 – 12",
+        st:statusOf(bias,2,3,12,14) },
+      { l:X("TX power","Potencia TX"), v:(tx>=0?"+":"")+tx.toFixed(1), u:"dBm", rg:"-7 – +3",
+        st:statusOf(tx,-9,-7,3,5) },
+      { l:X("RX power","Potencia RX"), v:(rxPow>=0?"+":"")+rxPow.toFixed(1), u:"dBm",
+        rg:rx.toFixed(1)+" – "+rxmax.toFixed(1),
+        st:statusOf(rxPow,rx,rx+2,rxmax-2,rxmax) }
+    ];
+    $("ddmBody").innerHTML=rows.map(function(r){
+      return '<tr><td>'+r.l+'</td><td>'+r.v+' '+r.u+'</td><td>'+r.rg+' '+r.u+'</td><td>'+badge(r.st)+'</td></tr>';
+    }).join("");
+  }
+
+  /* ================= SCENARIOS ================= */
+  var scn={ i:0, answered:false, chosen:-1 };
+
+  var SCEN=[
+    {
+      tag:X.bind(null,"Scenario · High loss","Escenario · Pérdida alta"),
+      title:["Dirty connector — excess insertion loss","Conector sucio — pérdida de inserción excesiva"],
+      sym:["A freshly patched link at 1310 nm won't come up clean. End-to-end loss measured with the OLTS is well above the design value. The rest of the plant tested fine at install.",
+           "Un enlace recién parcheado a 1310 nm no levanta limpio. La pérdida extremo a extremo medida con el OLTS supera bastante el valor de diseño. El resto de la planta pasó bien en la instalación."],
+      data:[
+        ["Design / expected loss","Pérdida de diseño / esperada","8.0 dB"],
+        ["Measured loss (OLTS)","Pérdida medida (OLTS)","11.2 dB"],
+        ["Fiber & fusion splices","Fibra y empalmes","OK / in spec"],
+        ["Fiber-scope inspection","Inspección con microscopio","Debris ring on 1 endface"]
+      ],
+      ddm:[
+        ["RX power","Potencia RX","-21.2 dBm","warn"],
+        ["TX power","Potencia TX","-2.1 dBm","ok"],
+        ["TX bias / Temp / Vcc","Bias / Temp / Vcc","Nominal","ok"]
+      ],
+      q:["The excess loss (~3 dB) is localized to one connector. What is the root cause and correct action?",
+         "El exceso de pérdida (~3 dB) está localizado en un conector. ¿Cuál es la causa raíz y la acción correcta?"],
+      opts:[
+        { t:["Clean and re-inspect that connector, then re-test","Limpiar y reinspeccionar ese conector, luego reprobar"], ok:true,
+          why:["The ~3 dB excess matches a contaminated endface — contamination is the #1 cause of field loss. Clean with proper tools and inspect with a scope before mating.",
+               "El exceso de ~3 dB coincide con una cara contaminada — la contaminación es la causa #1 de pérdida en campo. Limpia con herramientas adecuadas e inspecciona con microscopio antes de conectar."] },
+        { t:["Add an inline attenuator","Agregar un atenuador en línea"], ok:false,
+          why:["An attenuator adds MORE loss. The link is already short of budget — this makes it worse.",
+               "Un atenuador agrega MÁS pérdida. El enlace ya está corto de presupuesto — esto lo empeora."] },
+        { t:["Replace the SFP module","Reemplazar el módulo SFP"], ok:false,
+          why:["The DDM shows TX power healthy and bias nominal — the optic is fine. Swapping it wastes time.",
+               "El DDM muestra potencia TX sana y bias nominal — la óptica está bien. Cambiarla es perder tiempo."] },
+        { t:["Re-splice the fiber","Rehacer el empalme"], ok:false,
+          why:["Splices measured in spec. The fault is at the connector interface, not the fusion point.",
+               "Los empalmes miden en spec. La falla está en la interfaz del conector, no en la fusión."] }
+      ],
+      lesson:["Roughly 3 dB of excess loss localized to one connector = contamination. Inspect-before-connect and clean with lint-free wipes / a click cleaner. Never 'just crank up power.'",
+              "Unos 3 dB de exceso localizados en un conector = contaminación. Inspecciona-antes-de-conectar y limpia con paños sin pelusa / limpiador de clic. Nunca 'solo subas la potencia.'"]
+    },
+    {
+      tag:X.bind(null,"Scenario · Wavelength-dependent","Escenario · Dependiente de λ"),
+      title:["Macrobend — loss worse at 1550 than 1310","Macro-doblez — más pérdida a 1550 que a 1310"],
+      sym:["The span passes at 1310 nm but fails at 1550 nm. Same fiber, same connectors, tested minutes apart. An OTDR at 1550 shows a gradual, non-reflective loss event mid-span.",
+           "El tramo pasa a 1310 nm pero falla a 1550 nm. Misma fibra, mismos conectores, probado con minutos de diferencia. Un OTDR a 1550 muestra un evento de pérdida gradual y sin reflexión a mitad del tramo."],
+      data:[
+        ["Loss @ 1310 nm","Pérdida @ 1310 nm","6.8 dB (OK)"],
+        ["Loss @ 1550 nm","Pérdida @ 1550 nm","12.5 dB"],
+        ["Expected @ 1550","Esperado @ 1550","< 1310 (lower)"],
+        ["OTDR @ 1550","OTDR @ 1550","Gradual, non-reflective"],
+        ["Connectors","Conectores","Clean / inspected"]
+      ],
+      ddm:[
+        ["RX power @1550","Potencia RX @1550","-24.6 dBm","alarm"],
+        ["TX power","Potencia TX","-2.0 dBm","ok"]
+      ],
+      q:["1550 nm should have LOWER loss than 1310 nm, but it's higher. What's happening and what do you do?",
+         "1550 nm debería tener MENOR pérdida que 1310 nm, pero es mayor. ¿Qué ocurre y qué haces?"],
+      opts:[
+        { t:["Locate and relieve the tight bend / kink in the cable route","Localizar y liberar el doblez / pliegue en la ruta del cable"], ok:true,
+          why:["Bend loss rises sharply with wavelength, so a macrobend leaks far more at 1550 than 1310. A gradual non-reflective OTDR event confirms it. Re-route or loosen the cable.",
+               "La pérdida por doblez crece con la longitud de onda, así que un macro-doblez fuga mucho más a 1550 que a 1310. Un evento OTDR gradual y sin reflexión lo confirma. Re-enruta o afloja el cable."] },
+        { t:["Clean the connectors","Limpiar los conectores"], ok:false,
+          why:["Connectors were inspected and clean, and contamination isn't this strongly wavelength-selective.",
+               "Los conectores fueron inspeccionados y están limpios, y la contaminación no es tan selectiva con la longitud de onda."] },
+        { t:["Replace the optic","Reemplazar la óptica"], ok:false,
+          why:["TX is healthy and the fault is in the fiber path — a new optic won't fix a physical bend.",
+               "El TX está sano y la falla está en la fibra — una óptica nueva no arregla un doblez físico."] },
+        { t:["Fit a higher-power / longer-reach SFP","Poner un SFP de mayor potencia / alcance"], ok:false,
+          why:["That masks the fault and risks overloading the receiver at 1310 where loss is already fine.",
+               "Eso enmascara la falla y arriesga saturar el receptor a 1310, donde la pérdida ya está bien."] }
+      ],
+      lesson:["Loss that is worse at 1550 than 1310 nm — with a gradual, non-reflective OTDR event — is the fingerprint of macro/microbending. Fix the mechanics; adding power only hides it.",
+              "Pérdida mayor a 1550 que a 1310 nm — con un evento OTDR gradual y sin reflexión — es la huella del macro/micro-doblez. Arregla la mecánica; agregar potencia solo lo oculta."]
+    },
+    {
+      tag:X.bind(null,"Scenario · The classic trap","Escenario · La trampa clásica"),
+      title:["Receiver overload — wrong (too-hot) optic","Sobrecarga del receptor — óptica equivocada (muy potente)"],
+      sym:["A 10G-ZR (80 km, high-power) optic is patched to a switch just 2 m away with a short jumper. The link flaps and shows heavy CRC / bit errors — yet there is clearly plenty of light.",
+           "Una óptica 10G-ZR (80 km, alta potencia) se conecta a un switch a solo 2 m con un jumper corto. El enlace parpadea y muestra muchos errores CRC / de bit — aunque claramente sobra luz."],
+      data:[
+        ["Optic","Óptica","10G-ZR, TX +2.5 dBm"],
+        ["Jumper","Jumper","2 m (~0.5 dB)"],
+        ["RX power measured","Potencia RX medida","-1.0 dBm"],
+        ["RX overload (max)","Sobrecarga RX (máx)","-3 dBm"],
+        ["RX sensitivity","Sensibilidad RX","-24 dBm"]
+      ],
+      ddm:[
+        ["RX power","Potencia RX","-1.0 dBm","alarm"],
+        ["TX power","Potencia TX","+2.5 dBm","ok"]
+      ],
+      q:["RX power (-1 dBm) is ABOVE the overload point (-3 dBm). What is the correct fix?",
+         "La potencia RX (-1 dBm) está POR ENCIMA del punto de sobrecarga (-3 dBm). ¿Cuál es la solución correcta?"],
+      opts:[
+        { t:["Insert an inline attenuator (~5–10 dB) or use a short-reach optic","Insertar un atenuador en línea (~5–10 dB) o usar una óptica de corto alcance"], ok:true,
+          why:["RX power is above the receiver's max — the receiver is saturated. You must REDUCE the light: a fixed/inline attenuator or a lower-power (SR/LR) optic sized for a 2 m jump.",
+               "La potencia RX supera el máximo del receptor — está saturado. Debes REDUCIR la luz: un atenuador fijo/en línea o una óptica de menor potencia (SR/LR) adecuada para un salto de 2 m."] },
+        { t:["Increase TX power / fit an even hotter optic","Subir la potencia TX / poner una óptica aún más potente"], ok:false,
+          why:["THE TRAP. More light drives the receiver deeper into saturation and makes the errors worse. 'No signal = add power' is only half the rule — too much light also breaks the link.",
+               "LA TRAMPA. Más luz mete al receptor más profundo en saturación y empeora los errores. 'Sin señal = subir potencia' es solo la mitad de la regla — demasiada luz también rompe el enlace."] },
+        { t:["Clean the connectors","Limpiar los conectores"], ok:false,
+          why:["Endfaces are fine — the problem is too LITTLE loss, not too much. Cleaning changes nothing here.",
+               "Las caras están bien — el problema es MUY POCA pérdida, no demasiada. Limpiar no cambia nada aquí."] },
+        { t:["Replace the fiber jumper","Reemplazar el jumper"], ok:false,
+          why:["The jumper is healthy; its short length is exactly why a ZR optic overloads the receiver.",
+               "El jumper está sano; su corta longitud es justamente por lo que una óptica ZR satura el receptor."] }
+      ],
+      lesson:["THE classic trap: when RX power exceeds the receiver's overload point, the fix is an ATTENUATOR or a lower-power optic — never more power. Reach for the DDM 'RX power high alarm' as your tell.",
+              "LA trampa clásica: cuando la potencia RX supera el punto de sobrecarga, la solución es un ATENUADOR o una óptica de menor potencia — nunca más potencia. La 'alarma alta de RX' del DDM es tu pista."]
+    },
+    {
+      tag:X.bind(null,"Scenario · Read the DDM","Escenario · Lee el DDM"),
+      title:["Aging transmitter — degraded laser","Transmisor envejecido — láser degradado"],
+      sym:["An in-service link has slowly degraded over months; error counters keep climbing. Nobody has touched the fiber plant. The far end and cabling test unchanged.",
+           "Un enlace en servicio se ha degradado lentamente durante meses; los contadores de error suben. Nadie tocó la planta de fibra. El extremo lejano y el cableado prueban sin cambios."],
+      data:[
+        ["Loss (OLTS)","Pérdida (OLTS)","7.9 dB (unchanged)"],
+        ["Connectors / splices","Conectores / empalmes","Clean, in spec"],
+        ["TX power at install","Potencia TX al instalar","-2 dBm"],
+        ["TX power now","Potencia TX ahora","-7.4 dBm"]
+      ],
+      ddm:[
+        ["TX power","Potencia TX","-7.4 dBm","alarm"],
+        ["TX bias","Corriente láser","13.8 mA","alarm"],
+        ["RX power","Potencia RX","-15.3 dBm","warn"],
+        ["Temp / Vcc","Temp / Vcc","Nominal","ok"]
+      ],
+      q:["Loss is unchanged, but DDM shows TX power falling AND bias current climbing. Root cause?",
+         "La pérdida no cambió, pero el DDM muestra la potencia TX cayendo Y la corriente subiendo. ¿Causa raíz?"],
+      opts:[
+        { t:["Replace the SFP / transmitter module","Reemplazar el módulo SFP / transmisor"], ok:true,
+          why:["Falling TX power WITH rising bias current is the classic aging-laser signature: the driver pushes more current to hold output, and loses. Plant loss is unchanged — the optic is the fault.",
+               "Potencia TX cayendo CON corriente subiendo es la firma clásica del láser envejecido: el driver empuja más corriente para sostener la salida y pierde. La pérdida de planta no cambió — la óptica es la falla."] },
+        { t:["Clean the connectors","Limpiar los conectores"], ok:false,
+          why:["Loss is unchanged and in spec — cleaning can't restore a transmitter's output power.",
+               "La pérdida no cambió y está en spec — limpiar no puede restaurar la potencia de salida del transmisor."] },
+        { t:["Add an attenuator","Agregar un atenuador"], ok:false,
+          why:["RX is already low; attenuating pushes it below sensitivity and drops the link entirely.",
+               "El RX ya está bajo; atenuar lo lleva bajo la sensibilidad y tira el enlace por completo."] },
+        { t:["Re-splice the span","Rehacer los empalmes"], ok:false,
+          why:["There's no loss change in the plant — nothing points to the splices.",
+               "No hay cambio de pérdida en la planta — nada apunta a los empalmes."] }
+      ],
+      lesson:["Read the DDM before you touch fiber. Low TX power + high bias current = a dying laser. Swap the module; no cleaning or far-end tweak fixes a failing transmitter.",
+              "Lee el DDM antes de tocar la fibra. Potencia TX baja + corriente alta = láser muriendo. Cambia el módulo; ni limpiar ni ajustar el extremo lejano arregla un transmisor que falla."]
+    },
+    {
+      tag:X.bind(null,"Scenario · No fault — design","Escenario · Sin falla — diseño"),
+      title:["Genuine budget shortfall — span too long","Déficit real de presupuesto — tramo muy largo"],
+      sym:["A new long rural span at 1550 nm never reaches sensitivity, even though every connector and splice tests clean and the DDM is healthy. The numbers simply don't add up to a working link.",
+           "Un nuevo tramo rural largo a 1550 nm nunca alcanza la sensibilidad, aunque cada conector y empalme prueba limpio y el DDM está sano. Los números simplemente no cierran para un enlace funcional."],
+      data:[
+        ["Length @1550","Longitud @1550","96 km (~21.1 dB)"],
+        ["Splices","Empalmes","24 × 0.1 = 2.4 dB"],
+        ["Connectors","Conectores","4 × 0.5 = 2.0 dB"],
+        ["Total loss","Pérdida total","≈ 25.5 dB (in spec)"],
+        ["Optic budget (TX − sens.)","Presupuesto (TX − sens.)","0 − (-23) = 23 dB"]
+      ],
+      ddm:[
+        ["TX power","Potencia TX","0.0 dBm","ok"],
+        ["TX bias / Temp / Vcc","Bias / Temp / Vcc","Nominal","ok"],
+        ["RX power","Potencia RX","-25.5 dBm","alarm"]
+      ],
+      q:["Everything tests clean, yet loss (25.5 dB) exceeds the optic budget (23 dB). What's the fix?",
+         "Todo prueba limpio, pero la pérdida (25.5 dB) supera el presupuesto de la óptica (23 dB). ¿Cuál es la solución?"],
+      opts:[
+        { t:["Re-engineer the span: higher-power/coherent optic, add an amplifier/regen, or shorten the route","Rediseñar el tramo: óptica de mayor potencia/coherente, agregar amplificador/regen, o acortar la ruta"], ok:true,
+          why:["Measured loss matches the design AND still exceeds the budget with everything in spec — a genuine shortfall, not a fault. Solutions ADD budget: coherent/higher-power optics, an EDFA, regeneration, or a shorter/re-routed span.",
+               "La pérdida medida coincide con el diseño Y aún supera el presupuesto con todo en spec — un déficit real, no una falla. Las soluciones AGREGAN presupuesto: óptica coherente/mayor potencia, un EDFA, regeneración, o un tramo más corto/re-enrutado."] },
+        { t:["Clean the connectors","Limpiar los conectores"], ok:false,
+          why:["Everything already tests in spec — cleaning recovers nothing meaningful here.",
+               "Todo ya prueba en spec — limpiar no recupera nada significativo aquí."] },
+        { t:["Add an attenuator","Agregar un atenuador"], ok:false,
+          why:["The link is already underpowered — attenuating makes an impossible budget worse.",
+               "El enlace ya está sin potencia — atenuar empeora un presupuesto imposible."] },
+        { t:["Swap for another optic of the same class","Cambiar por otra óptica de la misma clase"], ok:false,
+          why:["Same budget, same result. You need MORE budget, not the same spec again.",
+               "Mismo presupuesto, mismo resultado. Necesitas MÁS presupuesto, no la misma especificación otra vez."] }
+      ],
+      lesson:["When measured loss matches the design AND still exceeds the optic budget, it's a genuine shortfall — not something you clean or swap away. Add link budget: higher-power/coherent optics, an amplifier (EDFA), regeneration, or a shorter span.",
+              "Cuando la pérdida medida coincide con el diseño Y aún supera el presupuesto, es un déficit real — no algo que se limpia o cambia. Agrega presupuesto: óptica de mayor potencia/coherente, un amplificador (EDFA), regeneración, o un tramo más corto."]
+    }
+  ];
+
+  function renderScenario(){
+    var s=SCEN[scn.i];
+    var letters=["A","B","C","D"];
+    var html="";
+    html+='<span class="tag">'+s.tag()+' · '+(scn.i+1)+'/'+SCEN.length+'</span>';
+    html+='<h3>'+X(s.title[0],s.title[1])+'</h3>';
+    html+='<div class="sym">'+X(s.sym[0],s.sym[1])+'</div>';
+
+    html+='<div class="dtl">'+X("Given data (expected vs measured)","Datos (esperado vs medido)")+'</div>';
+    html+='<table class="gdata"><tbody>';
+    s.data.forEach(function(d){ html+='<tr><td>'+X(d[0],d[1])+'</td><td>'+d[2]+'</td></tr>'; });
+    html+='</tbody></table>';
+
+    if(s.ddm){
+      html+='<div class="dtl">'+X("Module DDM readout (SFF-8472)","Lectura DDM del módulo (SFF-8472)")+'</div>';
+      html+='<table class="ddm"><tbody>';
+      s.ddm.forEach(function(r){
+        html+='<tr><td>'+X(r[0],r[1])+'</td><td>'+r[2]+'</td><td>'+badge(r[3])+'</td></tr>';
+      });
+      html+='</tbody></table>';
+    }
+
+    html+='<div class="qtxt">'+X(s.q[0],s.q[1])+'</div>';
+    html+='<div class="opts">';
+    s.opts.forEach(function(o,idx){
+      var cls="opt", dis="";
+      if(scn.answered){
+        dis=" disabled";
+        if(o.ok) cls+=" correct";
+        else if(idx===scn.chosen) cls+=" wrong";
+      }
+      html+='<button class="'+cls+'" data-i="'+idx+'"'+dis+'><span class="k">'+letters[idx]+'</span><span>'+X(o.t[0],o.t[1])+'</span></button>';
+    });
+    html+='</div>';
+
+    if(scn.answered){
+      var ch=s.opts[scn.chosen];
+      var good=ch.ok;
+      html+='<div class="fb '+(good?"good":"bad")+'">';
+      html+='<b>'+(good?X("Correct.","Correcto."):X("Not quite — here's why.","No exactamente — aquí el porqué."))+'</b>';
+      html+=X(ch.why[0],ch.why[1]);
+      if(!good){
+        var corr=s.opts.filter(function(o){return o.ok;})[0];
+        html+='<div style="margin-top:8px"><b style="display:inline">'+X("Correct action: ","Acción correcta: ")+'</b>'+X(corr.t[0],corr.t[1])+'</div>';
+      }
+      html+='</div>';
+      html+='<div class="lesson"><b>'+X("Field lesson: ","Lección de campo: ")+'</b>'+X(s.lesson[0],s.lesson[1])+'</div>';
+    }
+
+    // nav
+    html+='<div class="scnnav">';
+    html+='<button class="nbtn" id="scnPrev"'+(scn.i===0?" disabled":"")+'>‹ '+X("Previous","Anterior")+'</button>';
+    html+='<div class="dots">';
+    for(var k=0;k<SCEN.length;k++){ html+='<span class="dot'+(k===scn.i?" on":"")+'"></span>'; }
+    html+='</div>';
+    if(scn.answered){
+      html+='<button class="nbtn" id="scnRetry">'+X("Try again","Reintentar")+'</button>';
+    }
+    html+='<button class="nbtn pri" id="scnNext"'+(scn.i===SCEN.length-1?" disabled":"")+'>'+X("Next","Siguiente")+' ›</button>';
+    html+='</div>';
+
+    $("scnCard").innerHTML=html;
+
+    // bind
+    $("scnCard").querySelectorAll(".opt").forEach(function(b){
+      b.onclick=function(){
+        if(scn.answered) return;
+        scn.chosen=+b.getAttribute("data-i");
+        scn.answered=true;
+        renderScenario();
+      };
+    });
+    var pv=$("scnPrev"), nx=$("scnNext"), rt=$("scnRetry");
+    if(pv) pv.onclick=function(){ if(scn.i>0){ scn.i--; scn.answered=false; scn.chosen=-1; renderScenario(); } };
+    if(nx) nx.onclick=function(){ if(scn.i<SCEN.length-1){ scn.i++; scn.answered=false; scn.chosen=-1; renderScenario(); } };
+    if(rt) rt.onclick=function(){ scn.answered=false; scn.chosen=-1; renderScenario(); };
+  }
+
+  /* ---------- defaults & wiring ---------- */
+  $("tx").value=0; $("rx").value=-23; $("rxmax").value=-3; $("len").value=20;
+  $("con").value=4; $("conl").value=0.5; $("spl").value=6; $("spll").value=0.1;
+  $("mar").value=3; $("myst").value=0;
+
+  ["tx","rx","rxmax","len","con","conl","spl","spll","mar","myst"].forEach(function(id){
+    $(id).addEventListener("input",compute);
+  });
+
+  $("modetog").querySelectorAll("button").forEach(function(b){
+    b.onclick=function(){ mode=b.getAttribute("data-m"); chrome(); };
+  });
   $("tema").onclick=function(){ THEME=THEME==="dark"?"light":"dark"; if(window.FOT&&FOT.setTheme)FOT.setTheme(THEME); chrome(); };
   $("lang").querySelectorAll("button").forEach(function(b){
     b.onclick=function(){ LANG=b.getAttribute("data-l"); if(window.FOT&&FOT.setLang)FOT.setLang(LANG); chrome(); };

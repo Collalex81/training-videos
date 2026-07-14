@@ -96,21 +96,26 @@
     arrow:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'
   };
   var LABS=[
-    { file:"optical-budget.html", mod:["Module 2 · Physics","Módulo 2 · Física"],
-      ic:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M4 20V8M9 20V4M14 20v-7M19 20v-10"/></svg>',
-      t:["Optical Power Budget","Presupuesto óptico"],
-      d:["Set TX power, fiber length, connectors and splices and see received power, loss and margin update live. Learn when a link passes or fails.",
-         "Ajusta potencia TX, longitud de fibra, conectores y empalmes y ve potencia recibida, pérdida y margen en vivo. Aprende cuándo un enlace pasa o falla."] },
     { file:"otdr-reader.html", mod:["Module 4 · Testing","Módulo 4 · Pruebas"],
       ic:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l2-7 3 15 2-9 2 4h6"/></svg>',
-      t:["OTDR Trace Reader","Lector de traza OTDR"],
-      d:["Generate random OTDR traces and identify each event — connector, fusion splice, macrobend or fiber end — then check your answer against the key.",
-         "Genera trazas OTDR al azar e identifica cada evento — conector, empalme por fusión, macrobend o fin de fibra — y verifica tu respuesta con la clave."] },
+      t:["OTDR Simulator","Simulador OTDR"],
+      d:["Operate a realistic OTDR — pulse width, wavelength, IOR, averaging, launch fiber, dead zones, ghosts and gainers. Sandbox to explore, plus fault scenarios where you locate and classify real events.",
+         "Opera un OTDR realista — ancho de pulso, longitud de onda, IOR, promedio, cable de lanzamiento, zonas muertas, ghosts y gainers. Modo sandbox para explorar, más escenarios de falla donde localizas y clasificas eventos reales."] },
+    { file:"optical-budget.html", mod:["Module 2 · Physics","Módulo 2 · Física"],
+      ic:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M4 20V8M9 20V4M14 20v-7M19 20v-10"/></svg>',
+      t:["Optical Link Budget","Presupuesto del enlace"],
+      d:["Design a link with a real receiver window (underpower vs overload), DDM/DOM diagnostics and a fault slider. Scenarios teach the traps — like overload needing an attenuator, not more power.",
+         "Diseña un enlace con ventana de receptor real (bajo nivel vs sobrecarga), diagnóstico DDM/DOM y un deslizador de falla. Los escenarios enseñan las trampas — como que la sobrecarga necesita atenuador, no más potencia."] },
     { file:"connector-trainer.html", mod:["Module 1 · Layer 1","Módulo 1 · Layer 1"],
       ic:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>',
-      t:["Connector & Color Trainer","Entrenador de conectores y colores"],
-      d:["Flashcard practice on connector types, PC/UPC/APC polish and the TIA-598-C color code. Build speed and accuracy before you hit the field.",
-         "Práctica tipo flashcard de tipos de conector, pulido PC/UPC/APC y el código de color TIA-598-C. Gana velocidad y precisión antes del campo."] }
+      t:["Fiber Inspection & Connectors","Inspección de fibra y conectores"],
+      d:["An IEC 61300-3-35 end-face microscope: place scratches, digs and contamination across the zones and get a pass/fail verdict. Scenarios drill Inspect–Clean–Inspect and clean-vs-replace decisions.",
+         "Un microscopio de cara IEC 61300-3-35: coloca rayones, picaduras y contaminación en las zonas y obtén un veredicto pasa/falla. Los escenarios entrenan Inspeccionar–Limpiar–Inspeccionar y decidir limpiar vs reemplazar."] },
+    { file:"troubleshooting.html", mod:["Capstone · Troubleshooting","Capstone · Troubleshooting"],
+      ic:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6l-5 9a2 2 0 0 0 1.7 3h12.6a2 2 0 0 0 1.7-3l-5-9V3"/><path d="M8 3h8"/><circle cx="12" cy="15" r="1.6" fill="currentColor" stroke="none"/></svg>',
+      t:["Troubleshooting Scenarios","Escenarios de troubleshooting"],
+      d:["A work order, a link topology and a toolbox (VFL, scope, power meter, OTDR, DDM). Pick the right tools in the right order to isolate the fault — then justify the root cause and the fix. Method over guessing.",
+         "Una orden de trabajo, una topología de enlace y una caja de herramientas (VFL, microscopio, power meter, OTDR, DDM). Elige las herramientas correctas en el orden correcto para aislar la falla — y justifica la causa raíz y la solución. Método antes que adivinar."] }
   ];
 
   function applyTheme(){ document.documentElement.setAttribute("data-theme",THEME);
@@ -124,8 +129,8 @@
     $("homeTxt").textContent=X("Dashboard","Panel");
     $("lang").querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-l")===LANG); });
     $("heroTitle").textContent=X("Hands-on labs & simulators","Laboratorios y simuladores prácticos");
-    $("heroLead").textContent=X("Free-practice tools that reinforce the modules. Nothing here is graded — experiment, make mistakes and build intuition.",
-                               "Herramientas de práctica libre que refuerzan los módulos. Nada aquí se califica — experimenta, equivócate y gana intuición.");
+    $("heroLead").textContent=X("Field-realistic simulators. Each has a Sandbox to explore the instrument freely and a Scenarios mode that injects real faults and coaches your reasoning — observe, measure, isolate, decide. Nothing is graded: the goal is critical thinking, not a passing score.",
+                               "Simuladores realistas de campo. Cada uno tiene un modo Sandbox para explorar el instrumento libremente y un modo Escenarios que inyecta fallas reales y guía tu razonamiento — observar, medir, aislar, decidir. Nada se califica: el objetivo es el pensamiento crítico, no una nota.");
     $("cards").innerHTML=LABS.map(function(l){
       return '<div class="lab"><div class="ic">'+l.ic+'</div>'+
         '<div class="mod">'+X(l.mod[0],l.mod[1])+'</div>'+

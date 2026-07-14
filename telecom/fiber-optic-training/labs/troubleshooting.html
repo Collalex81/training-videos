@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fiber Link Troubleshooting — Capstone Lab</title>
+<!-- TELECOM (azul) — Capstone Lab: simulador de diagnóstico de fallas de enlace de fibra. -->
+<style>
+  :root{
+    --pg:#f3f6fc; --card:#ffffff; --ink:#0c1c34; --sub:#51618a; --line:#dde5f3;
+    --accent:#2563EB; --tint:rgba(37,99,235,.10);
+    --ok:#15803D; --okt:rgba(21,128,61,.12); --bad:#dc2626; --badt:rgba(220,38,38,.12);
+    --amber:#b45309; --ambt:rgba(180,83,9,.14);
+    --radius:16px; --shadow:0 1px 2px rgba(12,28,52,.05),0 10px 26px rgba(12,28,52,.08);
+  }
+  html[data-theme="dark"]{
+    --pg:#0a1120; --card:#141d30; --ink:#e9f0ff; --sub:#9db0d6; --line:#243149;
+    --accent:#4d8bff; --tint:rgba(77,139,255,.14);
+    --ok:#4ade80; --okt:rgba(74,222,128,.16); --bad:#f87171; --badt:rgba(248,113,113,.16);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  a{color:inherit;text-decoration:none}
+  .shell{max-width:960px;margin:0 auto;padding:14px 18px 60px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:11px;min-width:0}
+  .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#1e3a8a);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:700;display:block;line-height:1.15}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+
+  h1{font-size:20px;margin:14px 2px 4px}
+  .lead{color:var(--sub);font-size:13.5px;margin:0 2px 16px;max-width:680px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
+  .card h2{font-size:14px;margin:0 0 12px;text-transform:uppercase;letter-spacing:.03em;color:var(--sub)}
+
+  /* gallery */
+  .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+  .scn{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:15px;cursor:pointer;text-align:left;font-family:inherit;color:var(--ink);display:flex;flex-direction:column;gap:8px;transition:border-color .15s,transform .15s}
+  .scn:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .scn .ic{width:34px;height:34px;border-radius:9px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center}
+  .scn b{font-size:14.5px;line-height:1.25}
+  .scn p{margin:0;font-size:12.5px;color:var(--sub)}
+  .tag{align-self:flex-start;font-size:10.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--ambt);color:var(--amber)}
+
+  /* work order */
+  .wo{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+  .wo .sym{flex:1;min-width:220px}
+  .wo .meta{font-size:12px;color:var(--sub)}
+  .wo .sym b{display:block;font-size:15px;margin-bottom:4px}
+  .kv{font-size:12.5px;color:var(--sub);margin-top:6px}
+  .kv span{color:var(--ink);font-weight:600}
+
+  /* toolbox */
+  .toolbox{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px}
+  .tool{border:1px solid var(--line);background:var(--pg);color:var(--ink);cursor:pointer;border-radius:11px;padding:11px 12px;font-family:inherit;text-align:left;display:flex;gap:9px;align-items:center;transition:border-color .15s}
+  .tool:hover{border-color:var(--accent)}
+  .tool.done{border-color:var(--accent);background:var(--tint)}
+  .tool .ti{width:30px;height:30px;flex:none;border-radius:8px;background:var(--card);border:1px solid var(--line);color:var(--accent);display:flex;align-items:center;justify-content:center}
+  .tool b{font-size:12.5px;display:block;line-height:1.2}
+  .tool small{font-size:10.5px;color:var(--sub)}
+
+  /* readout */
+  .readout{margin-top:14px;border:1px solid var(--line);border-radius:12px;background:var(--pg);overflow:hidden}
+  .rhead{display:flex;align-items:center;gap:8px;padding:10px 13px;background:var(--card);border-bottom:1px solid var(--line);font-size:12.5px;font-weight:700}
+  .rhead .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);flex:none}
+  .rbody{padding:13px}
+  .rval{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;margin-bottom:4px}
+  .rnote{font-size:12.5px;color:var(--sub)}
+  canvas.otdr{width:100%;height:200px;border:1px solid var(--line);border-radius:9px;background:var(--card);margin-top:10px;display:block}
+  .facewrap{display:flex;justify-content:center;margin-top:10px}
+  canvas.face{width:190px;height:190px}
+  .safety{margin-top:10px;font-size:12px;border-left:3px solid var(--amber);background:var(--ambt);color:var(--amber);padding:8px 11px;border-radius:6px}
+  .tip{margin-top:10px;font-size:12px;border-left:3px solid var(--accent);background:var(--tint);padding:8px 11px;border-radius:6px}
+
+  /* log + chips */
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+  .chip{font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--pg);border:1px solid var(--line)}
+  .chip b{color:var(--accent)}
+  .log{list-style:none;margin:12px 0 0;padding:0;font-size:12.5px}
+  .log li{padding:7px 0;border-bottom:1px dashed var(--line);display:flex;gap:8px;align-items:baseline}
+  .log li:last-child{border-bottom:0}
+  .log .clue{color:var(--ok);font-weight:700;flex:none}
+  .log .nm{font-weight:700;flex:none}
+  .log .rd{color:var(--sub)}
+
+  /* diagnosis */
+  .qh{font-size:13px;font-weight:700;margin:4px 0 8px}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+  .opt{border:1px solid var(--line);background:var(--pg);color:var(--ink);cursor:pointer;border-radius:10px;padding:11px 13px;font-family:inherit;font-size:13px;text-align:left;display:flex;gap:9px;align-items:flex-start;line-height:1.4}
+  .opt:hover{border-color:var(--accent)}
+  .opt .mk{width:18px;height:18px;border-radius:50%;border:2px solid var(--sub);flex:none;margin-top:1px}
+  .opt.sel{border-color:var(--accent);background:var(--tint)}
+  .opt.sel .mk{border-color:var(--accent);background:var(--accent);box-shadow:inset 0 0 0 3px var(--card)}
+  .opt.right{border-color:var(--ok);background:var(--okt)}
+  .opt.right .mk{border-color:var(--ok);background:var(--ok);box-shadow:inset 0 0 0 3px var(--card)}
+  .opt.wrong{border-color:var(--bad);background:var(--badt)}
+  .opt.wrong .mk{border-color:var(--bad);background:var(--bad);box-shadow:inset 0 0 0 3px var(--card)}
+
+  .btnrow{display:flex;gap:9px;flex-wrap:wrap;margin-top:4px}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;height:40px;padding:0 18px;border-radius:10px;font-size:13.5px;font-weight:700;font-family:inherit}
+  .btn:hover{filter:brightness(1.06)}
+  .btn.ghost{background:var(--card);color:var(--ink);border-color:var(--line)}
+  .btn.ghost:hover{border-color:var(--accent);color:var(--accent)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  /* feedback */
+  .verdict{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:13.5px;padding:7px 13px;border-radius:999px;margin-bottom:12px}
+  .verdict.ok{background:var(--okt);color:var(--ok)} .verdict.no{background:var(--ambt);color:var(--amber)}
+  .fb h3{font-size:12.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--sub);margin:16px 0 6px}
+  .fb p{font-size:13px;margin:0 0 8px}
+  .fb ul{font-size:13px;margin:0;padding-left:18px}
+  .fb li{margin-bottom:5px}
+  .trap{border-left:3px solid var(--bad);background:var(--badt);padding:9px 12px;border-radius:6px;font-size:12.5px;margin-top:6px}
+
+  details.method{margin-top:4px}
+  details.method summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--accent);list-style:none;display:flex;align-items:center;gap:7px}
+  details.method summary::-webkit-details-marker{display:none}
+  details.method ol{font-size:13px;margin:10px 0 0;padding-left:20px}
+  details.method li{margin-bottom:6px}
+
+  .foot{margin-top:24px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--sub);text-align:center}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+    <div class="top">
+      <div class="brand">
+        <span class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M4 20V8M9 20V4M14 20v-7M19 20v-10"/></svg></span>
+        <div><b id="brand"></b><small id="brandsub"></small></div>
+      </div>
+      <div class="tools">
+        <a class="tbtn" id="home" href="index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span id="homeTxt"></span></a>
+        <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+        <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+      </div>
+    </div>
+  </div>
+
+  <h1 id="title"></h1>
+  <p class="lead" id="lead"></p>
+
+  <div id="view"></div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script src="../scripts/progress.js"></script>
+<script>
+(function(){
+  function $(id){ return document.getElementById(id); }
+  var LANG=(window.FOT&&FOT.getLang)?FOT.getLang():"en";
+  var THEME=(window.FOT&&FOT.getTheme)?FOT.getTheme():"light";
+  function X(en,es){ return LANG==="es"?es:en; }
+  function T(o){ return LANG==="es"?o.es:o.en; }
+
+  var ICO={
+    sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+    moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+    ok:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+    warn:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>',
+    book:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>'
+  };
+  var TICO={
+    pm:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 15l3-4 2 2 3-4"/></svg>',
+    ddm:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="8" rx="1"/><path d="M8 8V6h8v2M8 12h.01M11 12h5"/></svg>',
+    vfl:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="4"/></svg>',
+    insp:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',
+    olts:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4l3-7 4 14 3-7h6"/></svg>',
+    otdr:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4v16h18"/><path d="M6 9l4 1 3 5 3-8 3 2"/></svg>'
+  };
+
+  /* ---------- TOOLBOX ---------- */
+  var TOOLS=[
+    {id:"pm",  ico:TICO.pm,  name:{en:"Optical power meter",es:"Medidor de potencia"}, sub:{en:"Read RX level / verify dark",es:"Leer nivel RX / verificar apagado"}},
+    {id:"ddm", ico:TICO.ddm, name:{en:"Module DDM / DOM",es:"DDM / DOM del módulo"}, sub:{en:"TX, RX, bias, temp",es:"TX, RX, corriente, temp."}},
+    {id:"vfl", ico:TICO.vfl, name:{en:"Visual fault locator",es:"Localizador visual (VFL)"}, sub:{en:"Continuity / short-range faults",es:"Continuidad / fallas cercanas"}},
+    {id:"insp",ico:TICO.insp,name:{en:"Inspection scope",es:"Microscopio de inspección"}, sub:{en:"Endface cleanliness",es:"Limpieza del extremo"}},
+    {id:"olts",ico:TICO.olts,name:{en:"OLTS (source + meter)",es:"OLTS (fuente + medidor)"}, sub:{en:"Insertion loss (dB)",es:"Pérdida de inserción (dB)"}},
+    {id:"otdr",ico:TICO.otdr,name:{en:"OTDR",es:"OTDR"}, sub:{en:"Trace, events, distance",es:"Traza, eventos, distancia"}}
+  ];
+  function toolName(id){ for(var i=0;i<TOOLS.length;i++) if(TOOLS[i].id===id) return T(TOOLS[i].name); return id; }
+
+  /* ---------- SCENARIOS ---------- */
+  var SC=[
+  {
+    icon:TICO.insp, tag:{en:"High loss",es:"Pérdida alta"},
+    title:{en:"Degraded margin at a business customer",es:"Margen degradado en un cliente de negocio"},
+    symptom:{en:"Customer reports slow, intermittent service. The link ran fine for months; nobody has touched the fiber. RX margin has quietly degraded.",
+             es:"El cliente reporta servicio lento e intermitente. El enlace funcionó bien por meses; nadie tocó la fibra. El margen RX se degradó silenciosamente."},
+    link:{en:"OLT → Panel A → 10 km OSP span → Panel B → CPE",es:"OLT → Panel A → tramo OSP 10 km → Panel B → CPE"},
+    expected:{en:"RX ≈ −18 dBm · budget ≈ 2.5 dB",es:"RX ≈ −18 dBm · presupuesto ≈ 2.5 dB"},
+    suspect:{type:"node",idx:2},
+    res:{
+      pm:{clue:true,r:{en:"−26.5 dBm @1550  (expected ≈ −18)",es:"−26.5 dBm @1550  (esperado ≈ −18)"},note:{en:"Received power is ~8 dB low, but light IS present — this is excess loss, not an outage.",es:"La potencia recibida está ~8 dB baja, pero SÍ hay luz — es pérdida excesiva, no un corte."}},
+      ddm:{clue:false,r:{en:"TX +2.1 dBm · RX −26.4 dBm (LOW-WARN)",es:"TX +2.1 dBm · RX −26.4 dBm (BAJA-ADV)"},note:{en:"TX is healthy; RX is low → the loss is in the plant, not the laser.",es:"El TX está sano; el RX bajo → la pérdida está en la planta, no en el láser."}},
+      vfl:{clue:false,r:{en:"Continuous red glow to far end; bright flare at Panel B bulkhead",es:"Brillo rojo continuo hasta el extremo; destello fuerte en el bulkhead del Panel B"},note:{en:"No break (continuity is fine). A flare at one mating suggests a bad/dirty connector there.",es:"Sin ruptura (hay continuidad). Un destello en una unión sugiere un conector malo/sucio ahí."}},
+      insp:{clue:true,face:{state:"dirty",pass:false},r:{en:"FAIL — Panel B connector: core-zone contamination",es:"FALLA — conector Panel B: contaminación en zona del núcleo"},note:{en:"Contamination over the core (IEC 61300-3-35 fail). This is your root cause.",es:"Contaminación sobre el núcleo (falla IEC 61300-3-35). Esta es tu causa raíz."}},
+      olts:{clue:true,r:{en:"Link insertion loss 9.6 dB @1550  (budget ≈ 2.5 dB)",es:"Pérdida de inserción 9.6 dB @1550  (presupuesto ≈ 2.5 dB)"},note:{en:"Far over budget — a single high-loss point is likely. Localize it.",es:"Muy por encima del presupuesto — probablemente un solo punto de pérdida alta. Localízalo."}},
+      otdr:{clue:true,otdr:{len:10.6,atten:0.22,events:[{km:5.0,loss:0.1,refl:false},{km:10.0,loss:1.9,refl:true}],endKm:10.05},r:{en:"Reflective 1.9 dB event at 10.0 km (Panel B)",es:"Evento reflectivo de 1.9 dB a 10.0 km (Panel B)"},note:{en:"One big reflective + lossy event at the last connector = a bad mated connector, usually contamination.",es:"Un evento reflectivo y con pérdida en el último conector = conector mal unido, normalmente contaminación."}}
+    },
+    roots:[
+      {en:"Fiber break in the OSP span",es:"Ruptura de fibra en el tramo OSP"},
+      {en:"Dirty / contaminated connector at Panel B",es:"Conector sucio / contaminado en el Panel B",ok:true},
+      {en:"Failing transceiver laser",es:"Láser del transceptor fallando"},
+      {en:"Receiver overload",es:"Sobrecarga del receptor"}
+    ],
+    acts:[
+      {en:"Raise TX power / fit a long-reach optic",es:"Subir potencia TX / poner óptica de largo alcance"},
+      {en:"Replace the OSP fiber",es:"Reemplazar la fibra OSP"},
+      {en:"Clean the connector (dry/wet), re-inspect, re-mate, re-test",es:"Limpiar el conector (seco/húmedo), reinspeccionar, reconectar, reprobar",ok:true},
+      {en:"Add an inline attenuator",es:"Agregar un atenuador en línea"}
+    ],
+    confirm:"insp",
+    debrief:{en:"Light present + very low RX + one big reflective event at the last connector = a contaminated mated connector. The inspection scope confirmed it. Contamination is the #1 cause of fiber trouble and is fully reversible with proper cleaning.",
+             es:"Luz presente + RX muy bajo + un gran evento reflectivo en el último conector = conector contaminado. El microscopio lo confirmó. La contaminación es la causa #1 de fallas de fibra y es totalmente reversible con limpieza adecuada."},
+    trap:{en:"Trap: 'low RX → raise power'. Pushing more power through a dirty connector adds back-reflection and heat, and hides the real defect. Clean, don't crank.",
+          es:"Trampa: 'RX bajo → subir potencia'. Meter más potencia por un conector sucio agrega retro-reflexión y calor, y esconde el defecto real. Limpia, no fuerces."}
+  },
+  {
+    icon:TICO.otdr, tag:{en:"Outage",es:"Corte"},
+    title:{en:"Total outage after excavation on the route",es:"Corte total tras excavación en la ruta"},
+    symptom:{en:"Complete loss of service. Dispatch notes an excavation crew was working near the cable route this morning. Both ends: link down.",
+             es:"Pérdida total de servicio. El despacho anota que una cuadrilla de excavación trabajó cerca de la ruta esta mañana. Ambos extremos: enlace caído."},
+    link:{en:"OLT → Panel A → 12 km OSP span → Panel B → CPE",es:"OLT → Panel A → tramo OSP 12 km → Panel B → CPE"},
+    expected:{en:"RX ≈ −20 dBm · buried OSP cable",es:"RX ≈ −20 dBm · cable OSP enterrado"},
+    suspect:{type:"seg",idx:1},
+    res:{
+      pm:{clue:true,r:{en:"LOS — no measurable light (< −45 dBm)",es:"LOS — sin luz medible (< −45 dBm)"},note:{en:"No light at the CPE. Confirm the same at the OLT side. Verified dark → safe to open connectors (IEC 60825).",es:"No hay luz en el CPE. Confirma lo mismo en el OLT. Verificado apagado → seguro abrir conectores (IEC 60825)."}},
+      ddm:{clue:false,r:{en:"TX +2.0 dBm at OLT · RX = LOS at CPE",es:"TX +2.0 dBm en OLT · RX = LOS en CPE"},note:{en:"The transmitter emits; nothing arrives → the path is broken.",es:"El transmisor emite; no llega nada → el camino está roto."}},
+      vfl:{clue:false,r:{en:"No end-to-end continuity; VFL light does not reach the far end",es:"Sin continuidad extremo a extremo; la luz del VFL no llega al extremo"},note:{en:"Confirms an open fiber, but the OSP is buried — use the OTDR to get the distance.",es:"Confirma fibra abierta, pero el OSP está enterrado — usa el OTDR para la distancia."}},
+      insp:{clue:false,face:{state:"clean",pass:true},r:{en:"PASS — Panel A & B connectors clean",es:"APROBADO — conectores Panel A y B limpios"},note:{en:"Connectors are fine; the fault is out in the span, not at the ends.",es:"Los conectores están bien; la falla está en el tramo, no en los extremos."}},
+      olts:{clue:false,r:{en:"Out of range — no light received",es:"Fuera de rango — no se recibe luz"},note:{en:"You cannot measure loss on an open fiber. Switch to the OTDR to find the break distance.",es:"No puedes medir pérdida en una fibra abierta. Cambia al OTDR para hallar la distancia de la ruptura."}},
+      otdr:{clue:true,otdr:{len:12,atten:0.20,events:[],endKm:4.30,broken:true},r:{en:"Reflective event then noise floor at 4.30 km — fiber end (break)",es:"Evento reflectivo y luego piso de ruido a 4.30 km — fin de fibra (ruptura)"},note:{en:"Trace falls into noise right after a reflection at 4.30 km: a classic break. Correlate 4.30 km to a field location near the reported dig-in.",es:"La traza cae al ruido justo tras una reflexión a 4.30 km: ruptura clásica. Correlaciona 4.30 km con un punto de campo cerca de la excavación reportada."}}
+    },
+    roots:[
+      {en:"Dirty connector at a panel",es:"Conector sucio en un panel"},
+      {en:"Macrobend at a slack coil",es:"Macrocurvatura en una reserva"},
+      {en:"Fiber break in the OSP span at ~4.3 km",es:"Ruptura de fibra en el tramo OSP a ~4.3 km",ok:true},
+      {en:"Rolled (reversed) fibers",es:"Fibras invertidas"}
+    ],
+    acts:[
+      {en:"Clean both panel connectors",es:"Limpiar los conectores de ambos paneles"},
+      {en:"Dispatch to the 4.3 km mark, pinpoint, repair by fusion splice/replacement, re-OTDR to verify",es:"Ir a la marca de 4.3 km, ubicar, reparar con empalme por fusión/reemplazo, re-OTDR para verificar",ok:true},
+      {en:"Replace both transceivers",es:"Reemplazar ambos transceptores"},
+      {en:"Add an inline attenuator",es:"Agregar un atenuador en línea"}
+    ],
+    confirm:"otdr",
+    debrief:{en:"Total LOS with the transmitter still emitting means an open path. The OTDR is the localization tool: a reflection followed by the noise floor at 4.30 km is a textbook fiber break. The distance turns a vague 'somewhere out there' into a dig-and-splice work order.",
+             es:"LOS total con el transmisor aún emitiendo significa camino abierto. El OTDR es la herramienta de localización: una reflexión seguida del piso de ruido a 4.30 km es una ruptura de libro. La distancia convierte un vago 'por ahí afuera' en una orden de excavar y empalmar."},
+    trap:{en:"Trap: cleaning connectors on an outage. Clean ends are good hygiene but won't fix a severed span. Also: always verify dark with a power meter before opening any connector.",
+          es:"Trampa: limpiar conectores en un corte. Extremos limpios es buena higiene pero no arregla un tramo cortado. Además: siempre verifica apagado con el medidor antes de abrir un conector."}
+  },
+  {
+    icon:TICO.olts, tag:{en:"Wavelength",es:"Longitud de onda"},
+    title:{en:"Errors at 1550 but clean at 1310",es:"Errores en 1550 pero limpio en 1310"},
+    symptom:{en:"Link carries 1310 traffic fine but a new 1550 channel throws errors. Margin looks marginal and gets worse in cold weather.",
+             es:"El enlace lleva bien el tráfico 1310 pero un nuevo canal 1550 da errores. El margen se ve justo y empeora con el frío."},
+    link:{en:"OLT → Panel A → 10 km OSP span (slack coil at closure) → Panel B → CPE",es:"OLT → Panel A → tramo OSP 10 km (reserva en manga) → Panel B → CPE"},
+    expected:{en:"Loss ≈ 2.5 dB both windows",es:"Pérdida ≈ 2.5 dB en ambas ventanas"},
+    suspect:{type:"seg",idx:1},
+    res:{
+      pm:{clue:true,r:{en:"@1310: −19 dBm (OK) · @1550: −27 dBm (LOW)",es:"@1310: −19 dBm (OK) · @1550: −27 dBm (BAJA)"},note:{en:"Loss is wavelength-dependent — much worse at 1550. That points to a bend, not a connector.",es:"La pérdida depende de la longitud de onda — mucho peor en 1550. Eso apunta a una curvatura, no a un conector."}},
+      ddm:{clue:false,r:{en:"TX normal · RX low only on the 1550 channel",es:"TX normal · RX bajo solo en el canal 1550"},note:{en:"The optics are fine; the fiber attenuates 1550 more than 1310.",es:"Las ópticas están bien; la fibra atenúa 1550 más que 1310."}},
+      vfl:{clue:false,r:{en:"Faint red glow leaking at a slack coil near the 8.5 km closure",es:"Tenue brillo rojo escapando en una reserva cerca de la manga a 8.5 km"},note:{en:"Light leaking at a tight bend/coil — a VFL can sometimes reveal a macrobend.",es:"Luz escapando en una curva/reserva cerrada — un VFL a veces revela una macrocurvatura."}},
+      insp:{clue:false,face:{state:"clean",pass:true},r:{en:"PASS — endfaces clean",es:"APROBADO — extremos limpios"},note:{en:"Connectors are clean; this is not a contamination fault.",es:"Los conectores están limpios; no es contaminación."}},
+      olts:{clue:true,r:{en:"Insertion loss: 2.6 dB @1310 · 9.1 dB @1550",es:"Pérdida de inserción: 2.6 dB @1310 · 9.1 dB @1550"},note:{en:"A large spread between wavelengths is the macrobend signature — bend loss rises steeply with wavelength.",es:"Una gran diferencia entre longitudes de onda es la firma de la macrocurvatura — la pérdida por curva sube fuerte con la longitud de onda."}},
+      otdr:{clue:true,otdr:{len:10.4,atten:0.22,events:[{km:8.5,loss:1.0,refl:false}],endKm:10.0},r:{en:"Non-reflective ~1.0 dB loss at 8.5 km (larger at 1550)",es:"Pérdida no reflectiva de ~1.0 dB a 8.5 km (mayor en 1550)"},note:{en:"A gradual, non-reflective drop (no spike) = bend or stress, not a break or connector.",es:"Una caída gradual y no reflectiva (sin pico) = curvatura o estrés, no ruptura ni conector."}}
+    },
+    roots:[
+      {en:"Dirty connector at a panel",es:"Conector sucio en un panel"},
+      {en:"Macrobend / tight bend at the slack coil",es:"Macrocurvatura / curva cerrada en la reserva",ok:true},
+      {en:"Fiber break",es:"Ruptura de fibra"},
+      {en:"Failing laser",es:"Láser fallando"}
+    ],
+    acts:[
+      {en:"Clean the connectors",es:"Limpiar los conectores"},
+      {en:"Locate and relieve the bend — re-dress the slack coil to ≥ min bend radius, re-test",es:"Ubicar y liberar la curva — reacomodar la reserva a ≥ radio mínimo, reprobar",ok:true},
+      {en:"Splice in a new section",es:"Empalmar una sección nueva"},
+      {en:"Raise TX power",es:"Subir la potencia TX"}
+    ],
+    confirm:"olts",
+    debrief:{en:"Loss that is fine at 1310 but heavy at 1550 is the fingerprint of a macrobend: bending loss grows with wavelength. The OTDR confirms it with a non-reflective event (no reflection spike = the glass is stressed, not cut or unmated). Comparing wavelengths is the key diagnostic move here.",
+             es:"Una pérdida buena en 1310 pero fuerte en 1550 es la huella de una macrocurvatura: la pérdida por curva crece con la longitud de onda. El OTDR lo confirma con un evento no reflectivo (sin pico = vidrio estresado, no cortado ni desconectado). Comparar longitudes de onda es el movimiento clave aquí."},
+    trap:{en:"Trap: reading it as a break. A break is reflective and drops to noise; a bend is non-reflective and wavelength-sensitive. Don't cut good fiber — just relieve the bend.",
+          es:"Trampa: leerlo como ruptura. Una ruptura es reflectiva y cae al ruido; una curva es no reflectiva y sensible a la longitud de onda. No cortes fibra buena — solo libera la curva."}
+  },
+  {
+    icon:TICO.vfl, tag:{en:"New install",es:"Instalación nueva"},
+    title:{en:"New link won't come up — but light is present",es:"Enlace nuevo no levanta — pero hay luz"},
+    symptom:{en:"Fresh install. Both ends show 'light detected' on the power meter, yet the interface stays DOWN with no sync. Optics are the correct type.",
+             es:"Instalación reciente. Ambos extremos muestran 'luz detectada' en el medidor, pero la interfaz sigue CAÍDA sin sincronía. Las ópticas son del tipo correcto."},
+    link:{en:"Switch → Panel A → 2.4 km → Panel B → Radio/CPE",es:"Switch → Panel A → 2.4 km → Panel B → Radio/CPE"},
+    expected:{en:"RX ≈ −17 dBm · duplex LC pair",es:"RX ≈ −17 dBm · par dúplex LC"},
+    suspect:{type:"node",idx:3},
+    res:{
+      pm:{clue:true,r:{en:"Both directions: ≈ −17 dBm (normal)",es:"Ambos sentidos: ≈ −17 dBm (normal)"},note:{en:"Plenty of light both ways, yet the link is down. Light present + no link → not a loss problem.",es:"Bastante luz en ambos sentidos, pero el enlace está caído. Luz presente + sin enlace → no es un problema de pérdida."}},
+      ddm:{clue:true,r:{en:"TX +1 dBm · RX −17 dBm · no optical faults — but interface STATE = DOWN / no sync",es:"TX +1 dBm · RX −17 dBm · sin fallas ópticas — pero ESTADO = CAÍDO / sin sincronía"},note:{en:"Optics are happy; the far end just isn't receiving its own transmit pair. Suspect duplex polarity.",es:"Las ópticas están bien; el extremo simplemente no recibe su propio par de transmisión. Sospecha de polaridad dúplex."}},
+      vfl:{clue:true,r:{en:"Continuity good on both strands — but the strand fed from TX-A lights up the far RX that pairs with TX-B",es:"Continuidad buena en ambos hilos — pero el hilo alimentado por TX-A ilumina el RX del extremo que corresponde a TX-B"},note:{en:"Trace each strand end-to-end: transmit is landing on the wrong receiver. The pair is rolled.",es:"Traza cada hilo extremo a extremo: la transmisión llega al receptor equivocado. El par está invertido."}},
+      insp:{clue:false,face:{state:"clean",pass:true},r:{en:"PASS — endfaces clean",es:"APROBADO — extremos limpios"},note:{en:"Not a contamination issue.",es:"No es un problema de contaminación."}},
+      olts:{clue:false,r:{en:"1.2 dB @1550 (well within budget)",es:"1.2 dB @1550 (dentro del presupuesto)"},note:{en:"Loss is fine — this is not a plant/loss problem.",es:"La pérdida está bien — no es un problema de planta/pérdida."}},
+      otdr:{clue:false,otdr:{len:2.6,atten:0.22,events:[],endKm:2.4},r:{en:"Clean trace, 2.4 km, ~1.1 dB total, no events",es:"Traza limpia, 2.4 km, ~1.1 dB total, sin eventos"},note:{en:"Fiber is healthy end-to-end.",es:"La fibra está sana extremo a extremo."}}
+    },
+    roots:[
+      {en:"Fiber break",es:"Ruptura de fibra"},
+      {en:"TX/RX fibers rolled (duplex polarity reversed)",es:"Fibras TX/RX invertidas (polaridad dúplex al revés)",ok:true},
+      {en:"Dirty connector",es:"Conector sucio"},
+      {en:"Receiver overload",es:"Sobrecarga del receptor"}
+    ],
+    acts:[
+      {en:"Replace both transceivers",es:"Reemplazar ambos transceptores"},
+      {en:"Swap duplex polarity — flip A/B at one end (or use the correct-polarity patch cord), re-test",es:"Invertir la polaridad dúplex — cambiar A/B en un extremo (o usar el patch cord de polaridad correcta), reprobar",ok:true},
+      {en:"Clean the connectors",es:"Limpiar los conectores"},
+      {en:"Add an attenuator",es:"Agregar un atenuador"}
+    ],
+    confirm:"ddm",
+    debrief:{en:"Normal light at both ends with no sync is the signature of rolled fibers (duplex polarity). Each transmitter is landing on the far transmitter instead of the far receiver, so there is light but no valid signal path. No amount of cleaning or power change fixes wiring polarity — you flip the pair.",
+             es:"Luz normal en ambos extremos sin sincronía es la firma de fibras invertidas (polaridad dúplex). Cada transmisor llega al transmisor del otro extremo en vez del receptor, así que hay luz pero no un camino válido. Ni limpiar ni cambiar potencia arregla la polaridad — inviertes el par."},
+    trap:{en:"Trap: swapping the transceiver. The optic is fine — the fibers are crossed. Always confirm A-to-B / B-to-A polarity on duplex links before condemning hardware.",
+          es:"Trampa: cambiar el transceptor. La óptica está bien — las fibras están cruzadas. Siempre confirma la polaridad A-a-B / B-a-A en enlaces dúplex antes de condenar hardware."}
+  },
+  {
+    icon:TICO.pm, tag:{en:"Overload",es:"Sobrecarga"},
+    title:{en:"Short in-building link keeps flapping",es:"Enlace corto en el edificio se cae repetidamente"},
+    symptom:{en:"A 200 m link between two racks in the same building flaps with high error counts. The tech already swapped both patch cords — no change.",
+             es:"Un enlace de 200 m entre dos racks del mismo edificio se cae con muchos errores. El técnico ya cambió ambos patch cords — sin cambio."},
+    link:{en:"Switch A → Panel → 0.2 km → Panel → Switch B",es:"Switch A → Panel → 0.2 km → Panel → Switch B"},
+    expected:{en:"RX in range: −3 to −18 dBm",es:"RX en rango: −3 a −18 dBm"},
+    suspect:{type:"node",idx:3},
+    res:{
+      pm:{clue:true,r:{en:"RX −1.5 dBm  (receiver max ≈ −3 dBm → OVERLOAD)",es:"RX −1.5 dBm  (máx. del receptor ≈ −3 dBm → SOBRECARGA)"},note:{en:"Too much light. The receiver is saturated — errors even though 'more signal' feels like it should be good.",es:"Demasiada luz. El receptor está saturado — errores aunque 'más señal' parezca bueno."}},
+      ddm:{clue:true,r:{en:"TX +3.2 dBm · RX −1.5 dBm (RX HIGH-ALARM)",es:"TX +3.2 dBm · RX −1.5 dBm (RX ALTA-ALARMA)"},note:{en:"RX is above the module's max input. This is overload, not weak signal.",es:"El RX está por encima del máximo del módulo. Es sobrecarga, no señal débil."}},
+      vfl:{clue:false,r:{en:"Continuity good, very short run",es:"Continuidad buena, tramo muy corto"},note:{en:"Fiber path is intact — nothing broken.",es:"El camino de fibra está intacto — nada roto."}},
+      insp:{clue:false,face:{state:"clean",pass:true},r:{en:"PASS — endfaces clean",es:"APROBADO — extremos limpios"},note:{en:"Not contamination.",es:"No es contaminación."}},
+      olts:{clue:true,r:{en:"Insertion loss 0.6 dB (200 m link)",es:"Pérdida de inserción 0.6 dB (enlace 200 m)"},note:{en:"Almost no loss — a long-reach (high-power) optic on a very short span delivers too much power.",es:"Casi sin pérdida — una óptica de largo alcance (alta potencia) en un tramo muy corto entrega demasiada potencia."}},
+      otdr:{clue:false,otdr:{len:0.4,atten:0.3,events:[],endKm:0.2},r:{en:"Short, clean fiber — nothing wrong in the plant",es:"Fibra corta y limpia — nada mal en la planta"},note:{en:"The plant is not the problem.",es:"La planta no es el problema."}}
+    },
+    roots:[
+      {en:"Failing laser (low power)",es:"Láser fallando (potencia baja)"},
+      {en:"Receiver overload — too-hot optic for a short span",es:"Sobrecarga del receptor — óptica muy potente para un tramo corto",ok:true},
+      {en:"Dirty connector",es:"Conector sucio"},
+      {en:"Fiber break",es:"Ruptura de fibra"}
+    ],
+    acts:[
+      {en:"Increase TX power",es:"Aumentar la potencia TX"},
+      {en:"Add an inline attenuator (5–10 dB) or fit a short-reach optic; confirm RX back in range",es:"Agregar un atenuador (5–10 dB) o poner una óptica de corto alcance; confirmar RX de nuevo en rango",ok:true},
+      {en:"Clean the connectors",es:"Limpiar los conectores"},
+      {en:"Replace the fiber",es:"Reemplazar la fibra"}
+    ],
+    confirm:"pm",
+    debrief:{en:"On a very short link, a long-reach optic delivers more power than the receiver can handle. RX above the maximum input causes clipping/flapping — the mirror image of low-power problems. The DDM HIGH alarm and near-zero loss make it unmistakable. The fix is an attenuator or the right optic, never more power.",
+             es:"En un enlace muy corto, una óptica de largo alcance entrega más potencia de la que el receptor tolera. RX por encima del máximo causa recorte/caídas — la imagen espejo de los problemas de potencia baja. La alarma ALTA del DDM y la pérdida casi nula lo hacen inconfundible. La solución es un atenuador o la óptica correcta, nunca más potencia."},
+    trap:{en:"Trap: 'link is bad → boost power'. Here more power makes it worse. Always check RX against the receiver's overload point, not just its sensitivity floor.",
+          es:"Trampa: 'el enlace está mal → subir potencia'. Aquí más potencia empeora todo. Siempre compara el RX con el punto de sobrecarga del receptor, no solo con el piso de sensibilidad."}
+  },
+  {
+    icon:TICO.ddm, tag:{en:"Module",es:"Módulo"},
+    title:{en:"Slow decline, then intermittent — fiber tested good",es:"Declive lento, luego intermitente — la fibra probó bien"},
+    symptom:{en:"Over several weeks the link degraded and is now intermittent. The OSP was OTDR-tested clean last month. RX has drifted down from turn-up levels.",
+             es:"En varias semanas el enlace se degradó y ahora es intermitente. El OSP se probó limpio con OTDR el mes pasado. El RX bajó desde los niveles de puesta en marcha."},
+    link:{en:"OLT → Panel A → 8 km OSP span → Panel B → CPE",es:"OLT → Panel A → tramo OSP 8 km → Panel B → CPE"},
+    expected:{en:"TX ≈ −1 dBm at turn-up · RX ≈ −18 dBm",es:"TX ≈ −1 dBm al inicio · RX ≈ −18 dBm"},
+    suspect:{type:"node",idx:0},
+    res:{
+      pm:{clue:true,r:{en:"RX −24 dBm  (was −18 dBm at turn-up)",es:"RX −24 dBm  (era −18 dBm al inicio)"},note:{en:"Received power has drifted down over time — could be plant or source. Check the module.",es:"La potencia recibida bajó con el tiempo — puede ser planta o fuente. Revisa el módulo."}},
+      ddm:{clue:true,r:{en:"TX −6.5 dBm (was −1) · bias 85 mA (high) · temp normal · TX-POWER LOW-ALARM",es:"TX −6.5 dBm (era −1) · corriente 85 mA (alta) · temp normal · POTENCIA-TX BAJA-ALARMA"},note:{en:"TX power collapsing while bias current climbs (laser driven harder to keep output) = a laser at end-of-life.",es:"Potencia TX cayendo mientras la corriente de polarización sube (el láser se fuerza para mantener salida) = láser al final de su vida."}},
+      vfl:{clue:false,r:{en:"Continuity good",es:"Continuidad buena"},note:{en:"Fiber path intact.",es:"Camino de fibra intacto."}},
+      insp:{clue:false,face:{state:"clean",pass:true},r:{en:"PASS — endfaces clean",es:"APROBADO — extremos limpios"},note:{en:"Not contamination.",es:"No es contaminación."}},
+      olts:{clue:true,r:{en:"Insertion loss 2.4 dB @1550 (normal, unchanged)",es:"Pérdida de inserción 2.4 dB @1550 (normal, sin cambio)"},note:{en:"Plant loss is fine and unchanged — the loss is not in the fiber.",es:"La pérdida de planta está bien y sin cambio — la pérdida no está en la fibra."}},
+      otdr:{clue:false,otdr:{len:8.4,atten:0.22,events:[{km:4.0,loss:0.1,refl:false}],endKm:8.0},r:{en:"Clean trace, no new events",es:"Traza limpia, sin eventos nuevos"},note:{en:"Fiber is not the problem — the loss moved but the glass didn't.",es:"La fibra no es el problema — la pérdida se movió pero el vidrio no."}}
+    },
+    roots:[
+      {en:"Macrobend",es:"Macrocurvatura"},
+      {en:"Failing / degraded transceiver laser (low TX)",es:"Láser del transceptor degradado (TX bajo)",ok:true},
+      {en:"Dirty connector",es:"Conector sucio"},
+      {en:"Receiver overload",es:"Sobrecarga del receptor"}
+    ],
+    acts:[
+      {en:"Clean the connectors",es:"Limpiar los conectores"},
+      {en:"Replace the SFP/transceiver, re-check TX/RX, re-test",es:"Reemplazar el SFP/transceptor, revisar TX/RX, reprobar",ok:true},
+      {en:"Add an attenuator",es:"Agregar un atenuador"},
+      {en:"Re-splice the span",es:"Reempalmar el tramo"}
+    ],
+    confirm:"ddm",
+    confirmAlt:"olts",
+    debrief:{en:"RX fell but the plant loss is unchanged — so the missing power is at the source. The DDM tells the story: TX power dropping while bias current rises is a laser being pushed harder to hold output, i.e. end-of-life ageing. Reading the module (SFF-8472 diagnostics) separates a tired transceiver from a plant fault in seconds.",
+             es:"El RX cayó pero la pérdida de planta no cambió — así que la potencia perdida está en la fuente. El DDM cuenta la historia: potencia TX bajando mientras la corriente de polarización sube es un láser forzado para mantener salida, es decir envejecimiento terminal. Leer el módulo (diagnósticos SFF-8472) separa un transceptor cansado de una falla de planta en segundos."},
+    trap:{en:"Trap: chasing the fiber because RX is low. Loss unchanged + TX falling + bias high = the module, not the glass. DDM before OTDR would have saved a truck roll.",
+          es:"Trampa: perseguir la fibra porque el RX está bajo. Pérdida sin cambio + TX cayendo + corriente alta = el módulo, no el vidrio. DDM antes que OTDR habría ahorrado una salida."}
+  },
+  {
+    icon:TICO.insp, tag:{en:"Repeat fault",es:"Falla repetida"},
+    title:{en:"Third truck roll — fault keeps coming back",es:"Tercera visita — la falla sigue volviendo"},
+    symptom:{en:"Third dispatch to the same drop. Each visit the tech cleaned the jumper connector and service returned — then failed again within days. Same low-power symptom.",
+             es:"Tercer despacho al mismo drop. En cada visita el técnico limpió el conector del jumper y el servicio volvió — luego falló otra vez en días. Mismo síntoma de potencia baja."},
+    link:{en:"OLT → Panel A → 6 km → Panel B (bulkhead adapter) → CPE",es:"OLT → Panel A → 6 km → Panel B (adaptador bulkhead) → CPE"},
+    expected:{en:"RX ≈ −18 dBm · budget ≈ 2.5 dB",es:"RX ≈ −18 dBm · presupuesto ≈ 2.5 dB"},
+    suspect:{type:"node",idx:2},
+    res:{
+      pm:{clue:true,r:{en:"RX −25 dBm (low again)",es:"RX −25 dBm (baja otra vez)"},note:{en:"The same low-power fault has returned. Repeat failures after cleaning hint you're missing one mating surface.",es:"La misma falla de potencia baja volvió. Fallas repetidas tras limpiar sugieren que te falta una superficie de acople."}},
+      ddm:{clue:false,r:{en:"TX normal · RX low",es:"TX normal · RX baja"},note:{en:"Source is fine; loss is in the plant at one point.",es:"La fuente está bien; la pérdida está en la planta en un punto."}},
+      vfl:{clue:false,r:{en:"Bright flare at the Panel B bulkhead",es:"Destello fuerte en el bulkhead del Panel B"},note:{en:"One mated interface is scattering — look at BOTH sides of that mating.",es:"Una unión dispersa luz — mira AMBOS lados de ese acople."}},
+      insp:{clue:true,face:{state:"oil",pass:false},r:{en:"Jumper endface: PASS · Bulkhead/adapter side: FAIL — contamination",es:"Extremo del jumper: APROBADO · Lado del bulkhead/adaptador: FALLA — contaminación"},note:{en:"The jumper you keep cleaning is fine — but the fixed bulkhead endface is dirty. Mating a clean connector into a dirty bulkhead re-contaminates it. Both sides must be clean.",es:"El jumper que sigues limpiando está bien — pero el extremo fijo del bulkhead está sucio. Acoplar un conector limpio en un bulkhead sucio lo vuelve a contaminar. Ambos lados deben estar limpios."}},
+      olts:{clue:true,r:{en:"Insertion loss 8.9 dB @1550 (over budget)",es:"Pérdida de inserción 8.9 dB @1550 (sobre presupuesto)"},note:{en:"High loss localized to one mated pair.",es:"Pérdida alta localizada en un par acoplado."}},
+      otdr:{clue:true,otdr:{len:6.4,atten:0.22,events:[{km:3.0,loss:1.6,refl:true}],endKm:6.0},r:{en:"Reflective 1.6 dB event at the Panel B bulkhead (3.0 km)",es:"Evento reflectivo de 1.6 dB en el bulkhead del Panel B (3.0 km)"},note:{en:"Reflective loss event at the bulkhead — consistent with a dirty mated interface.",es:"Evento reflectivo con pérdida en el bulkhead — consistente con una unión sucia."}}
+    },
+    roots:[
+      {en:"Dirty connector on the jumper only",es:"Conector sucio solo en el jumper"},
+      {en:"Contaminated bulkhead adapter — the fixed side was never cleaned",es:"Adaptador bulkhead contaminado — el lado fijo nunca se limpió",ok:true},
+      {en:"Fiber break",es:"Ruptura de fibra"},
+      {en:"Failing laser",es:"Láser fallando"}
+    ],
+    acts:[
+      {en:"Clean the jumper again",es:"Limpiar el jumper otra vez"},
+      {en:"Clean AND inspect BOTH the connector and the bulkhead adapter, then mate; re-test",es:"Limpiar E inspeccionar AMBOS, el conector y el adaptador bulkhead, luego acoplar; reprobar",ok:true},
+      {en:"Replace the jumper",es:"Reemplazar el jumper"},
+      {en:"Add an attenuator",es:"Agregar un atenuador"}
+    ],
+    confirm:"insp",
+    debrief:{en:"A fault that returns after every cleaning means a mating surface is being missed. Cleaning only the jumper and plugging it into a dirty bulkhead adapter re-contaminates the freshly cleaned end every time. Inspecting BOTH sides of the mating exposes the real culprit. 'Inspect, clean, inspect, connect' applies to every endface — including the fixed one you can't see.",
+             es:"Una falla que vuelve tras cada limpieza significa que se está omitiendo una superficie de acople. Limpiar solo el jumper y conectarlo en un adaptador bulkhead sucio recontamina el extremo recién limpiado cada vez. Inspeccionar AMBOS lados del acople revela al verdadero culpable. 'Inspeccionar, limpiar, inspeccionar, conectar' aplica a cada extremo — incluido el fijo que no ves."},
+    trap:{en:"Trap: cleaning one side. The bulkhead adapter has two endfaces mating inside it; a clean jumper against a dirty adapter still fails. Never mate a connector you haven't inspected — and inspect the bulkhead too.",
+          es:"Trampa: limpiar un solo lado. El adaptador bulkhead tiene dos extremos acoplándose dentro; un jumper limpio contra un adaptador sucio igual falla. Nunca acoples un conector sin inspeccionar — e inspecciona también el bulkhead."}
+  }
+  ];
+
+  var NODES=[{en:"OLT",es:"OLT"},{en:"Panel A",es:"Panel A"},{en:"Panel B",es:"Panel B"},{en:"CPE",es:"CPE"}];
+
+  /* ---------- STATE ---------- */
+  var state={ cur:null, used:[], last:null, root:null, act:null, checked:false, firstTool:null, safetyShown:false, nudgeShown:false };
+
+  function applyTheme(){ document.documentElement.setAttribute("data-theme",THEME);
+    $("temaIco").innerHTML=THEME==="dark"?ICO.sun:ICO.moon;
+    $("temaTxt").textContent=THEME==="dark"?X("Light","Claro"):X("Dark","Oscuro"); }
+
+  function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+  function chrome(){
+    applyTheme(); document.documentElement.lang=LANG;
+    $("brand").textContent=X("Fiber Troubleshooting","Diagnóstico de fibra");
+    $("brandsub").textContent=X("Capstone Lab · Method & reasoning","Lab final · Método y razonamiento");
+    $("homeTxt").textContent=X("Labs","Labs");
+    $("lang").querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-l")===LANG); });
+    $("title").textContent=X("End-to-end fiber link troubleshooting","Diagnóstico de enlace de fibra de extremo a extremo");
+    $("lead").textContent=X("You are the technician. Read the work order, pick your instruments in a sensible order, isolate the fault, then choose the root cause and the fix. This coaches your method — there is no pass/fail grade.",
+                           "Tú eres el técnico. Lee la orden de trabajo, elige tus instrumentos en un orden sensato, aísla la falla y luego elige la causa raíz y la solución. Esto entrena tu método — no hay calificación de aprobado/reprobado.");
+    $("foot").innerHTML=X("Grounded in field practice: connector ≈0.3–0.5 dB, fusion splice ≈0.1 dB, G.652 ≈0.35 dB/km @1310 / ≈0.22 dB/km @1550. Refs: IEC 60825 (laser safety), IEC 61300-3-35 (endface cleanliness), SFF-8472 (DDM/DOM), ITU-T G.652.",
+                          "Basado en práctica de campo: conector ≈0.3–0.5 dB, empalme por fusión ≈0.1 dB, G.652 ≈0.35 dB/km @1310 / ≈0.22 dB/km @1550. Refs: IEC 60825 (seguridad láser), IEC 61300-3-35 (limpieza de extremos), SFF-8472 (DDM/DOM), ITU-T G.652.");
+    render();
+  }
+
+  /* ---------- RENDER ---------- */
+  function render(){ if(state.cur===null) renderGallery(); else renderScenario(); }
+
+  function renderGallery(){
+    var h='<div class="card"><h2>'+X("Choose a work order","Elige una orden de trabajo")+'</h2><div class="gal">';
+    SC.forEach(function(s,i){
+      h+='<button class="scn" data-i="'+i+'">'+
+           '<span class="ic">'+s.icon+'</span>'+
+           '<span class="tag">'+T(s.tag)+'</span>'+
+           '<b>'+esc(T(s.title))+'</b>'+
+           '<p>'+esc(T(s.symptom).slice(0,96))+'…</p>'+
+         '</button>';
+    });
+    h+='</div></div>';
+    h+=methodPanel();
+    $("view").innerHTML=h;
+    $("view").querySelectorAll(".scn").forEach(function(b){
+      b.onclick=function(){ openScenario(+b.getAttribute("data-i")); };
+    });
+  }
+
+  function methodPanel(){
+    return '<details class="method"><summary>'+ICO.book+' '+X("Method reminder — the textbook path","Recordatorio de método — el camino de libro")+'</summary><ol>'+
+      '<li>'+X("Verify the report and check the obvious first — patching, config, power levels.","Verifica el reporte y revisa lo obvio primero — conexionado, configuración, niveles de potencia.")+'</li>'+
+      '<li>'+X("Stay safe: never look into a fiber. Verify the fiber is dark with a power meter before handling ends (IEC 60825).","Mantente seguro: nunca mires dentro de una fibra. Verifica que la fibra esté apagada con el medidor antes de manipular extremos (IEC 60825).")+'</li>'+
+      '<li>'+X("Localize: which segment? Use the OTDR / VFL / segment power tests to narrow it down.","Localiza: ¿qué segmento? Usa el OTDR / VFL / pruebas de potencia por segmento para acotarlo.")+'</li>'+
+      '<li>'+X("Measure: quantify the loss (OLTS) or characterize events (OTDR).","Mide: cuantifica la pérdida (OLTS) o caracteriza los eventos (OTDR).")+'</li>'+
+      '<li>'+X("Confirm the root cause: inspection (contamination), DDM (module/laser), wavelength compare (bend).","Confirma la causa raíz: inspección (contaminación), DDM (módulo/láser), comparación de longitudes de onda (curvatura).")+'</li>'+
+      '<li>'+X("Act, then re-test: clean, splice/repair, re-dress a bend, swap polarity, add attenuation, or replace the module — and verify the fix.","Actúa, luego reprueba: limpiar, empalmar/reparar, reacomodar una curva, invertir polaridad, atenuar o reemplazar el módulo — y verifica la solución.")+'</li>'+
+      '</ol></details>';
+  }
+
+  function openScenario(i){
+    state.cur=i; state.used=[]; state.last=null; state.root=null; state.act=null;
+    state.checked=false; state.firstTool=null; state.safetyShown=false; state.nudgeShown=false;
+    render(); window.scrollTo(0,0);
+  }
+
+  function usedPowerCheck(){ return state.used.indexOf("pm")>=0 || state.used.indexOf("ddm")>=0; }
+
+  function renderScenario(){
+    var s=SC[state.cur];
+    var h="";
+    // work order
+    h+='<div class="card"><h2>'+X("Work order","Orden de trabajo")+' · '+T(s.tag)+'</h2>'+
+       '<div class="wo"><div class="sym"><b>'+esc(T(s.title))+'</b>'+esc(T(s.symptom))+
+       '<div class="kv">'+X("Link","Enlace")+': <span>'+esc(T(s.link))+'</span></div>'+
+       '<div class="kv">'+X("Baseline","Referencia")+': <span>'+esc(T(s.expected))+'</span></div>'+
+       '</div></div>';
+    // topology
+    h+='<div style="margin-top:12px">'+topoSVG(s)+'</div></div>';
+
+    // toolbox
+    h+='<div class="card"><h2>'+X("Toolbox — pick an instrument","Caja de herramientas — elige un instrumento")+'</h2><div class="toolbox">';
+    TOOLS.forEach(function(t){
+      var done=state.used.indexOf(t.id)>=0;
+      h+='<button class="tool'+(done?" done":"")+'" data-t="'+t.id+'"><span class="ti">'+t.ico+'</span>'+
+         '<span><b>'+esc(T(t.name))+'</b><small>'+esc(T(t.sub))+'</small></span></button>';
+    });
+    h+='</div>';
+
+    // readout
+    if(state.last){
+      var d=s.res[state.last];
+      h+='<div class="readout"><div class="rhead"><span class="dot"></span>'+esc(toolName(state.last))+'</div><div class="rbody">'+
+         '<div class="rval">'+esc(T(d.r))+'</div><div class="rnote">'+esc(T(d.note))+'</div>';
+      if(d.otdr) h+='<canvas class="otdr" id="cvOtdr"></canvas>';
+      if(d.face) h+='<div class="facewrap"><canvas class="face" id="cvFace" width="190" height="190"></canvas></div>';
+      if(state.safetyShown) h+='<div class="safety">'+ICO.warn+' '+X("Safety habit: never look into a fiber end. You verified the fiber is dark with the power meter first — good.","Hábito de seguridad: nunca mires dentro de un extremo de fibra. Verificaste que la fibra esté apagada con el medidor primero — bien.")+'</div>';
+      else if((state.last==="insp"||state.last==="vfl") && !usedPowerCheckExcl(state.last)) h+='<div class="safety">'+ICO.warn+' '+X("Safety reminder: before handling ends, verify the fiber is dark with a power meter. Never eyeball a live fiber (IEC 60825).","Recordatorio de seguridad: antes de manipular extremos, verifica que la fibra esté apagada con un medidor. Nunca inspecciones a ojo una fibra activa (IEC 60825).")+'</div>';
+      if(state.nudgeShown && state.firstTool===state.last) h+='<div class="tip">'+X("Good instrument — but the efficient path starts by confirming the symptom and checking power/DDM, then localizing. You can still solve it; just note the order.","Buen instrumento — pero el camino eficiente empieza confirmando el síntoma y revisando potencia/DDM, luego localizando. Igual puedes resolverlo; solo nota el orden.")+'</div>';
+      h+='</div></div>';
+    }
+
+    // chips + log
+    var clues=0; state.used.forEach(function(id){ if(s.res[id].clue) clues++; });
+    h+='<div class="chips" style="margin-top:14px">'+
+       '<span class="chip">'+X("Steps taken","Pasos dados")+' <b>'+state.used.length+'</b></span>'+
+       '<span class="chip">'+X("Clues found","Pistas halladas")+' <b>'+clues+'</b></span></div>';
+    if(state.used.length){
+      h+='<ul class="log">';
+      state.used.forEach(function(id){
+        var d=s.res[id];
+        h+='<li><span class="clue">'+(d.clue?ICO.ok:"·")+'</span><span class="nm">'+esc(toolName(id))+':</span> <span class="rd">'+esc(T(d.r))+'</span></li>';
+      });
+      h+='</ul>';
+    }
+    h+='</div>';
+
+    // diagnosis
+    h+='<div class="card"><h2>'+X("Your diagnosis","Tu diagnóstico")+'</h2>';
+    h+='<div class="qh">'+X("1 · Root cause","1 · Causa raíz")+'</div><div class="opts" id="rootOpts">';
+    s.roots.forEach(function(o,i){ h+=optHTML("root",i,T(o)); });
+    h+='</div>';
+    h+='<div class="qh">'+X("2 · Corrective action","2 · Acción correctiva")+'</div><div class="opts" id="actOpts">';
+    s.acts.forEach(function(o,i){ h+=optHTML("act",i,T(o)); });
+    h+='</div>';
+    h+='<div class="btnrow"><button class="btn" id="checkBtn"'+((state.root===null||state.act===null)?" disabled":"")+'>'+X("Check my diagnosis","Revisar mi diagnóstico")+'</button>'+
+       '<button class="btn ghost" id="backBtn">'+X("← Scenarios","← Escenarios")+'</button></div>';
+
+    // feedback
+    if(state.checked) h+=feedbackHTML(s);
+    h+='</div>';
+
+    h+=methodPanel();
+    $("view").innerHTML=h;
+
+    // draw visuals
+    if(state.last){
+      var d2=s.res[state.last];
+      if(d2.otdr) drawOTDR($("cvOtdr"),d2.otdr);
+      if(d2.face) drawFace($("cvFace"),d2.face);
+    }
+
+    // wire
+    $("view").querySelectorAll(".tool").forEach(function(b){ b.onclick=function(){ useTool(b.getAttribute("data-t")); }; });
+    $("view").querySelectorAll(".opt").forEach(function(b){
+      b.onclick=function(){ if(state.checked) return; pick(b.getAttribute("data-k"), +b.getAttribute("data-i")); };
+    });
+    $("backBtn").onclick=function(){ state.cur=null; render(); window.scrollTo(0,0); };
+    var cb=$("checkBtn"); if(cb) cb.onclick=function(){ if(state.root!==null&&state.act!==null){ state.checked=true; render(); } };
+    var rb=$("retryBtn"); if(rb) rb.onclick=function(){ state.root=null;state.act=null;state.checked=false; render(); window.scrollTo(0,0); };
+    var nb=$("nextBtn"); if(nb) nb.onclick=function(){ openScenario((state.cur+1)%SC.length); };
+    var gb=$("galBtn"); if(gb) gb.onclick=function(){ state.cur=null; render(); window.scrollTo(0,0); };
+  }
+
+  // power check excluding the tool just used (for safety note logic)
+  function usedPowerCheckExcl(){ return state.used.indexOf("pm")>=0 || state.used.indexOf("ddm")>=0; }
+
+  function optHTML(k,i,label){
+    var cls="opt";
+    if(state.checked){
+      var s=SC[state.cur];
+      var arr=k==="root"?s.roots:s.acts, sel=k==="root"?state.root:state.act;
+      if(arr[i].ok) cls+=" right";
+      else if(sel===i) cls+=" wrong";
+    } else {
+      if((k==="root"&&state.root===i)||(k==="act"&&state.act===i)) cls+=" sel";
+    }
+    return '<button class="'+cls+'" data-k="'+k+'" data-i="'+i+'"><span class="mk"></span><span>'+esc(label)+'</span></button>';
+  }
+
+  function pick(k,i){ if(k==="root") state.root=i; else state.act=i; render(); }
+
+  function useTool(id){
+    if(state.firstTool===null){
+      state.firstTool=id;
+      if(id==="otdr"||id==="vfl") state.nudgeShown=true;
+    }
+    // safety: verifying dark with power meter before inspecting/handling
+    if(id==="pm" && !usedPowerCheck()) state.safetyShown=true;
+    if(state.used.indexOf(id)<0) state.used.push(id);
+    state.last=id;
+    render();
+    // keep readout in view on small screens
+    var ro=document.querySelector(".readout"); if(ro && ro.scrollIntoView) ro.scrollIntoView({block:"nearest"});
+  }
+
+  function feedbackHTML(s){
+    var rootOk=s.roots[state.root]&&s.roots[state.root].ok;
+    var actOk=s.acts[state.act]&&s.acts[state.act].ok;
+    var both=rootOk&&actOk;
+    var confirmUsed = state.used.indexOf(s.confirm)>=0 || (s.confirmAlt && state.used.indexOf(s.confirmAlt)>=0);
+
+    var h='<div class="fb">';
+    h+='<div class="verdict '+(both?"ok":"no")+'">'+(both?ICO.ok:ICO.warn)+' '+
+       (both?X("Correct diagnosis and fix","Diagnóstico y solución correctos")
+            :(rootOk?X("Right cause — reconsider the action","Causa correcta — reconsidera la acción")
+                    :X("Let's re-reason this one","Repensemos este")))+'</div>';
+
+    // path efficiency
+    h+='<h3>'+X("Your diagnostic path","Tu camino de diagnóstico")+'</h3><p>';
+    var eff="";
+    if(!usedPowerCheckExcl()) eff+=X("You jumped past a basic power/DDM check — always confirm the symptom first. ","Te saltaste una revisión básica de potencia/DDM — confirma el síntoma primero. ");
+    if(confirmUsed) eff+=X("You used the confirming instrument ("+toolName(s.confirm)+"), so your conclusion rests on evidence, not a guess. ","Usaste el instrumento de confirmación ("+toolName(s.confirm)+"), así que tu conclusión se apoya en evidencia, no en una suposición. ");
+    else eff+=X("You reached an answer without the instrument that proves it ("+toolName(s.confirm)+") — next time, confirm before you commit. ","Llegaste a una respuesta sin el instrumento que la prueba ("+toolName(s.confirm)+") — la próxima vez, confirma antes de decidir. ");
+    eff+=(state.used.length<=3?X("Nicely efficient — "+state.used.length+" instruments.","Buena eficiencia — "+state.used.length+" instrumentos."):X("You gathered plenty of data ("+state.used.length+" instruments); you can often isolate this in fewer steps.","Reuniste bastante información ("+state.used.length+" instrumentos); a menudo puedes aislarlo en menos pasos."));
+    h+=eff+'</p>';
+
+    h+='<h3>'+X("What the clues meant","Qué significaban las pistas")+'</h3><p>'+esc(T(s.debrief))+'</p>';
+
+    h+='<h3>'+X("Watch the trap","Cuidado con la trampa")+'</h3><div class="trap">'+esc(T(s.trap))+'</div>';
+
+    if(!rootOk) h+='<p style="margin-top:12px">'+X("The correct root cause is highlighted in green above.","La causa raíz correcta está resaltada en verde arriba.")+'</p>';
+
+    h+='<div class="btnrow" style="margin-top:16px">'+
+       '<button class="btn" id="nextBtn">'+X("Next scenario →","Siguiente escenario →")+'</button>'+
+       '<button class="btn ghost" id="retryBtn">'+X("Retry this one","Reintentar este")+'</button>'+
+       '<button class="btn ghost" id="galBtn">'+X("All scenarios","Todos los escenarios")+'</button></div>';
+    h+='</div>';
+    return h;
+  }
+
+  /* ---------- VISUALS ---------- */
+  function topoSVG(s){
+    var W=600,H=150, y=64, xs=[70,235,400,540];
+    var nw=78,nh=42;
+    var accent=getVar("--accent"), line=getVar("--line"), ink=getVar("--ink"), sub=getVar("--sub"), card=getVar("--card"), tint=getVar("--tint");
+    var loc = state.used.indexOf("otdr")>=0||state.used.indexOf("olts")>=0||state.used.indexOf("vfl")>=0||state.checked;
+    var seg=s.suspect;
+    var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="max-height:170px" xmlns="http://www.w3.org/2000/svg">';
+    // segments
+    var segPairs=[[0,1],[1,2],[2,3]];
+    segPairs.forEach(function(p,si){
+      var x1=xs[p[0]]+nw/2, x2=xs[p[1]]-nw/2;
+      var hi=loc&&seg.type==="seg"&&seg.idx===si;
+      svg+='<line x1="'+x1+'" y1="'+y+'" x2="'+x2+'" y2="'+y+'" stroke="'+(hi?accent:line)+'" stroke-width="'+(hi?5:3)+'"'+(hi?' stroke-dasharray="8 5"':'')+'/>';
+      if(si===1) svg+='<text x="'+((x1+x2)/2)+'" y="'+(y-12)+'" text-anchor="middle" font-size="11" fill="'+sub+'" font-family="system-ui">'+esc(X("OSP span","tramo OSP"))+'</text>';
+    });
+    // nodes
+    xs.forEach(function(cx,ni){
+      var hi=loc&&seg.type==="node"&&seg.idx===ni;
+      svg+='<rect x="'+(cx-nw/2)+'" y="'+(y-nh/2)+'" width="'+nw+'" height="'+nh+'" rx="9" fill="'+(hi?tint:card)+'" stroke="'+(hi?accent:line)+'" stroke-width="'+(hi?3:1.5)+'"/>';
+      svg+='<text x="'+cx+'" y="'+(y+4)+'" text-anchor="middle" font-size="12.5" font-weight="700" fill="'+(hi?accent:ink)+'" font-family="system-ui">'+esc(T(NODES[ni]))+'</text>';
+      if(hi) svg+='<text x="'+cx+'" y="'+(y+nh/2+16)+'" text-anchor="middle" font-size="10.5" font-weight="700" fill="'+accent+'" font-family="system-ui">'+esc(X("suspect","sospechoso"))+'</text>';
+    });
+    svg+='</svg>';
+    if(!loc) svg+='<div style="font-size:11.5px;color:var(--sub);text-align:center;margin-top:2px">'+X("Localize the fault (OTDR / OLTS / VFL) to highlight the suspect segment.","Localiza la falla (OTDR / OLTS / VFL) para resaltar el segmento sospechoso.")+'</div>';
+    return svg;
+  }
+
+  function getVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim()||"#888"; }
+
+  function drawOTDR(cv,d){
+    if(!cv) return;
+    var w=cv.clientWidth||520; cv.width=w; cv.height=200;
+    var ctx=cv.getContext("2d"), H=200;
+    var accent=getVar("--accent"), line=getVar("--line"), sub=getVar("--sub"), bad=getVar("--bad");
+    var padL=38,padR=12,padT=14,padB=26;
+    var plotW=w-padL-padR, plotH=H-padT-padB;
+    var len=d.len, topDb=0, botDb=-(Math.max(8, len*d.atten+ (d.broken?6:5)));
+    function X2(km){ return padL+ (km/len)*plotW; }
+    function Y2(db){ return padT+ (topDb-db)/(topDb-botDb)*plotH; }
+    ctx.clearRect(0,0,w,H);
+    // grid
+    ctx.strokeStyle=line; ctx.lineWidth=1; ctx.font="10px system-ui"; ctx.fillStyle=sub;
+    for(var g=0;g<=4;g++){ var yy=padT+g*plotH/4; ctx.beginPath(); ctx.moveTo(padL,yy); ctx.lineTo(w-padR,yy); ctx.stroke(); }
+    for(var gx=0;gx<=5;gx++){ var xx=padL+gx*plotW/5; ctx.beginPath(); ctx.strokeStyle=line; ctx.moveTo(xx,padT); ctx.lineTo(xx,padT+plotH); ctx.stroke();
+      ctx.fillStyle=sub; ctx.textAlign="center"; ctx.fillText((len*gx/5).toFixed(len<1?2:1),xx,H-10); }
+    ctx.textAlign="right"; ctx.fillText("dB",padL-6,padT+8);
+    // trace
+    ctx.strokeStyle=accent; ctx.lineWidth=2; ctx.beginPath();
+    var start=-2.0, cur=start, km=0;
+    ctx.moveTo(X2(0),Y2(cur));
+    var evs=(d.events||[]).slice().sort(function(a,b){return a.km-b.km;});
+    var ei=0, step=len/220;
+    for(km=0; km<=(d.broken?d.endKm:d.endKm); km+=step){
+      // apply events at their km
+      while(ei<evs.length && km>=evs[ei].km){
+        var e=evs[ei];
+        if(e.refl){ ctx.lineTo(X2(e.km),Y2(cur+0.9)); } // reflective spike up
+        cur-=e.loss;
+        ctx.lineTo(X2(e.km),Y2(cur));
+        ei++;
+      }
+      cur-=d.atten*step;
+      ctx.lineTo(X2(km),Y2(cur));
+    }
+    if(d.broken){
+      // reflection spike at end then noise
+      ctx.lineTo(X2(d.endKm),Y2(cur+2.2));
+      ctx.stroke();
+      // noise floor
+      ctx.strokeStyle=bad; ctx.lineWidth=1.4; ctx.beginPath();
+      var ny=Y2(botDb+0.6);
+      ctx.moveTo(X2(d.endKm),Y2(cur+2.2));
+      ctx.lineTo(X2(d.endKm),ny);
+      for(var nx=d.endKm; nx<=len; nx+=len/60){ ctx.lineTo(X2(nx), ny+(Math.random()*8-4)); }
+      ctx.stroke();
+      // marker
+      ctx.setLineDash([4,4]); ctx.strokeStyle=bad; ctx.beginPath(); ctx.moveTo(X2(d.endKm),padT); ctx.lineTo(X2(d.endKm),padT+plotH); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle=bad; ctx.textAlign="left"; ctx.font="10px system-ui";
+      ctx.fillText(X("break "+d.endKm.toFixed(2)+" km","ruptura "+d.endKm.toFixed(2)+" km"), Math.min(X2(d.endKm)+4,w-96), padT+12);
+    } else {
+      // end reflection then drop to noise
+      ctx.lineTo(X2(d.endKm),Y2(cur+1.6));
+      ctx.lineTo(X2(d.endKm),Y2(botDb+0.4));
+      ctx.stroke();
+      ctx.strokeStyle=sub; ctx.lineWidth=1; ctx.beginPath();
+      for(var nx2=d.endKm; nx2<=len; nx2+=len/60){ ctx.lineTo(X2(nx2), Y2(botDb+0.4)+(Math.random()*5-2.5)); }
+      ctx.stroke();
+    }
+    // mark non-end events
+    (evs||[]).forEach(function(e){
+      ctx.setLineDash([3,4]); ctx.strokeStyle=e.refl?accent:sub; ctx.beginPath();
+      ctx.moveTo(X2(e.km),padT); ctx.lineTo(X2(e.km),padT+plotH); ctx.stroke(); ctx.setLineDash([]);
+    });
+  }
+
+  function drawFace(cv,d){
+    if(!cv) return;
+    var ctx=cv.getContext("2d"), S=190, c=S/2;
+    var line=getVar("--line"), ok=getVar("--ok"), bad=getVar("--bad"), sub=getVar("--sub");
+    ctx.clearRect(0,0,S,S);
+    // ferrule background
+    ctx.fillStyle="#c9d3e6"; ctx.beginPath(); ctx.arc(c,c,78,0,7); ctx.fill();
+    // cladding
+    var g=ctx.createRadialGradient(c,c,4,c,c,60);
+    g.addColorStop(0,"#9fb0cc"); g.addColorStop(1,"#7c8aa8");
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(c,c,58,0,7); ctx.fill();
+    // IEC zones
+    ctx.strokeStyle="rgba(255,255,255,.5)"; ctx.lineWidth=1;
+    [12,26,58].forEach(function(r){ ctx.beginPath(); ctx.arc(c,c,r,0,7); ctx.stroke(); });
+    // core
+    ctx.fillStyle="#3a4a66"; ctx.beginPath(); ctx.arc(c,c,7,0,7); ctx.fill();
+    // contamination / defects
+    function blob(x,y,r,col){ ctx.fillStyle=col; ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill(); }
+    if(d.state==="dirty"){
+      blob(c-3,c+2,6,"rgba(70,50,30,.75)"); blob(c+5,c-4,4,"rgba(60,45,30,.7)");
+      blob(c+2,c+8,3,"rgba(50,40,25,.7)"); blob(c-9,c-6,5,"rgba(80,60,35,.6)");
+      blob(c+12,c+9,4,"rgba(70,55,35,.6)");
+    } else if(d.state==="oil"){
+      var og=ctx.createRadialGradient(c,c,2,c,c,20); og.addColorStop(0,"rgba(120,90,50,.55)"); og.addColorStop(1,"rgba(120,90,50,0)");
+      ctx.fillStyle=og; ctx.beginPath(); ctx.arc(c-2,c,20,0,7); ctx.fill();
+      blob(c+4,c-2,3,"rgba(60,45,30,.7)");
+    } else if(d.state==="scratch"){
+      ctx.strokeStyle="rgba(255,255,255,.85)"; ctx.lineWidth=1.6;
+      ctx.beginPath(); ctx.moveTo(c-40,c-20); ctx.lineTo(c+38,c+16); ctx.stroke();
+    }
+    // verdict badge
+    var col=d.pass?ok:bad;
+    ctx.beginPath(); ctx.arc(c,c,60,0,7); ctx.strokeStyle=col; ctx.lineWidth=3; ctx.stroke();
+    ctx.fillStyle=col; ctx.font="700 13px system-ui"; ctx.textAlign="center";
+    ctx.fillText(d.pass?X("PASS","APROBADO"):X("FAIL","FALLA"), c, S-6);
+  }
+
+  /* ---------- INIT ---------- */
+  $("tema").onclick=function(){ THEME=THEME==="dark"?"light":"dark"; if(window.FOT&&FOT.setTheme)FOT.setTheme(THEME); chrome(); };
+  $("lang").querySelectorAll("button").forEach(function(b){
+    b.onclick=function(){ LANG=b.getAttribute("data-l"); if(window.FOT&&FOT.setLang)FOT.setLang(LANG); chrome(); };
+  });
+
+  chrome();
+})();
+</script>
+</body>
+</html>

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OTDR Trace Reader — Lab</title>
-<!-- TELECOM (azul) — Lab: lector de traza OTDR en canvas. Refuerza Módulo 4. -->
+<!-- TELECOM (azul) — Lab: OTDR realista (Sandbox + Escenarios) en canvas. Refuerza Módulo 4. -->
 <style>
   :root{
     --pg:#f3f6fc; --card:#ffffff; --ink:#0c1c34; --sub:#51618a; --line:#dde5f3;
@@ -27,7 +27,7 @@
   body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
   svg{display:block}
   a{color:inherit;text-decoration:none}
-  .shell{max-width:920px;margin:0 auto;padding:14px 18px 60px}
+  .shell{max-width:960px;margin:0 auto;padding:14px 18px 60px}
   .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0}
   .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
   .brand{display:flex;align-items:center;gap:11px;min-width:0}
@@ -42,34 +42,86 @@
   .lang button.on{background:var(--accent);color:#fff}
 
   h1{font-size:20px;margin:14px 2px 4px}
-  .lead{color:var(--sub);font-size:13.5px;margin:0 2px 14px;max-width:660px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+  .lead{color:var(--sub);font-size:13.5px;margin:0 2px 14px;max-width:680px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:16px}
+  .card h2{font-size:12.5px;margin:0 0 12px;text-transform:uppercase;letter-spacing:.04em;color:var(--sub)}
+
+  /* mode toggle */
+  .modebar{display:flex;justify-content:center;margin:2px 0 16px}
+  .modeseg{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px}
+  .modeseg button{border:0;background:transparent;color:var(--sub);cursor:pointer;padding:9px 18px;border-radius:999px;font-size:13.5px;font-weight:700;font-family:inherit;display:flex;align-items:center;gap:7px}
+  .modeseg button.on{background:var(--accent);color:#fff}
+
   .screen{background:var(--scr);border-radius:12px;padding:10px;position:relative}
-  canvas{width:100%;height:auto;display:block;border-radius:8px}
-  .bararea{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-top:12px}
-  .seg{display:flex;gap:6px;flex-wrap:wrap}
-  .seg button{border:1px solid var(--line);background:var(--pg);color:var(--ink);cursor:pointer;padding:8px 12px;border-radius:9px;font-size:12.5px;font-family:inherit;font-weight:600}
+  canvas{width:100%;height:auto;display:block;border-radius:8px;touch-action:none;cursor:crosshair}
+  .scrhint{font-size:11px;color:#7fa8d6;text-align:center;margin-top:6px}
+
+  /* controls */
+  .panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px;margin-top:14px}
+  .ctrl .row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;gap:8px}
+  .ctrl label{font-size:12.5px;font-weight:700}
+  .ctrl .val{font-size:12.5px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--accent);height:26px}
+  .seg{display:flex;gap:5px;flex-wrap:wrap}
+  .seg button{border:1px solid var(--line);background:var(--pg);color:var(--ink);cursor:pointer;padding:7px 11px;border-radius:9px;font-size:12px;font-family:inherit;font-weight:600}
   .seg button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .hint{font-size:11px;color:var(--sub);margin-top:4px}
+  .toggles{display:flex;gap:8px;flex-wrap:wrap}
+
+  /* readouts */
+  .reads{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:14px}
+  .rd{background:var(--pg);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+  .rd small{display:block;font-size:10.5px;color:var(--sub);text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px}
+  .rd b{font-size:16px;font-variant-numeric:tabular-nums}
+  .rd.a b{color:var(--accent)} .rd.b b{color:var(--amber)}
+
+  /* table */
+  .tblwrap{overflow-x:auto;margin-top:6px;border:1px solid var(--line);border-radius:10px}
+  table{border-collapse:collapse;width:100%;font-size:12.5px;min-width:460px}
+  th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+  th:first-child,td:first-child{text-align:left}
+  th:nth-child(2),td:nth-child(2){text-align:left}
+  th{font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--sub);font-weight:700}
+  tr:last-child td{border-bottom:0}
+  .evdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:baseline}
+  .ghostrow td{color:var(--sub);font-style:italic}
+  .tnote{font-size:11.5px;color:var(--amber);margin-top:8px}
+
   .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:9px 14px;border-radius:9px;font-size:13px;font-weight:600;font-family:inherit;min-height:38px;display:inline-flex;align-items:center;gap:7px;justify-content:center}
   .btn.ghost{background:transparent;color:var(--accent)}
+  .btn.mini{padding:7px 12px;min-height:34px;font-size:12.5px}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center}
 
-  .quiz{margin-top:16px}
-  .prompt{font-size:14.5px;font-weight:600;margin-bottom:4px}
-  .prompt .em{color:var(--accent)}
-  .subprompt{font-size:12.5px;color:var(--sub);margin-bottom:10px}
-  .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px}
-  .opt{border:1px solid var(--line);background:var(--pg);color:var(--ink);cursor:pointer;padding:11px 12px;border-radius:10px;font-size:13.5px;font-family:inherit;text-align:left;display:flex;gap:9px;align-items:center}
+  /* scenarios */
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line);background:var(--pg);color:var(--ink);cursor:pointer;padding:9px 12px;border-radius:10px;font-size:12.5px;font-family:inherit;font-weight:600;display:flex;gap:8px;align-items:center;text-align:left}
+  .chip:hover{border-color:var(--accent)}
+  .chip.on{border-color:var(--accent);background:var(--tint);color:var(--accent)}
+  .chip .cic{width:20px;height:20px;flex:none;display:flex;align-items:center;justify-content:center}
+  .symptom{display:flex;gap:11px;background:var(--ambt);border:1px solid var(--amber);border-radius:12px;padding:12px 13px;margin-bottom:14px}
+  .symptom .sic{flex:none;color:var(--amber)}
+  .symptom b{color:var(--ink)}
+  .symptom .st{font-size:13px;color:var(--ink)}
+  .stepmeta{font-size:11.5px;color:var(--sub);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;font-weight:700}
+  .qtext{font-size:14.5px;font-weight:600;margin-bottom:4px}
+  .qhint{font-size:12.5px;color:var(--sub);margin-bottom:11px}
+  .opts{display:grid;grid-template-columns:1fr;gap:8px}
+  .opt{border:1px solid var(--line);background:var(--pg);color:var(--ink);cursor:pointer;padding:11px 12px;border-radius:10px;font-size:13.5px;font-family:inherit;text-align:left;display:flex;gap:10px;align-items:flex-start;line-height:1.4}
   .opt:hover{border-color:var(--accent)}
-  .opt .dot{width:12px;height:12px;border-radius:50%;flex:none}
+  .opt .mk{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);flex:none;margin-top:1px}
   .opt.correct{border-color:var(--ok);background:var(--okt);color:var(--ok);font-weight:600}
+  .opt.correct .mk{border-color:var(--ok);background:var(--ok)}
   .opt.wrong{border-color:var(--bad);background:var(--badt);color:var(--bad);font-weight:600}
+  .opt.wrong .mk{border-color:var(--bad);background:var(--bad)}
   .opt[disabled]{cursor:default}
-  .fb{margin-top:11px;font-size:13px;color:var(--sub);border-left:3px solid var(--accent);padding-left:11px;display:none}
+  .fb{margin-top:12px;font-size:13px;color:var(--sub);border-left:3px solid var(--accent);padding:2px 0 2px 12px;display:none}
   .fb.show{display:block}
   .fb b{color:var(--ink)}
-  .scorebar{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--sub);margin-top:12px}
-  .scorebar b{color:var(--ink)}
-  .foot{margin-top:24px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--sub);text-align:center}
+  .fb.good{border-color:var(--ok)} .fb.bad{border-color:var(--bad)}
+
+  .foot{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--sub);text-align:center;line-height:1.7}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;font-size:11.5px;color:var(--sub)}
+  .legend span{display:flex;align-items:center;gap:5px}
 </style>
 </head>
 <body>
@@ -91,21 +143,43 @@
   <h1 id="title"></h1>
   <p class="lead" id="lead"></p>
 
-  <div class="card">
-    <div class="screen"><canvas id="cv"></canvas></div>
-    <div class="bararea">
-      <div class="seg" id="wl"></div>
-      <button class="btn ghost" id="newt"></button>
-    </div>
-
-    <div class="quiz">
-      <div class="prompt" id="prompt"></div>
-      <div class="subprompt" id="subprompt"></div>
-      <div class="opts" id="opts"></div>
-      <div class="fb" id="fb"></div>
-      <div class="scorebar"><span id="scoreLbl"></span><button class="btn" id="next" style="display:none"></button></div>
+  <div class="modebar">
+    <div class="modeseg" id="modeseg">
+      <button data-m="sandbox" id="mSand"></button>
+      <button data-m="scenarios" id="mScen"></button>
     </div>
   </div>
+
+  <!-- INSTRUMENT (shared) -->
+  <div class="card">
+    <div class="screen">
+      <canvas id="cv"></canvas>
+    </div>
+    <div class="scrhint" id="scrhint"></div>
+
+    <div class="reads" id="reads"></div>
+
+    <div class="panel" id="panel"></div>
+
+    <div class="rowbtns" id="sandbtns"></div>
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <!-- EVENT TABLE (shared) -->
+  <div class="card">
+    <h2 id="tblTitle"></h2>
+    <div class="tblwrap"><table id="tbl"></table></div>
+    <div class="tnote" id="tnote"></div>
+  </div>
+
+  <!-- SCENARIO PICKER -->
+  <div class="card" id="scenPick" style="display:none">
+    <h2 id="scenPickTitle"></h2>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <!-- SCENARIO WORKFLOW -->
+  <div class="card" id="scard" style="display:none"></div>
 
   <div class="foot" id="foot"></div>
 </div>
@@ -113,195 +187,756 @@
 <script src="../scripts/progress.js"></script>
 <script>
 (function(){
+  "use strict";
   function $(id){ return document.getElementById(id); }
   var LANG=(window.FOT&&FOT.getLang)?FOT.getLang():"en";
   var THEME=(window.FOT&&FOT.getTheme)?FOT.getTheme():"light";
   function X(en,es){ return LANG==="es"?es:en; }
+  function L(pair){ return pair[LANG==="es"?1:0]; }
 
   var ICO={
     sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
     moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
-    refresh:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>'
+    refresh:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>',
+    scope:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l2-7 3 15 2-9 2 4h6"/></svg>',
+    bug:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="6" width="8" height="14" rx="4"/><path d="M12 2v4M5 8l2 2M19 8l-2 2M3 14h3M18 14h3M5 20l2-2M19 20l-2-2"/></svg>',
+    alert:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>'
   };
 
-  var TYPES={
-    connector:{ col:"#4d8bff", label:["Connector (reflective)","Conector (reflectivo)"],
-      why:["Connectors cause a sharp reflective spike plus a small loss step. Common at panels and mating points.",
-            "Los conectores causan un pico reflectivo agudo más un pequeño escalón de pérdida. Comunes en paneles y acoples."] },
-    splice:{ col:"#31d67a", label:["Fusion splice (non-reflective)","Empalme por fusión (no reflectivo)"],
-      why:["A fusion splice is a small step DOWN with no reflection — typically 0.02–0.1 dB.",
-            "Un empalme por fusión es un pequeño escalón hacia ABAJO sin reflexión — típicamente 0.02–0.1 dB."] },
-    macrobend:{ col:"#fbbf24", label:["Macrobend","Macrocurvatura"],
-      why:["A macrobend is a non-reflective loss step that is clearly WORSE at 1550 nm than at 1310 nm.",
-            "Un macrobend es un escalón de pérdida no reflectivo claramente PEOR a 1550 nm que a 1310 nm."] },
-    end:{ col:"#f87171", label:["End of fiber","Fin de la fibra"],
-      why:["The fiber end shows a final reflection (or just a drop) into the noise floor — nothing beyond it.",
-            "El fin de la fibra muestra una reflexión final (o solo una caída) hacia el piso de ruido — no hay nada más allá."] }
+  /* ---------- physics constants (field-realistic, G.652) ---------- */
+  var ATTEN={ "1310":0.35, "1550":0.22, "1625":0.25 };   // dB/km
+  var MACRO={ "1310":0.22, "1550":1.00, "1625":1.65 };   // macrobend loss scaling vs 1550
+  var PULSE={
+    short:{ dz:0.05, noise:0.55, lbl:["Short","Corto"] },
+    medium:{ dz:0.18, noise:0.30, lbl:["Medium","Medio"] },
+    long:{ dz:0.55, noise:0.16, lbl:["Long","Largo"] }
   };
-  var OPT_ORDER=["connector","splice","macrobend","end"];
+  var AVG={ low:{k:1.6,lbl:["Low","Bajo"]}, med:{k:3,lbl:["Med","Medio"]}, high:{k:6,lbl:["High","Alto"]} };
+  var RANGES=[5,10,25,50,100];
+  var IOR_FIBER=1.4682;       // true fiber index (sandbox default)
+  var START=-5, DBTOP=3, DBBOT=-40;
 
-  var wl="1550";
+  var TYPE={
+    connector:{ c:"#4d8bff", l:["Connector","Conector"] },
+    fusion:{ c:"#31d67a", l:["Fusion splice","Empalme por fusión"] },
+    mechanical:{ c:"#a78bfa", l:["Mechanical splice","Empalme mecánico"] },
+    macrobend:{ c:"#fbbf24", l:["Macrobend","Macrocurvatura"] },
+    gainer:{ c:"#f472b6", l:["Gainer (MFD)","Ganador (MFD)"] },
+    ghost:{ c:"#94a3b8", l:["Ghost (artifact)","Fantasma (artefacto)"] },
+    end:{ c:"#f87171", l:["End / break","Fin / rotura"] }
+  };
+
+  /* ---------- instrument state ---------- */
+  var MODE="sandbox";
+  var state={ wl:"1550", pulse:"medium", range:25, avg:"med", ior:1.4682, launch:false, recv:false, mA:6, mB:15 };
+  var IOR_TRUE=IOR_FIBER;
+
   var cv=$("cv"), ctx=cv.getContext("2d");
-  var MAXD=25;          // km eje X
-  var scenario=null, current=0, answeredType=null, score=0, asked=0;
+  var GEO={x0:0,x1:0,y0:0,y1:0,range:25};
+  var EVTS=[], FEATS=[], ENDMEAS=25, LEADDZ=0.18, HIDDEN=0;
 
   function rnd(a,b){ return a+Math.random()*(b-a); }
+  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+  function fmt(n,d){ return (n>=0?"":"")+n.toFixed(d); }
+  function cssv(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
 
-  function buildScenario(){
-    var n=Math.floor(rnd(3,5)); // 3-4 eventos intermedios + fin
-    var evs=[]; var d=rnd(1.5,3);
-    for(var i=0;i<n;i++){
-      var t=OPT_ORDER[Math.floor(rnd(0,3))]; // connector/splice/macrobend
-      evs.push({ dist:d, type:t,
-        refl: t==="connector"?rnd(2.5,4):0,
-        loss: t==="connector"?rnd(0.2,0.6):(t==="splice"?rnd(0.03,0.12):rnd(0.4,1.1)),
-        bendExtra: t==="macrobend"?rnd(0.6,1.6):0 });
-      d+=rnd(3,6);
+  /* ---------- link builders ---------- */
+  function sandboxLink(){
+    var base=[
+      {type:"connector", dist:0.0,  loss:0.35, refl:-42},
+      {type:"fusion",    dist:3.5,  loss:0.06, refl:null},
+      {type:"connector", dist:6.0,  loss:0.50, refl:-35},   // dirty -> strong reflection -> ghost @12
+      {type:"macrobend", dist:9.2,  macro:0.80, loss:0, refl:null},
+      {type:"fusion",    dist:14.0, loss:0.05, refl:null},
+      {type:"connector", dist:17.8, loss:0.40, refl:-45},
+      {type:"gainer",    dist:19.5, loss:-0.15, refl:null},  // MFD mismatch apparent gain
+      {type:"end",       dist:22.0, loss:0, refl:-14}
+    ];
+    if(state.launch){
+      base=base.map(function(e){ var c=Object.assign({},e); c.dist=e.dist+1.0; return c; });
+      base.unshift({type:"connector", dist:0.0, loss:0.30, refl:-42}); // launch cord front connector
     }
-    evs.push({ dist:Math.min(MAXD-1.5,d), type:"end", refl:rnd(2,4), loss:0, bendExtra:0 });
-    scenario={ evs:evs, atten: wl==="1550"?0.22:0.35, start:rnd(-2,-4) };
-    current=0; asked=0; score=0; answeredType=null;
+    if(state.recv){
+      var end=base[base.length-1];
+      end.type="connector"; end.loss=0.40; end.refl=-45; // far connector now measurable
+      base.push({type:"end", dist:end.dist+1.0, loss:0, refl:-14});
+    }
+    return base;
   }
 
-  // efecto de pérdida real de un evento según wl (macrobend depende de wl)
-  function evLoss(e){ return e.loss + (e.type==="macrobend" ? (wl==="1550"? e.bendExtra : e.bendExtra*0.25) : 0); }
+  /* ---------- process link into measured events + reflective features ---------- */
+  function reflHeight(refl){ return clamp((refl+60)*0.28, 0.8, 15); }
+  function featDZ(refl){ return LEADDZ*(refl>-30?1.6:(refl>-42?1.15:0.9)); }
+  function effLoss(e){
+    if(e.type==="ghost") return 0;
+    if(e.type==="macrobend") return (e.macro||0)*MACRO[state.wl];
+    return e.loss||0;
+  }
 
+  function processLink(raw){
+    var ratio=IOR_TRUE/state.ior;
+    LEADDZ=PULSE[state.pulse].dz;
+    var evs=raw.map(function(e){ var c=Object.assign({},e); c.mdist=e.dist*ratio; return c; });
+    // ghosts from strong reflectors
+    var ghosts=[];
+    evs.forEach(function(e){
+      if(e.refl!==null && e.refl>=-40 && e.mdist>0.5 && e.type!=="ghost" && e.type!=="end"){
+        var g=2*e.mdist;
+        if(g<=state.range){ ghosts.push({type:"ghost", mdist:g, dist:g, loss:0, refl:e.refl-16, ghostOf:e.mdist}); }
+      }
+    });
+    evs=evs.concat(ghosts);
+    evs.sort(function(a,b){ return a.mdist-b.mdist; });
+
+    // reflective features (spikes) — incl. leading OTDR pulse at 0
+    var feats=[{pos:0, height:13, dz:LEADDZ*1.4, ghost:false}];
+    evs.forEach(function(e){
+      if(e.refl!==null){ feats.push({pos:e.mdist, height:reflHeight(e.refl), dz:featDZ(e.refl), ghost:e.type==="ghost"}); }
+    });
+
+    // hidden events (dead zones): near launch pulse or inside a prior reflection's dead zone
+    var hidden=0;
+    evs.forEach(function(e){
+      e.hidden=false;
+      if(e.type==="ghost") return;
+      if(e.mdist>0 && e.mdist<LEADDZ){ e.hidden=true; hidden++; return; }
+      for(var i=0;i<feats.length;i++){
+        var f=feats[i];
+        if(f.pos<e.mdist-1e-6 && e.mdist<f.pos+f.dz){ e.hidden=true; hidden++; return; }
+      }
+    });
+
+    // last real end / break
+    var endMeas=state.range;
+    for(var i=evs.length-1;i>=0;i--){ if(evs[i].type==="end"){ endMeas=evs[i].mdist; break; } }
+
+    EVTS=evs; FEATS=feats; ENDMEAS=endMeas; HIDDEN=hidden;
+  }
+
+  // clean backscatter level (dB) at measured distance d — no noise / no spikes
+  function backscatter(d){
+    var lvl=START - ATTEN[state.wl]*d;
+    for(var i=0;i<EVTS.length;i++){
+      var e=EVTS[i];
+      if(e.type==="ghost") continue;
+      if(e.mdist<=d+1e-9) lvl-=effLoss(e);
+      else break;
+    }
+    return lvl;
+  }
+  function overlay(d){
+    var s=0;
+    for(var i=0;i<FEATS.length;i++){
+      var f=FEATS[i];
+      if(d>=f.pos && d<f.pos+f.dz*2.4){ s+=f.height*Math.exp(-(d-f.pos)/(f.dz*0.5)); }
+    }
+    return s;
+  }
+  function pnoise(i){ var x=Math.sin(i*12.9898)*43758.5453; return (x-Math.floor(x))*2-1; }
+
+  /* ---------- canvas fit + draw ---------- */
   function fit(){
     var w=cv.clientWidth||cv.parentNode.clientWidth-20; if(!w) w=640;
-    var h=Math.max(240,Math.round(w*0.5));
+    var h=Math.max(260,Math.round(w*0.52));
     var dpr=window.devicePixelRatio||1;
-    cv.width=w*dpr; cv.height=h*dpr; cv.style.height=h+"px";
+    cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); cv.style.height=h+"px";
     ctx.setTransform(dpr,0,0,dpr,0,0);
     return {w:w,h:h};
   }
 
-  function cssv(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
-
   function draw(){
     var s=fit(), w=s.w, h=s.h;
-    var padL=42, padR=14, padT=14, padB=28;
-    var x0=padL, x1=w-padR, y0=padT, y1=h-padB;
-    var gx=function(km){ return x0+(km/MAXD)*(x1-x0); };
-    var DBTOP=1, DBBOT=-32;
-    var gy=function(db){ return y0+((DBTOP-db)/(DBTOP-DBBOT))*(y1-y0); };
+    var padL=44, padR=14, padT=16, padB=30;
+    GEO.x0=padL; GEO.x1=w-padR; GEO.y0=padT; GEO.y1=h-padB; GEO.range=state.range;
+    var x0=GEO.x0,x1=GEO.x1,y0=GEO.y0,y1=GEO.y1;
+    var kmToX=function(km){ return x0+(km/state.range)*(x1-x0); };
+    var dbToY=function(db){ return y0+((DBTOP-db)/(DBTOP-DBBOT))*(y1-y0); };
 
     ctx.clearRect(0,0,w,h);
+
+    // dead zone band (launch pulse)
+    ctx.fillStyle="rgba(248,113,113,.10)";
+    ctx.fillRect(x0,y0, kmToX(Math.min(LEADDZ,state.range))-x0, y1-y0);
+
     // grid
     ctx.strokeStyle=cssv("--grid"); ctx.lineWidth=1; ctx.fillStyle="#7fa8d6"; ctx.font="10px system-ui";
     ctx.textAlign="right"; ctx.textBaseline="middle";
-    for(var db=0; db>=DBBOT; db-=8){ var yy=gy(db); ctx.globalAlpha=.5; ctx.beginPath(); ctx.moveTo(x0,yy); ctx.lineTo(x1,yy); ctx.stroke(); ctx.globalAlpha=1; ctx.fillText(db+"", x0-6, yy); }
+    for(var db=0; db>=DBBOT; db-=8){ var yy=dbToY(db); ctx.globalAlpha=.5; ctx.beginPath(); ctx.moveTo(x0,yy); ctx.lineTo(x1,yy); ctx.stroke(); ctx.globalAlpha=1; ctx.fillText(db+"", x0-6, yy); }
     ctx.textAlign="center"; ctx.textBaseline="top";
-    for(var km=0; km<=MAXD; km+=5){ var xx=gx(km); ctx.globalAlpha=.5; ctx.beginPath(); ctx.moveTo(xx,y0); ctx.lineTo(xx,y1); ctx.stroke(); ctx.globalAlpha=1; ctx.fillText(km+(km===MAXD?" km":""), xx, y1+5); }
+    var kstep=state.range<=10?2:(state.range<=25?5:(state.range<=50?10:20));
+    for(var km=0; km<=state.range+0.001; km+=kstep){ var xx=kmToX(km); ctx.globalAlpha=.5; ctx.beginPath(); ctx.moveTo(xx,y0); ctx.lineTo(xx,y1); ctx.stroke(); ctx.globalAlpha=1; ctx.fillText(km.toFixed(0), xx, y1+5); }
+    ctx.fillText("km", x1-4, y1+16);
+    // y axis label
+    ctx.save(); ctx.translate(12,(y0+y1)/2); ctx.rotate(-Math.PI/2); ctx.textAlign="center"; ctx.fillText("dB", 0,0); ctx.restore();
 
-    // trace
-    var atten=scenario.atten;
-    var pts=[]; var db0=scenario.start; var lastD=0;
-    pts.push([0,db0]);
-    scenario.evs.forEach(function(e){
-      var dbAt=db0-(e.dist-lastD)*atten; // backscatter cae con la fibra
-      pts.push([e.dist,dbAt,"pre",e]);
-      if(e.refl>0){ pts.push([e.dist,dbAt+e.refl,"spike",e]); pts.push([e.dist,dbAt,"spikedown",e]); }
-      var after=dbAt-evLoss(e);
-      pts.push([e.dist,after,"drop",e]);
-      db0=after; lastD=e.dist;
-    });
-
-    // dibujar segmentos de fibra + eventos
-    ctx.strokeStyle=cssv("--trace"); ctx.lineWidth=2; ctx.lineJoin="round";
+    // trace polyline (backscatter + reflections + noise)
+    var noiseAmp=PULSE[state.pulse].noise/AVG[state.avg].k;
+    var floorLvl=backscatter(ENDMEAS)-7;
+    var seed=(state.wl.length*7+state.pulse.length*13+state.avg.length*3+Math.round(state.range)+ (state.launch?31:0)+(state.recv?17:0))*97;
+    ctx.strokeStyle=cssv("--trace"); ctx.lineWidth=1.8; ctx.lineJoin="round"; ctx.lineCap="round";
     ctx.beginPath();
-    var started=false, endReached=false, endDist=scenario.evs[scenario.evs.length-1].dist;
-    // reconstruir línea continua
-    db0=scenario.start; lastD=0;
-    ctx.moveTo(gx(0),gy(db0));
-    scenario.evs.forEach(function(e){
-      var dbAt=db0-(e.dist-lastD)*atten;
-      ctx.lineTo(gx(e.dist),gy(dbAt));            // pendiente de fibra
-      if(e.refl>0){ ctx.lineTo(gx(e.dist),gy(dbAt+e.refl)); ctx.lineTo(gx(e.dist),gy(dbAt)); } // pico
-      var after=dbAt-evLoss(e);
-      ctx.lineTo(gx(e.dist),gy(after));           // escalón de pérdida
-      db0=after; lastD=e.dist;
+    var first=true;
+    for(var px=x0; px<=x1; px++){
+      var km2=(px-x0)/(x1-x0)*state.range;
+      var base=(km2<=ENDMEAS)?backscatter(km2):floorLvl;
+      var val=base+overlay(km2);
+      var amp=(km2>ENDMEAS)?Math.max(noiseAmp*6,0.9):noiseAmp;
+      val+=amp*pnoise(px+seed);
+      var yv=clamp(dbToY(val),y0,y1);
+      if(first){ ctx.moveTo(px,yv); first=false; } else ctx.lineTo(px,yv);
+    }
+    ctx.stroke();
+
+    // event markers on top axis (visible, non-hidden)
+    ctx.textAlign="center"; ctx.textBaseline="bottom"; ctx.font="bold 10px system-ui";
+    var idx=0;
+    EVTS.forEach(function(e){
+      if(e.hidden) return;
+      if(e.mdist>state.range) return;
+      idx++;
+      var mx=kmToX(e.mdist);
+      var col=TYPE[e.type].c;
+      ctx.strokeStyle=col; ctx.globalAlpha=.35; ctx.setLineDash([3,4]); ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(mx,y0+8); ctx.lineTo(mx,y1); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1;
+      ctx.fillStyle=col;
+      ctx.beginPath(); ctx.moveTo(mx,y0+9); ctx.lineTo(mx-5,y0+1); ctx.lineTo(mx+5,y0+1); ctx.closePath(); ctx.fill();
+      ctx.fillStyle="#fff"; ctx.fillText(idx+"", mx, y0+8);
     });
-    ctx.stroke();
 
-    // ruido tras el fin
-    ctx.strokeStyle="rgba(150,180,210,.55)"; ctx.lineWidth=1; ctx.beginPath();
-    var ny=gy(db0-2);
-    ctx.moveTo(gx(endDist),gy(db0));
-    for(var xk=endDist; xk<=MAXD; xk+=0.3){ ctx.lineTo(gx(xk), ny+rnd(-6,6)); }
-    ctx.stroke();
+    // markers A / B (draggable)
+    drawMarker(kmToX(state.mA), state.mA, "A", cssv("--accent"), backscatter(Math.min(state.mA,ENDMEAS)), dbToY, y0, y1);
+    drawMarker(kmToX(state.mB), state.mB, "B", cssv("--amber"), backscatter(Math.min(state.mB,ENDMEAS)), dbToY, y0, y1);
+  }
 
-    // marcador del evento en cuestión
-    var e=scenario.evs[current];
-    var mx=gx(e.dist);
-    ctx.strokeStyle=cssv("--accent"); ctx.setLineDash([5,4]); ctx.lineWidth=1.5;
+  function drawMarker(mx, km, name, col, lvl, dbToY, y0, y1){
+    mx=clamp(mx,GEO.x0,GEO.x1);
+    ctx.strokeStyle=col; ctx.lineWidth=1.6; ctx.setLineDash([6,4]);
     ctx.beginPath(); ctx.moveTo(mx,y0); ctx.lineTo(mx,y1); ctx.stroke(); ctx.setLineDash([]);
-    // etiqueta ?
-    ctx.fillStyle=cssv("--accent");
-    var lbW=22; var lx=Math.min(Math.max(mx-lbW/2,x0),x1-lbW);
-    ctx.fillRect(lx,y0,lbW,16);
-    ctx.fillStyle="#fff"; ctx.font="bold 11px system-ui"; ctx.textAlign="center"; ctx.textBaseline="middle";
-    ctx.fillText("? ",lx+lbW/2,y0+8);
-    // distancia del evento
-    ctx.fillStyle="#7fa8d6"; ctx.font="10px system-ui"; ctx.textAlign="center"; ctx.textBaseline="top";
-    ctx.fillText(e.dist.toFixed(1)+" km", mx, y0+18);
+    // level dot
+    var yv=clamp(dbToY(lvl),y0,y1);
+    ctx.fillStyle=col; ctx.beginPath(); ctx.arc(mx,yv,3.5,0,6.283); ctx.fill();
+    // bottom handle
+    ctx.beginPath(); ctx.moveTo(mx,y1); ctx.lineTo(mx-6,y1+9); ctx.lineTo(mx+6,y1+9); ctx.closePath(); ctx.fill();
+    ctx.fillStyle="#fff"; ctx.font="bold 9px system-ui"; ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(name,mx,y1+6);
+  }
+
+  /* ---------- marker dragging ---------- */
+  var DRAG=null;
+  function xToKm(cssX){ return clamp((cssX-GEO.x0)/(GEO.x1-GEO.x0)*state.range,0,state.range); }
+  function pointerKm(e){ var r=cv.getBoundingClientRect(); return xToKm(e.clientX-r.left); }
+  cv.addEventListener("pointerdown",function(e){
+    var km=pointerKm(e);
+    DRAG=(Math.abs(km-state.mA)<=Math.abs(km-state.mB))?"A":"B";
+    if(DRAG==="A") state.mA=km; else state.mB=km;
+    cv.setPointerCapture(e.pointerId); draw(); renderReadouts();
+  });
+  cv.addEventListener("pointermove",function(e){
+    if(!DRAG) return; e.preventDefault();
+    var km=pointerKm(e);
+    if(DRAG==="A") state.mA=km; else state.mB=km;
+    draw(); renderReadouts();
+  });
+  cv.addEventListener("pointerup",function(){ DRAG=null; });
+  cv.addEventListener("pointercancel",function(){ DRAG=null; });
+
+  /* ---------- readouts ---------- */
+  function nearestRefl(km){
+    var best=null,bd=0.45;
+    EVTS.forEach(function(e){ if(e.refl!==null){ var d=Math.abs(e.mdist-km); if(d<bd){ bd=d; best=e; } } });
+    return best;
+  }
+  function renderReadouts(){
+    var a=Math.min(state.mA,state.mB), b=Math.max(state.mA,state.mB);
+    var la=backscatter(Math.min(a,ENDMEAS)), lb=backscatter(Math.min(b,ENDMEAS));
+    var dist=b-a;
+    var loss=la-lb;                 // dB drop from A to B
+    var atten=dist>0.02?loss/dist:0;
+    var rEv=nearestRefl(state.mA)||nearestRefl(state.mB);
+    var refl=rEv?rEv.refl:null;
+    var box=[
+      { cls:"a", s:X("Marker A","Marcador A"), v:state.mA.toFixed(3)+" km" },
+      { cls:"b", s:X("Marker B","Marcador B"), v:state.mB.toFixed(3)+" km" },
+      { cls:"", s:X("Distance A↔B","Distancia A↔B"), v:dist.toFixed(3)+" km" },
+      { cls:"", s:X("Loss A→B","Pérdida A→B"), v:fmt(loss,2)+" dB" },
+      { cls:"", s:X("Section atten.","Atenuación tramo"), v:fmt(atten,3)+" dB/km" },
+      { cls:"", s:X("Reflectance","Reflectancia"), v: refl!==null?fmt(refl,1)+" dB":"—" }
+    ];
+    $("reads").innerHTML=box.map(function(r){
+      return '<div class="rd '+r.cls+'"><small>'+r.s+'</small><b>'+r.v+'</b></div>';
+    }).join("");
+  }
+
+  /* ---------- event table ---------- */
+  function renderTable(){
+    var head='<tr><th>#</th><th>'+X("Type","Tipo")+'</th><th>'+X("Dist. (km)","Dist. (km)")+'</th><th>'+X("Loss (dB)","Pérd. (dB)")+'</th><th>'+X("Refl. (dB)","Refl. (dB)")+'</th><th>'+X("Cumul. (dB)","Acum. (dB)")+'</th></tr>';
+    var rows="", idx=0;
+    EVTS.forEach(function(e){
+      if(e.hidden || e.mdist>state.range) return;
+      idx++;
+      var isGhost=e.type==="ghost";
+      var lossTxt = isGhost?"—":(e.type==="end"?"—":fmt(effLoss(e),2));
+      var reflTxt = e.refl!==null?fmt(e.refl,1):"—";
+      var cumTxt = isGhost?"—":fmt(START-backscatter(e.mdist),2);
+      rows+='<tr'+(isGhost?' class="ghostrow"':'')+'><td>'+idx+'</td><td><span class="evdot" style="background:'+TYPE[e.type].c+'"></span>'+L(TYPE[e.type].l)+'</td><td>'+e.mdist.toFixed(3)+'</td><td>'+lossTxt+'</td><td>'+reflTxt+'</td><td>'+cumTxt+'</td></tr>';
+    });
+    $("tbl").innerHTML=head+rows;
+    var notes=[];
+    if(HIDDEN>0) notes.push(X(HIDDEN+" event(s) fall inside a dead zone and are not resolved — a shorter pulse or a launch fiber may reveal them.",
+                             HIDDEN+" evento(s) caen en una zona muerta y no se resuelven — un pulso más corto o un cable de lanzamiento puede revelarlos."));
+    if(Math.abs(state.ior-IOR_TRUE)>0.0005) notes.push(X("IOR is set to "+state.ior.toFixed(4)+" but the fiber is "+IOR_TRUE.toFixed(4)+" — measured distances are biased by "+((IOR_TRUE/state.ior-1)*100).toFixed(2)+"%.",
+                             "El IOR está en "+state.ior.toFixed(4)+" pero la fibra es "+IOR_TRUE.toFixed(4)+" — las distancias medidas tienen un sesgo de "+((IOR_TRUE/state.ior-1)*100).toFixed(2)+"%."));
+    $("tnote").innerHTML=notes.join("<br>");
+  }
+
+  /* ---------- controls panel ---------- */
+  function segHTML(id, opts, cur){
+    return '<div class="seg" data-seg="'+id+'">'+opts.map(function(o){
+      return '<button data-v="'+o.v+'" class="'+(String(o.v)===String(cur)?"on":"")+'">'+o.t+'</button>';
+    }).join("")+'</div>';
+  }
+  function renderPanel(){
+    var wlOpts=[{v:"1310",t:"1310 nm"},{v:"1550",t:"1550 nm"},{v:"1625",t:"1625 nm"}];
+    var puOpts=Object.keys(PULSE).map(function(k){ return {v:k,t:L(PULSE[k].lbl)}; });
+    var avOpts=Object.keys(AVG).map(function(k){ return {v:k,t:L(AVG[k].lbl)}; });
+    var rgOpts=RANGES.map(function(r){ return {v:r,t:r+" km"}; });
+    var html="";
+    html+='<div class="ctrl"><div class="row"><label>'+X("Wavelength","Longitud de onda")+'</label></div>'+segHTML("wl",wlOpts,state.wl)+'<div class="hint">'+X("Attenuation "+ATTEN[state.wl].toFixed(2)+" dB/km. Bends look worse at 1550/1625.","Atenuación "+ATTEN[state.wl].toFixed(2)+" dB/km. Los dobleces se ven peor a 1550/1625.")+'</div></div>';
+    html+='<div class="ctrl"><div class="row"><label>'+X("Pulse width","Ancho de pulso")+'</label></div>'+segHTML("pulse",puOpts,state.pulse)+'<div class="hint">'+X("Short = fine resolution, small dead zone, noisier. Long = more range, less noise, bigger dead zone.","Corto = fina resolución, zona muerta pequeña, más ruido. Largo = más alcance, menos ruido, zona muerta mayor.")+'</div></div>';
+    html+='<div class="ctrl"><div class="row"><label>'+X("Range / span","Rango / alcance")+'</label></div>'+segHTML("range",rgOpts,state.range)+'<div class="hint">'+X("Set beyond the fiber end or events fall off-screen.","Ajusta más allá del fin o los eventos quedan fuera de pantalla.")+'</div></div>';
+    html+='<div class="ctrl"><div class="row"><label>'+X("Averaging","Promediado")+'</label></div>'+segHTML("avg",avOpts,state.avg)+'<div class="hint">'+X("More averaging lowers the noise floor (longer test time).","Más promediado baja el piso de ruido (más tiempo de prueba).")+'</div></div>';
+    html+='<div class="ctrl"><div class="row"><label>'+X("Refractive index (IOR)","Índice de refracción (IOR)")+'</label><span class="val" id="vIor">'+state.ior.toFixed(4)+'</span></div><input type="range" id="ior" min="1.4380" max="1.4760" step="0.0002" value="'+state.ior+'"><div class="hint">'+X("Fiber true IOR "+IOR_TRUE.toFixed(4)+". A wrong IOR shifts every measured distance.","IOR real de la fibra "+IOR_TRUE.toFixed(4)+". Un IOR incorrecto desplaza toda distancia medida.")+'</div></div>';
+    html+='<div class="ctrl"><div class="row"><label>'+X("Test leads","Cables de prueba")+'</label></div><div class="toggles"><div class="seg" data-seg="launch"><button data-v="on" class="'+(state.launch?"on":"")+'">'+X("Launch fiber","Cable lanzamiento")+'</button></div><div class="seg" data-seg="recv"><button data-v="on" class="'+(state.recv?"on":"")+'">'+X("Receive fiber","Cable recepción")+'</button></div></div><div class="hint">'+X("A launch fiber moves the first connector out of the dead zone; a receive fiber lets you measure the last connector.","Un cable de lanzamiento saca el primer conector de la zona muerta; uno de recepción permite medir el último conector.")+'</div></div>';
+    $("panel").innerHTML=html;
+    bindPanel();
+  }
+  function bindPanel(){
+    $("panel").querySelectorAll(".seg[data-seg]").forEach(function(seg){
+      var key=seg.getAttribute("data-seg");
+      seg.querySelectorAll("button").forEach(function(b){
+        b.onclick=function(){
+          var v=b.getAttribute("data-v");
+          if(key==="wl"){ state.wl=v; }
+          else if(key==="pulse"){ state.pulse=v; }
+          else if(key==="avg"){ state.avg=v; }
+          else if(key==="range"){ state.range=+v; state.mA=clamp(state.mA,0,state.range); state.mB=clamp(state.mB,0,state.range); }
+          else if(key==="launch"){ state.launch=!state.launch; }
+          else if(key==="recv"){ state.recv=!state.recv; }
+          refreshInstrument(); renderPanel();
+        };
+      });
+    });
+    var ior=$("ior");
+    if(ior){ ior.oninput=function(){ state.ior=+ior.value; $("vIor").textContent=state.ior.toFixed(4); refreshInstrument(); }; }
+  }
+
+  function getLink(){
+    if(MODE==="sandbox"){ IOR_TRUE=IOR_FIBER; return sandboxLink(); }
+    IOR_TRUE=(currentSc&&currentSc.ior)||IOR_FIBER;
+    return currentSc?currentSc.link.map(function(e){ return Object.assign({},e); }):[];
+  }
+  function refreshInstrument(){
+    processLink(getLink());
+    draw(); renderReadouts(); renderTable();
+  }
+
+  /* ---------- legend ---------- */
+  function renderLegend(){
+    var keys=["connector","fusion","mechanical","macrobend","gainer","ghost","end"];
+    $("legend").innerHTML=keys.map(function(k){
+      return '<span><span class="evdot" style="background:'+TYPE[k].c+'"></span>'+L(TYPE[k].l)+'</span>';
+    }).join("");
+  }
+
+  /* =====================================================================
+     SCENARIOS
+  ===================================================================== */
+  var currentSc=null, SR=null;
+
+  var SCEN=[
+    {
+      id:"break", ic:ICO.alert, ior:IOR_FIBER,
+      name:["Link down after a storm","Enlace caído tras una tormenta"],
+      symptom:["A customer circuit went dark right after last night's storm. The NOC reports total loss of signal. You are at the panel with the OTDR; the span is normally 22 km. Your range is still set to 5 km from the last job.",
+               "Un circuito de cliente quedó sin señal justo tras la tormenta de anoche. El NOC reporta pérdida total de señal. Estás en el panel con el OTDR; el tramo mide normalmente 22 km. El rango sigue en 5 km del trabajo anterior."],
+      link:[ {type:"connector",dist:0,loss:0.3,refl:-42},{type:"fusion",dist:2.5,loss:0.05,refl:null},{type:"end",dist:7.3,loss:0,refl:-28} ],
+      setup:function(){ state.range=5; state.wl="1550"; state.pulse="medium"; state.ior=IOR_FIBER; state.launch=false; state.recv=false; },
+      steps:[
+        { q:["The trace just stops at your 5 km range with no clear end — what do you do first?","La traza termina en tu rango de 5 km sin un fin claro — ¿qué haces primero?"],
+          hint:["Think about what the range control actually limits.","Piensa en qué limita realmente el control de rango."],
+          opts:[
+            {t:["Increase the range to 25 km — the fault may be beyond the current span.","Aumenta el rango a 25 km — la falla puede estar más allá del tramo actual."],correct:true,
+             fb:["Right. The display simply ended at your 5 km window; the fiber continues. Always set the range past the expected end before concluding anything.","Correcto. La pantalla solo terminó en tu ventana de 5 km; la fibra continúa. Siempre ajusta el rango más allá del fin esperado antes de concluir."],
+             apply:function(){ state.range=25; }},
+            {t:["Report the fiber is broken at 5 km.","Reporta que la fibra está rota a 5 km."],correct:false,
+             fb:["Common trap: the trace ending at the range edge is NOT the fiber end. You truncated the view. Extend the range first.","Trampa común: que la traza termine en el borde del rango NO es el fin de la fibra. Truncaste la vista. Extiende el rango primero."]},
+            {t:["Switch to 1310 nm to see farther.","Cambia a 1310 nm para ver más lejos."],correct:false,
+             fb:["Wavelength doesn't change how far the range window reaches. Range/span is the control that limits distance shown.","La longitud de onda no cambia el alcance de la ventana de rango. El rango es el control que limita la distancia mostrada."]}
+          ]
+        },
+        { q:["With range extended, drag the markers. Where is the reflection followed by only noise?","Con el rango extendido, arrastra los marcadores. ¿Dónde está la reflexión seguida solo de ruido?"],
+          hint:["A break = a reflective spike, then the noise floor, then nothing.","Una rotura = un pico reflectivo, luego el piso de ruido y nada más."],
+          opts:[
+            {t:["About 7.3 km.","Cerca de 7.3 km."],correct:true,
+             fb:["Yes — a reflective event with only grass (noise) beyond it is a fiber break/end. Marker A on it reads ~7.3 km.","Sí — un evento reflectivo con solo pasto (ruido) más allá es una rotura/fin de fibra. El marcador A sobre él lee ~7.3 km."]},
+            {t:["About 5 km (where it stopped before).","Cerca de 5 km (donde paraba antes)."],correct:false,
+             fb:["That was just the old range limit, not a physical event. The real reflection sits at ~7.3 km.","Ese era solo el viejo límite de rango, no un evento físico. La reflexión real está a ~7.3 km."]},
+            {t:["About 14.6 km.","Cerca de 14.6 km."],correct:false,
+             fb:["Nothing there — beyond the break there is only noise. Re-read the marker on the reflective spike (~7.3 km).","No hay nada ahí — más allá de la rotura solo hay ruido. Vuelve a leer el marcador sobre el pico reflectivo (~7.3 km)."]}
+          ]
+        },
+        { q:["Classify the fault.","Clasifica la falla."],
+          opts:[
+            {t:["Fiber break / open (reflection into noise).","Rotura / fibra abierta (reflexión hacia el ruido)."],correct:true,
+             fb:["Correct. A storm-induced break shows a reflection (Fresnel from the fractured/air gap) then the noise floor with no return signal.","Correcto. Una rotura por tormenta muestra una reflexión (Fresnel del corte/hueco de aire) y luego el piso de ruido sin señal de retorno."]},
+            {t:["Macrobend.","Macrocurvatura."],correct:false,
+             fb:["A macrobend is a non-reflective loss step and the fiber continues afterward. Here everything past 7.3 km is gone.","Un macrobend es un escalón de pérdida no reflectivo y la fibra continúa. Aquí todo tras 7.3 km desaparece."]},
+            {t:["Dirty connector.","Conector sucio."],correct:false,
+             fb:["A connector still passes light — you'd see fiber continue. A break loses all signal beyond it.","Un conector aún deja pasar luz — verías la fibra continuar. Una rotura pierde toda señal más allá."]}
+          ]
+        },
+        { q:["Correct action?","¿Acción correcta?"],
+          opts:[
+            {t:["Dispatch an OSP crew to ~7.3 km (add slack/coil allowance) to locate and repair the break.","Despacha una cuadrilla de planta externa a ~7.3 km (con holgura/reserva) para localizar y reparar la rotura."],correct:true,
+             fb:["That's the call. Give the crew the OTDR distance plus known slack loops so ground distance matches.","Esa es la decisión. Da a la cuadrilla la distancia del OTDR más los rollos de reserva conocidos para que la distancia en terreno coincida."]},
+            {t:["Clean the panel connector and retest.","Limpia el conector del panel y reprueba."],correct:false,
+             fb:["Cleaning won't restore a physical break 7.3 km out. This is a field repair, not a connector issue.","Limpiar no restaura una rotura física a 7.3 km. Esto es reparación en campo, no un problema de conector."]}
+          ]
+        }
+      ]
+    },
+
+    {
+      id:"badsplice", ic:ICO.bug, ior:IOR_FIBER,
+      name:["Span loss too high","Pérdida de tramo muy alta"],
+      symptom:["Commissioning fails: end-to-end loss is ~0.6 dB over budget, but there is no break. There are four fusion splices and two connectors on a 21 km span. You need to find the culprit.",
+               "La puesta en servicio falla: la pérdida extremo a extremo está ~0.6 dB sobre presupuesto, pero no hay rotura. Hay cuatro empalmes por fusión y dos conectores en 21 km. Debes hallar al culpable."],
+      link:[ {type:"connector",dist:0,loss:0.3,refl:-42},{type:"fusion",dist:4,loss:0.05,refl:null},{type:"fusion",dist:8,loss:0.06,refl:null},{type:"fusion",dist:12,loss:0.55,refl:null},{type:"fusion",dist:16,loss:0.05,refl:null},{type:"connector",dist:19,loss:0.4,refl:-45},{type:"end",dist:21,loss:0,refl:-14} ],
+      setup:function(){ state.range=25; state.wl="1550"; state.pulse="medium"; state.ior=IOR_FIBER; state.launch=false; state.recv=false; },
+      steps:[
+        { q:["How do you find which splice is bad?","¿Cómo encuentras cuál empalme está mal?"],
+          hint:["You want to resolve each splice separately.","Quieres resolver cada empalme por separado."],
+          opts:[
+            {t:["Use a SHORT pulse and step the markers across each splice to measure its loss.","Usa un pulso CORTO y mueve los marcadores por cada empalme para medir su pérdida."],correct:true,
+             fb:["Good method. Short pulse = small dead zone and fine resolution, so closely-spaced splices stay separated and you can read each one.","Buen método. Pulso corto = zona muerta pequeña y fina resolución, así los empalmes cercanos quedan separados y puedes leer cada uno."],
+             apply:function(){ state.pulse="short"; }},
+            {t:["Use a LONG pulse so the trace is less noisy.","Usa un pulso LARGO para que la traza tenga menos ruido."],correct:false,
+             fb:["Trap: a long pulse's big dead zone can merge adjacent splices and hide small ones. Less noise, but you lose the resolution you need here.","Trampa: la gran zona muerta del pulso largo puede fusionar empalmes contiguos y ocultar los pequeños. Menos ruido, pero pierdes la resolución que necesitas."],
+             apply:function(){ state.pulse="long"; }},
+            {t:["Replace all four splices.","Reemplaza los cuatro empalmes."],correct:false,
+             fb:["Wasteful and slow. Measure first — only one splice is out of spec.","Costoso y lento. Mide primero — solo un empalme está fuera de norma."]}
+          ]
+        },
+        { q:["Which splice reads far higher than the others?","¿Cuál empalme lee mucho más alto que los demás?"],
+          hint:["Good fusion splices are ~0.05 dB. Look for the ~0.5 dB step.","Un buen empalme por fusión es ~0.05 dB. Busca el escalón de ~0.5 dB."],
+          opts:[
+            {t:["The fusion splice at ~12 km (~0.55 dB).","El empalme por fusión a ~12 km (~0.55 dB)."],correct:true,
+             fb:["Exactly. Put A just before and B just after it: the step is ~0.55 dB while the others are ~0.05 dB. That single splice eats the budget.","Exacto. Pon A justo antes y B justo después: el escalón es ~0.55 dB mientras los otros son ~0.05 dB. Ese empalme se come el presupuesto."]},
+            {t:["The connector at 19 km.","El conector a 19 km."],correct:false,
+             fb:["The connector at ~0.4 dB is within a normal mated-pair range and it's reflective. The offender is a non-reflective ~0.55 dB fusion at 12 km.","El conector a ~0.4 dB está en rango normal de par acoplado y es reflectivo. El culpable es una fusión no reflectiva de ~0.55 dB a 12 km."]},
+            {t:["The splice at 4 km.","El empalme a 4 km."],correct:false,
+             fb:["That one measures ~0.05 dB — a good splice. Keep stepping the markers to the ~0.55 dB step at 12 km.","Ese mide ~0.05 dB — buen empalme. Sigue moviendo los marcadores hasta el escalón de ~0.55 dB a 12 km."]}
+          ]
+        },
+        { q:["Identify and act.","Identifica y actúa."],
+          opts:[
+            {t:["A high-loss fusion splice at 12 km — re-splice it.","Un empalme por fusión de alta pérdida a 12 km — rehazlo."],correct:true,
+             fb:["Correct. Re-fuse that joint and retest; the span should come back within budget. Verify the final loss end-to-end with an OLTS.","Correcto. Rehaz esa fusión y reprueba; el tramo debería volver a presupuesto. Verifica la pérdida final extremo a extremo con un OLTS."]},
+            {t:["Increase transmit power on the optic.","Sube la potencia de transmisión del óptico."],correct:false,
+             fb:["That masks a defect instead of fixing it and may violate the optic's spec. Repair the bad splice.","Eso enmascara un defecto en vez de arreglarlo y puede violar la norma del óptico. Repara el empalme malo."]}
+          ]
+        }
+      ]
+    },
+
+    {
+      id:"macro", ic:ICO.bug, ior:IOR_FIBER,
+      name:["High loss only at 1550 nm","Pérdida alta solo a 1550 nm"],
+      symptom:["A link passes at 1310 nm but the customer sees intermittent errors, worse in the afternoon heat. Your 1310 nm OTDR trace looks clean. Something is wavelength-dependent.",
+               "Un enlace pasa a 1310 nm pero el cliente ve errores intermitentes, peores con el calor de la tarde. Tu traza OTDR a 1310 nm se ve limpia. Algo depende de la longitud de onda."],
+      link:[ {type:"connector",dist:0,loss:0.3,refl:-42},{type:"fusion",dist:5,loss:0.05,refl:null},{type:"macrobend",dist:9.5,macro:1.2,loss:0,refl:null},{type:"fusion",dist:14,loss:0.05,refl:null},{type:"end",dist:18,loss:0,refl:-14} ],
+      setup:function(){ state.range=25; state.wl="1310"; state.pulse="short"; state.ior=IOR_FIBER; state.launch=false; state.recv=false; },
+      steps:[
+        { q:["The 1310 nm trace is clean. What's your next move?","La traza a 1310 nm está limpia. ¿Cuál es tu siguiente paso?"],
+          hint:["Some faults only show at longer wavelengths.","Algunas fallas solo se ven en longitudes de onda largas."],
+          opts:[
+            {t:["Compare 1310 vs 1550/1625 nm — bends are wavelength-dependent.","Compara 1310 vs 1550/1625 nm — los dobleces dependen de la longitud de onda."],correct:true,
+             fb:["Right. Switch the wavelength and watch: a non-reflective step near 9.5 km grows sharply at 1550 nm. That's the diagnostic move.","Correcto. Cambia la longitud de onda y observa: un escalón no reflectivo cerca de 9.5 km crece bruscamente a 1550 nm. Ese es el paso diagnóstico."],
+             apply:function(){ state.wl="1550"; }},
+            {t:["Re-measure at 1310 nm with more averaging.","Vuelve a medir a 1310 nm con más promediado."],correct:false,
+             fb:["Averaging cleans noise, not a hidden bend. At 1310 nm a macrobend barely shows — you must go to 1550/1625 nm.","El promediado limpia ruido, no un doblez oculto. A 1310 nm un macrobend apenas se ve — debes ir a 1550/1625 nm."]},
+            {t:["Replace the customer's ONT.","Reemplaza la ONT del cliente."],correct:false,
+             fb:["You haven't localized the fault yet. Swapping equipment blindly wastes a truck roll. Test both wavelengths first.","Aún no localizaste la falla. Cambiar equipo a ciegas gasta una visita. Prueba ambas longitudes de onda primero."]}
+          ]
+        },
+        { q:["At 1550 nm a non-reflective step ~4× larger appears near 9.5 km. What is it?","A 1550 nm aparece un escalón no reflectivo ~4× mayor cerca de 9.5 km. ¿Qué es?"],
+          opts:[
+            {t:["A macrobend (tight bend / over-tight coil).","Un macrobend (doblez cerrado / rollo muy apretado)."],correct:true,
+             fb:["Yes. Non-reflective loss that is small at 1310 and large at 1550/1625 is the classic macrobend signature — heat can tighten a coil and make it worse.","Sí. Pérdida no reflectiva pequeña a 1310 y grande a 1550/1625 es la firma clásica del macrobend — el calor puede apretar un rollo y empeorarlo."]},
+            {t:["A fusion splice.","Un empalme por fusión."],correct:false,
+             fb:["A fusion splice loss barely changes with wavelength. This step multiplies with wavelength — that's a bend.","La pérdida de una fusión casi no cambia con la longitud de onda. Este escalón se multiplica con la longitud de onda — es un doblez."]},
+            {t:["A connector.","Un conector."],correct:false,
+             fb:["A connector is reflective (a spike). This event has no reflection and grows with wavelength — a macrobend.","Un conector es reflectivo (un pico). Este evento no tiene reflexión y crece con la longitud de onda — un macrobend."]}
+          ]
+        },
+        { q:["Fix it.","Corrígelo."],
+          opts:[
+            {t:["Locate and relieve the tight bend/coil near 9.5 km (loosen radius, re-dress the slack).","Localiza y libera el doblez/rollo apretado cerca de 9.5 km (afloja el radio, reordena la reserva)."],correct:true,
+             fb:["Correct. Restore the minimum bend radius; the 1550 nm loss should collapse back toward the 1310 value. No splicing needed.","Correcto. Restaura el radio de curvatura mínimo; la pérdida a 1550 nm debería volver hacia el valor de 1310. No hace falta empalmar."]},
+            {t:["Re-splice the fiber at 9.5 km.","Rehaz el empalme a 9.5 km."],correct:false,
+             fb:["There's no splice there — it's a bend. Splicing won't help; fix the routing/coil.","No hay empalme ahí — es un doblez. Empalmar no ayuda; corrige el enrutado/rollo."]}
+          ]
+        }
+      ]
+    },
+
+    {
+      id:"ghost", ic:ICO.bug, ior:IOR_FIBER,
+      name:["Mystery reflection beyond the end","Reflexión misteriosa tras el fin"],
+      symptom:["A trainee flags a 'second event' at ~16 km, but the fiber record says the drop is only 13 km long. There's a small reflection out there with no loss across it. The connector at 8 km is dirty and strongly reflective.",
+               "Un aprendiz marca un 'segundo evento' a ~16 km, pero el registro dice que el drop mide solo 13 km. Hay una pequeña reflexión ahí sin pérdida a través de ella. El conector a 8 km está sucio y refleja fuerte."],
+      link:[ {type:"connector",dist:0,loss:0.3,refl:-40},{type:"fusion",dist:4,loss:0.05,refl:null},{type:"connector",dist:8,loss:0.35,refl:-36},{type:"end",dist:13,loss:0,refl:-14} ],
+      setup:function(){ state.range=25; state.wl="1550"; state.pulse="medium"; state.ior=IOR_FIBER; state.launch=false; state.recv=false; },
+      steps:[
+        { q:["Real event or artifact? The feature sits at ~16 km, past the 13 km end.","¿Evento real o artefacto? El rasgo está a ~16 km, tras el fin de 13 km."],
+          hint:["Check for a loss step across it, and do the math on the strong reflector at 8 km.","Busca un escalón de pérdida a través de él y haz la cuenta con el reflector fuerte a 8 km."],
+          opts:[
+            {t:["A ghost — a reflection with NO loss, at 2× the strong reflector (8 km→16 km), beyond the real end.","Un fantasma — reflexión SIN pérdida, a 2× el reflector fuerte (8 km→16 km), tras el fin real."],correct:true,
+             fb:["Exactly. A strong reflection bounces back and forth, re-appearing at a multiple of its distance. No loss across it and it's beyond the true end — that's a ghost, not fiber.","Exacto. Una reflexión fuerte rebota y reaparece a un múltiplo de su distancia. Sin pérdida a través y tras el fin real — es un fantasma, no fibra."]},
+            {t:["A second fiber segment spliced on.","Un segundo tramo de fibra empalmado."],correct:false,
+             fb:["Novice trap. There's no continuing backscatter with real loss beyond 13 km — the fiber already ended. A repeating reflection past the end is a ghost.","Trampa de novato. No hay retrodispersión con pérdida real tras 13 km — la fibra ya terminó. Una reflexión que se repite tras el fin es un fantasma."]},
+            {t:["A bad splice at 16 km.","Un empalme malo a 16 km."],correct:false,
+             fb:["A splice shows a loss step and needs fiber around it. Here there's a lone reflection over noise at exactly 2× a strong reflector — a ghost.","Un empalme muestra un escalón de pérdida y necesita fibra alrededor. Aquí hay una reflexión solitaria sobre ruido a exactamente 2× un reflector fuerte — un fantasma."]}
+          ]
+        },
+        { q:["How do you confirm and suppress a ghost?","¿Cómo confirmas y suprimes un fantasma?"],
+          opts:[
+            {t:["No loss across it + located at a multiple of a strong reflection; reduce it with a cleaner/APC connector or shorter pulse.","Sin pérdida a través + ubicado en un múltiplo de una reflexión fuerte; redúcelo con un conector limpio/APC o pulso más corto."],correct:true,
+             fb:["Correct. Kill the source reflection (clean or replace the dirty 8 km connector, or use APC) and the ghost disappears. Lower pulse energy helps too.","Correcto. Elimina la reflexión fuente (limpia o reemplaza el conector sucio de 8 km, o usa APC) y el fantasma desaparece. Bajar la energía del pulso también ayuda."]},
+            {t:["Increase the pulse width to see the ghost better.","Aumenta el ancho de pulso para ver mejor el fantasma."],correct:false,
+             fb:["A bigger pulse means a stronger reflection and often a stronger ghost. To confirm, reduce the source reflection instead.","Un pulso mayor implica reflexión más fuerte y a menudo fantasma más fuerte. Para confirmar, reduce la reflexión fuente."]}
+          ]
+        },
+        { q:["Report it.","Repórtalo."],
+          opts:[
+            {t:["True fiber end is ~13 km; the 16 km feature is a ghost artifact — ignore it (and clean the 8 km connector).","El fin real es ~13 km; el rasgo de 16 km es un artefacto fantasma — ignóralo (y limpia el conector de 8 km)."],correct:true,
+             fb:["Right. Don't dispatch a crew to 16 km chasing an echo. Fixing the dirty connector cleans up the trace.","Correcto. No despaches a nadie a 16 km persiguiendo un eco. Arreglar el conector sucio limpia la traza."]},
+            {t:["Send a crew to 16 km to investigate the event.","Envía una cuadrilla a 16 km a investigar el evento."],correct:false,
+             fb:["That's the exact trap — the ghost isn't a physical location. There's nothing to find at 16 km.","Esa es la trampa exacta — el fantasma no es un lugar físico. No hay nada que encontrar a 16 km."]}
+          ]
+        }
+      ]
+    },
+
+    {
+      id:"gainer", ic:ICO.bug, ior:IOR_FIBER,
+      name:["A splice that looks like gain","Un empalme que parece ganancia"],
+      symptom:["At 10 km the trace steps UP instead of down across a fusion splice. A junior tech says the splice is 'amplifying' the signal. The two fibers joined here are different types (different mode-field diameters).",
+               "A 10 km la traza sube en vez de bajar a través de un empalme por fusión. Un técnico junior dice que el empalme 'amplifica' la señal. Las dos fibras unidas aquí son de tipos distintos (distinto diámetro de campo modal)."],
+      link:[ {type:"connector",dist:0,loss:0.3,refl:-42},{type:"fusion",dist:5,loss:0.05,refl:null},{type:"gainer",dist:10,loss:-0.25,refl:null},{type:"fusion",dist:15,loss:0.05,refl:null},{type:"end",dist:19,loss:0,refl:-14} ],
+      setup:function(){ state.range=25; state.wl="1550"; state.pulse="short"; state.ior=IOR_FIBER; state.launch=false; state.recv=false; },
+      steps:[
+        { q:["Does the splice amplify light?","¿El empalme amplifica la luz?"],
+          hint:["Passive glass can't add power. Think about what backscatter depends on.","El vidrio pasivo no agrega potencia. Piensa de qué depende la retrodispersión."],
+          opts:[
+            {t:["No — it's a 'gainer' from mode-field-diameter mismatch. Measure from both ends and average.","No — es un 'ganador' por desajuste de diámetro de campo modal. Mide desde ambos extremos y promedia."],correct:true,
+             fb:["Correct. The trace level depends on each fiber's backscatter capture. Going into a fiber with higher backscatter makes the level jump up even though real loss is positive. Bidirectional average gives the true loss.","Correcto. El nivel de la traza depende de la retrodispersión de cada fibra. Al entrar a una fibra con más retrodispersión el nivel sube aunque la pérdida real sea positiva. El promedio bidireccional da la pérdida real."]},
+            {t:["Yes, it's acting like a small EDFA.","Sí, actúa como un pequeño EDFA."],correct:false,
+             fb:["No power source exists at a fusion splice — it can't amplify. The apparent gain is a backscatter artifact of MFD mismatch.","No hay fuente de potencia en un empalme por fusión — no puede amplificar. La ganancia aparente es un artefacto de retrodispersión por desajuste de MFD."]},
+            {t:["It's a glitch — ignore the splice entirely.","Es un fallo — ignora el empalme por completo."],correct:false,
+             fb:["It's real and it does have loss; you just can't read it one-way. Measure bidirectionally rather than dismissing it.","Es real y sí tiene pérdida; solo que no puedes leerla en un solo sentido. Mide bidireccionalmente en vez de descartarlo."]}
+          ]
+        },
+        { q:["From the opposite direction, the same splice would show…","Desde el sentido opuesto, el mismo empalme mostraría…"],
+          opts:[
+            {t:["An equal-magnitude apparent LOSS; the true loss = average of both directions.","Una pérdida aparente de igual magnitud; la pérdida real = promedio de ambos sentidos."],correct:true,
+             fb:["Exactly. If one way shows −0.25 dB (gain) and the other +0.35 dB, the real splice loss ≈ (−0.25+0.35)/2 = 0.05 dB. That's why bidirectional testing is the standard.","Exacto. Si un sentido muestra −0.25 dB (ganancia) y el otro +0.35 dB, la pérdida real ≈ (−0.25+0.35)/2 = 0.05 dB. Por eso la prueba bidireccional es el estándar."]},
+            {t:["The same apparent gain.","La misma ganancia aparente."],correct:false,
+             fb:["No — the artifact flips sign with direction. That sign flip is exactly how you recognize a gainer.","No — el artefacto cambia de signo con el sentido. Ese cambio de signo es justo cómo reconoces un ganador."]}
+          ]
+        },
+        { q:["Decision.","Decisión."],
+          opts:[
+            {t:["Accept it if the bidirectional average is within spec; don't re-splice on a one-way reading.","Acéptalo si el promedio bidireccional está en norma; no rehagas el empalme por una lectura de un solo sentido."],correct:true,
+             fb:["Right. Many good splices look like gainers one-way. Only the bidirectional average tells you if it truly passes.","Correcto. Muchos buenos empalmes parecen ganadores en un sentido. Solo el promedio bidireccional dice si realmente pasa."]},
+            {t:["Re-splice immediately because gain is impossible.","Rehaz el empalme de inmediato porque la ganancia es imposible."],correct:false,
+             fb:["You'd be re-doing a splice that may already be excellent. Measure both ways before touching it.","Estarías rehaciendo un empalme que quizá ya es excelente. Mide en ambos sentidos antes de tocarlo."]}
+          ]
+        }
+      ]
+    },
+
+    {
+      id:"ior", ic:ICO.alert, ior:1.4680,
+      name:["Wrong IOR sends the crew off","IOR incorrecto desvía a la cuadrilla"],
+      symptom:["A locate crew is standing by and needs the exact distance to a break. Your OTDR IOR is still 1.4400 from a different cable, but this cable's spec sheet says 1.4680. The break reads about 10.19 km right now.",
+               "Una cuadrilla de localización espera la distancia exacta a una rotura. Tu OTDR tiene IOR 1.4400 de otro cable, pero la hoja de datos de este cable dice 1.4680. La rotura lee ahora unos 10.19 km."],
+      link:[ {type:"connector",dist:0,loss:0.3,refl:-42},{type:"fusion",dist:5,loss:0.05,refl:null},{type:"end",dist:10.0,loss:0,refl:-28} ],
+      setup:function(){ state.range=25; state.wl="1550"; state.pulse="medium"; state.ior=1.4400; state.launch=false; state.recv=false; },
+      steps:[
+        { q:["Before you give the crew a distance, what do you fix?","Antes de dar una distancia a la cuadrilla, ¿qué corriges?"],
+          hint:["Distance = c·t / (2·IOR). The IOR you set scales every reading.","Distancia = c·t / (2·IOR). El IOR que fijas escala cada lectura."],
+          opts:[
+            {t:["Set the IOR to the cable's 1.4680, then read the distance.","Fija el IOR al 1.4680 del cable, luego lee la distancia."],correct:true,
+             fb:["Correct. IOR is the calibration between light travel-time and distance. With the right IOR the break snaps to its true ~10.0 km instead of the biased 10.19 km.","Correcto. El IOR es la calibración entre el tiempo de viaje de la luz y la distancia. Con el IOR correcto la rotura cae a su ~10.0 km real en vez del sesgado 10.19 km."],
+             apply:function(){ state.ior=1.4680; }},
+            {t:["Read the distance now with IOR 1.4400 — close enough.","Lee la distancia ahora con IOR 1.4400 — bastante cerca."],correct:false,
+             fb:["Trap: a ~1.9% IOR error is ~190 m over 10 km — enough to make the crew dig in the wrong place. Fix the IOR first.","Trampa: un error de IOR de ~1.9% son ~190 m en 10 km — suficiente para que la cuadrilla excave en el lugar equivocado. Corrige el IOR primero."]},
+            {t:["Switch wavelength to sharpen the distance.","Cambia la longitud de onda para afinar la distancia."],correct:false,
+             fb:["Wavelength doesn't set the distance calibration — IOR does. Enter the correct IOR from the cable spec.","La longitud de onda no fija la calibración de distancia — el IOR sí. Ingresa el IOR correcto de la hoja del cable."]}
+          ]
+        },
+        { q:["With IOR corrected, the break now reads about…","Con el IOR corregido, la rotura ahora lee unos…"],
+          opts:[
+            {t:["10.0 km.","10.0 km."],correct:true,
+             fb:["Yes. The true distance appears once the IOR matches the fiber. That's the number the crew needs.","Sí. La distancia real aparece cuando el IOR coincide con la fibra. Ese es el número que la cuadrilla necesita."]},
+            {t:["10.2 km.","10.2 km."],correct:false,
+             fb:["That was the biased reading with the wrong IOR. After correction it moves in to ~10.0 km.","Esa era la lectura sesgada con el IOR incorrecto. Tras corregir se mueve a ~10.0 km."]},
+            {t:["9.8 km.","9.8 km."],correct:false,
+             fb:["Over-corrected. The right IOR lands the break at ~10.0 km, not short of it.","Sobre-corregido. El IOR correcto ubica la rotura en ~10.0 km, no antes."]}
+          ]
+        },
+        { q:["What do you hand the crew?","¿Qué entregas a la cuadrilla?"],
+          opts:[
+            {t:["~10.0 km (IOR-corrected) plus the known slack/coil allowance for ground distance.","~10.0 km (corregido por IOR) más la reserva/rollos conocidos para la distancia en terreno."],correct:true,
+             fb:["Correct. OTDR distance is fiber distance; add cable slack and coils so the physical dig location matches.","Correcto. La distancia del OTDR es distancia de fibra; suma la reserva y rollos para que el punto físico de excavación coincida."]},
+            {t:["10.19 km, the first reading.","10.19 km, la primera lectura."],correct:false,
+             fb:["That's the wrong-IOR number — it would send them ~190 m past the fault. Give the corrected 10.0 km.","Ese es el número con IOR incorrecto — los enviaría ~190 m más allá de la falla. Da los 10.0 km corregidos."]}
+          ]
+        }
+      ]
+    }
+  ];
+
+  /* ---------- scenario rendering ---------- */
+  function renderChips(){
+    $("chips").innerHTML=SCEN.map(function(s,i){
+      return '<button class="chip'+(currentSc&&currentSc.id===s.id?" on":"")+'" data-i="'+i+'"><span class="cic">'+s.ic+'</span>'+L(s.name)+'</button>';
+    }).join("");
+    $("chips").querySelectorAll(".chip").forEach(function(b){
+      b.onclick=function(){ startScenario(+b.getAttribute("data-i")); };
+    });
+  }
+  function startScenario(i){
+    currentSc=SCEN[i];
+    currentSc.setup();
+    SR={ step:0, answered:false, chosen:null, scored:false, correctFirst:0 };
+    state.mA=clamp(state.range*0.25,0,state.range); state.mB=clamp(state.range*0.6,0,state.range);
+    renderChips(); renderPanel(); refreshInstrument(); renderScenarioCard();
+    $("scard").scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
+
+  function renderScenarioCard(){
+    if(!currentSc){ $("scard").style.display="none"; return; }
+    $("scard").style.display="block";
+    var sc=currentSc, n=sc.steps.length;
+    var html="";
+    html+='<div class="symptom"><span class="sic">'+ICO.alert+'</span><div><div class="stepmeta" style="color:var(--amber)">'+L(sc.name)+' · '+X("Reported symptom","Síntoma reportado")+'</div><div class="st">'+L(sc.symptom)+'</div></div></div>';
+
+    if(SR.step>=n){
+      // summary
+      html+='<div class="stepmeta">'+X("Debrief","Cierre")+'</div>';
+      html+='<div class="qtext">'+X("Nicely reasoned — you worked the trace like a field tech.","Bien razonado — trabajaste la traza como un técnico de campo.")+'</div>';
+      html+='<div class="qhint">'+X("First-try correct on "+SR.correctFirst+" of "+n+" decisions. This is practice, not a grade — the goal is the reasoning, not the score.","Aciertos al primer intento en "+SR.correctFirst+" de "+n+" decisiones. Esto es práctica, no una nota — la meta es el razonamiento, no el puntaje.")+'</div>';
+      html+='<div class="fb good show"><b>'+X("What to carry to the field:","Qué llevar al campo:")+'</b> '+L(sc.takeaway||["","" ])+'</div>';
+      html+='<div class="rowbtns"><button class="btn" id="scRestart">'+X("Restart scenario","Reiniciar escenario")+'</button><button class="btn ghost" id="scAnother">'+X("Try another","Probar otro")+'</button></div>';
+      $("scard").innerHTML=html;
+      $("scRestart").onclick=function(){ var i=SCEN.indexOf(currentSc); startScenario(i); };
+      $("scAnother").onclick=function(){ currentSc=null; SR=null; renderChips(); $("scard").style.display="none"; $("scenPick").scrollIntoView({behavior:"smooth",block:"nearest"}); };
+      return;
+    }
+
+    var step=sc.steps[SR.step];
+    html+='<div class="stepmeta">'+X("Step","Paso")+' '+(SR.step+1)+' / '+n+'</div>';
+    html+='<div class="qtext">'+L(step.q)+'</div>';
+    if(step.hint) html+='<div class="qhint">'+L(step.hint)+'</div>';
+    html+='<div class="opts">'+step.opts.map(function(o,oi){
+      var cls="opt";
+      if(SR.answered){
+        if(o.correct) cls+=" correct";
+        else if(SR.chosen===oi) cls+=" wrong";
+      }
+      return '<button class="'+cls+'" data-oi="'+oi+'"'+(SR.answered?" disabled":"")+'><span class="mk"></span><span>'+L(o.t)+'</span></button>';
+    }).join("")+'</div>';
+
+    var fbCls="fb";
+    if(SR.answered){
+      var ch=step.opts[SR.chosen];
+      fbCls+=ch.correct?" good show":" bad show";
+      html+='<div class="'+fbCls+'"><b>'+(ch.correct?X("Good call. ","Buena decisión. "):X("Watch this one. ","Cuidado con esto. "))+'</b>'+L(ch.fb)+'</div>';
+    } else {
+      html+='<div class="fb"></div>';
+    }
+
+    html+='<div class="rowbtns">';
+    if(SR.answered){
+      var last=(SR.step===n-1);
+      html+='<button class="btn" id="scNext">'+(last?X("Finish","Terminar"):X("Continue","Continuar"))+'</button>';
+      if(!step.opts[SR.chosen].correct) html+='<button class="btn ghost" id="scRetry">'+X("Try again","Intentar de nuevo")+'</button>';
+    }
+    html+='<button class="btn ghost mini" id="scAnother2">'+X("Try another scenario","Probar otro escenario")+'</button>';
+    html+='</div>';
+
+    $("scard").innerHTML=html;
+    $("scard").querySelectorAll(".opt").forEach(function(b){
+      b.onclick=function(){ if(SR.answered) return; answerStep(+b.getAttribute("data-oi")); };
+    });
+    var nx=$("scNext"); if(nx) nx.onclick=function(){ SR.step++; SR.answered=false; SR.chosen=null; SR.scored=false; renderScenarioCard(); };
+    var rt=$("scRetry"); if(rt) rt.onclick=function(){ SR.answered=false; SR.chosen=null; renderScenarioCard(); };
+    $("scAnother2").onclick=function(){ currentSc=null; SR=null; renderChips(); $("scard").style.display="none"; $("scenPick").scrollIntoView({behavior:"smooth",block:"nearest"}); };
+  }
+
+  function answerStep(oi){
+    var step=currentSc.steps[SR.step];
+    var o=step.opts[oi];
+    SR.chosen=oi; SR.answered=true;
+    if(!SR.scored){ SR.scored=true; if(o.correct) SR.correctFirst++; }
+    if(o.apply){ o.apply(); renderPanel(); refreshInstrument(); }
+    renderScenarioCard();
+  }
+
+  /* takeaways */
+  SCEN[0].takeaway=["Always set the range past the expected end; a trace ending at the range edge is not a fault. Give repair crews IOR-correct distance plus slack.","Siempre ajusta el rango más allá del fin esperado; una traza que termina en el borde del rango no es una falla. Da a las cuadrillas distancia con IOR correcto más reserva."];
+  SCEN[1].takeaway=["Isolate loss splice-by-splice with a short pulse and markers; don't hide small events under a long pulse.","Aísla la pérdida empalme por empalme con pulso corto y marcadores; no ocultes eventos pequeños bajo un pulso largo."];
+  SCEN[2].takeaway=["Bends are wavelength-dependent — always compare 1310 vs 1550/1625 nm to confirm a macrobend.","Los dobleces dependen de la longitud de onda — siempre compara 1310 vs 1550/1625 nm para confirmar un macrobend."];
+  SCEN[3].takeaway=["A reflection past the end with no loss, at a multiple of a strong reflector, is a ghost — not a place to dig.","Una reflexión tras el fin, sin pérdida, en un múltiplo de un reflector fuerte, es un fantasma — no un lugar para excavar."];
+  SCEN[4].takeaway=["Passive fiber can't add power. Gainers come from MFD mismatch; use the bidirectional average for true splice loss.","La fibra pasiva no agrega potencia. Los ganadores vienen de desajuste de MFD; usa el promedio bidireccional para la pérdida real."];
+  SCEN[5].takeaway=["Set the IOR from the cable spec before quoting any distance; a small IOR error becomes hundreds of meters on the ground.","Fija el IOR de la hoja del cable antes de citar cualquier distancia; un pequeño error de IOR se vuelve cientos de metros en terreno."];
+
+  /* =====================================================================
+     MODE + CHROME
+  ===================================================================== */
+  function setMode(m){
+    MODE=m;
+    $("mSand").classList.toggle("on",m==="sandbox");
+    $("mScen").classList.toggle("on",m==="scenarios");
+    if(m==="sandbox"){
+      $("sandbtns").style.display="flex";
+      $("scenPick").style.display="none";
+      $("scard").style.display="none";
+      currentSc=null; SR=null;
+      state.wl="1550"; state.range=25; state.ior=IOR_FIBER;
+      state.mA=6; state.mB=15;
+      $("scrhint").textContent=X("Drag markers A and B along the trace to measure distance, loss and reflectance.","Arrastra los marcadores A y B por la traza para medir distancia, pérdida y reflectancia.");
+    } else {
+      $("sandbtns").style.display="none";
+      $("scenPick").style.display="block";
+      if(!currentSc) startScenario(0);
+      $("scrhint").textContent=X("Use the controls to investigate, then drag markers A and B to read the trace.","Usa los controles para investigar, luego arrastra A y B para leer la traza.");
+    }
+    renderPanel(); refreshInstrument();
+    if(m==="scenarios") renderScenarioCard();
+  }
+
+  function renderSandBtns(){
+    $("sandbtns").innerHTML='<button class="btn ghost" id="reseed">'+ICO.refresh+' '+X("Reset instrument","Reiniciar instrumento")+'</button>'+
+      '<span class="hint" style="margin:0">'+X("Tip: enable the Launch fiber to move the near connector out of the dead zone.","Consejo: activa el cable de lanzamiento para sacar el conector cercano de la zona muerta.")+'</span>';
+    $("reseed").onclick=function(){ state.wl="1550"; state.pulse="medium"; state.range=25; state.avg="med"; state.ior=IOR_FIBER; state.launch=false; state.recv=false; state.mA=6; state.mB=15; renderPanel(); refreshInstrument(); };
   }
 
   function applyTheme(){ document.documentElement.setAttribute("data-theme",THEME);
     $("temaIco").innerHTML=THEME==="dark"?ICO.sun:ICO.moon;
     $("temaTxt").textContent=THEME==="dark"?X("Light","Claro"):X("Dark","Oscuro"); }
-
-  function renderWl(){
-    $("wl").innerHTML=["1310","1550"].map(function(w){
-      return '<button data-w="'+w+'" class="'+(w===wl?"on":"")+'">'+w+' nm</button>';
-    }).join("");
-    $("wl").querySelectorAll("button").forEach(function(b){
-      b.onclick=function(){ wl=b.getAttribute("data-w"); scenario.atten= wl==="1550"?0.22:0.35; draw(); };
-    });
-  }
-
-  function renderQuiz(){
-    var e=scenario.evs[current];
-    $("prompt").innerHTML=X('Event <span class="em">'+(current+1)+'</span> of '+scenario.evs.length+' — what is it?',
-                            'Evento <span class="em">'+(current+1)+'</span> de '+scenario.evs.length+' — ¿qué es?');
-    $("subprompt").textContent=X("Read the marked point on the trace (spike? step down? worse at 1550 nm? into the noise?). Toggle wavelength to help decide.",
-                                "Lee el punto marcado en la traza (¿pico? ¿escalón hacia abajo? ¿peor a 1550 nm? ¿hacia el ruido?). Cambia la longitud de onda para decidir.");
-    $("opts").innerHTML=OPT_ORDER.map(function(t){
-      return '<button class="opt" data-t="'+t+'"><span class="dot" style="background:'+TYPES[t].col+'"></span>'+X(TYPES[t].label[0],TYPES[t].label[1])+'</button>';
-    }).join("");
-    $("opts").querySelectorAll(".opt").forEach(function(b){ b.onclick=function(){ answer(b.getAttribute("data-t")); }; });
-    $("fb").classList.remove("show"); $("fb").innerHTML="";
-    $("next").style.display="none";
-    updateScore();
-    draw();
-  }
-
-  function answer(t){
-    if(answeredType) return;
-    answeredType=t; asked++;
-    var e=scenario.evs[current];
-    var correct=e.type;
-    $("opts").querySelectorAll(".opt").forEach(function(b){
-      var bt=b.getAttribute("data-t"); b.disabled=true;
-      if(bt===correct) b.classList.add("correct");
-      else if(bt===t) b.classList.add("wrong");
-    });
-    if(t===correct) score++;
-    $("fb").innerHTML='<b>'+(t===correct?X("Correct.","Correcto."):X("Not quite.","No exactamente."))+'</b> '+X(TYPES[correct].why[0],TYPES[correct].why[1]);
-    $("fb").classList.add("show");
-    updateScore();
-    $("next").style.display=(current<scenario.evs.length-1)?"inline-flex":"inline-flex";
-    $("next").textContent=(current<scenario.evs.length-1)?X("Next event","Siguiente evento"):X("New trace","Nueva traza");
-    $("next").onclick=function(){
-      if(current<scenario.evs.length-1){ current++; answeredType=null; renderQuiz(); }
-      else { newTrace(); }
-    };
-  }
-
-  function updateScore(){
-    $("scoreLbl").innerHTML=X("Score","Puntaje")+': <b>'+score+'/'+asked+'</b>';
-  }
-
-  function newTrace(){ buildScenario(); answeredType=null; renderWl(); renderQuiz(); }
 
   function chrome(){
     applyTheme(); document.documentElement.lang=LANG;
@@ -310,48 +945,37 @@
     $("homeTxt").textContent=X("Labs","Labs");
     $("lang").querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-l")===LANG); });
     $("title").textContent=X("OTDR trace reader","Lector de traza OTDR");
-    $("lead").textContent=X("The trace shows backscattered power (dB) versus distance (km). Identify each marked event. Reflective spikes = connectors/ends; steps down without reflection = splices; bends get worse at 1550 nm.",
-                           "La traza muestra potencia retrodispersada (dB) vs. distancia (km). Identifica cada evento marcado. Picos reflectivos = conectores/fines; escalones sin reflexión = empalmes; los dobleces empeoran a 1550 nm.");
-    $("newt").innerHTML=ICO.refresh+" "+X("New trace","Nueva traza");
-    $("newt").onclick=newTrace;
-    $("foot").innerHTML=X("Distances use round-trip time and the fiber index (IOR). A launch fiber moves the first connector out of the OTDR dead zone.",
-                          "Las distancias usan el tiempo de ida-vuelta y el índice de la fibra (IOR). Un cable de lanzamiento saca el primer conector de la zona muerta del OTDR.");
-    renderWl(); renderQuiz();
+    $("lead").textContent=X("A field-realistic OTDR. Read backscatter (dB) vs distance (km), measure with two cursors, and diagnose faults. Switch between a free Sandbox and guided fault Scenarios.",
+                           "Un OTDR realista de campo. Lee la retrodispersión (dB) vs distancia (km), mide con dos cursores y diagnostica fallas. Cambia entre un Sandbox libre y Escenarios guiados de falla.");
+    $("mSand").innerHTML=ICO.scope+' '+X("Sandbox","Sandbox");
+    $("mScen").innerHTML=ICO.bug+' '+X("Scenarios","Escenarios");
+    $("tblTitle").textContent=X("Detected events","Eventos detectados");
+    $("scenPickTitle").textContent=X("Pick a field scenario","Elige un escenario de campo");
+    $("foot").innerHTML=X("Grounded in G.652 field values: ~0.35 dB/km @1310, ~0.22 @1550 nm; fusion splices 0.02–0.1 dB; UPC connector reflectance −40 to −55 dB. Distance = c·t / (2·IOR). Reference practice: TIA-526-7 (OLTS insertion loss), IEC 61280-4-2 (multimode/singlemode OTDR), Telcordia GR-196 (OTDR requirements).",
+                          "Basado en valores de campo G.652: ~0.35 dB/km @1310, ~0.22 @1550 nm; empalmes por fusión 0.02–0.1 dB; reflectancia de conector UPC −40 a −55 dB. Distancia = c·t / (2·IOR). Práctica de referencia: TIA-526-7 (pérdida por inserción OLTS), IEC 61280-4-2 (OTDR mono/multimodo), Telcordia GR-196 (requisitos OTDR).");
+    renderLegend(); renderSandBtns();
+    renderPanel();
+    if(MODE==="scenarios"){ renderChips(); renderScenarioCard(); }
+    refreshInstrument();
   }
 
+  // wire header
+  $("modeseg").querySelectorAll("button").forEach(function(b){
+    b.onclick=function(){ setMode(b.getAttribute("data-m")); };
+  });
   $("tema").onclick=function(){ THEME=THEME==="dark"?"light":"dark"; if(window.FOT&&FOT.setTheme)FOT.setTheme(THEME); applyTheme(); draw(); };
   $("lang").querySelectorAll("button").forEach(function(b){
     b.onclick=function(){ LANG=b.getAttribute("data-l"); if(window.FOT&&FOT.setLang)FOT.setLang(LANG);
-      // re-render textos manteniendo el escenario y el estado de la pregunta
-      applyTheme(); document.documentElement.lang=LANG;
-      $("brand").textContent=X("OTDR Reader","Lector OTDR");
-      $("brandsub").textContent=X("Lab · Module 4","Lab · Módulo 4");
-      $("homeTxt").textContent=X("Labs","Labs");
-      $("lang").querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x.getAttribute("data-l")===LANG); });
-      $("title").textContent=X("OTDR trace reader","Lector de traza OTDR");
-      $("lead").textContent=X("The trace shows backscattered power (dB) versus distance (km). Identify each marked event. Reflective spikes = connectors/ends; steps down without reflection = splices; bends get worse at 1550 nm.",
-                             "La traza muestra potencia retrodispersada (dB) vs. distancia (km). Identifica cada evento marcado. Picos reflectivos = conectores/fines; escalones sin reflexión = empalmes; los dobleces empeoran a 1550 nm.");
-      $("newt").innerHTML=ICO.refresh+" "+X("New trace","Nueva traza");
-      $("foot").innerHTML=X("Distances use round-trip time and the fiber index (IOR). A launch fiber moves the first connector out of the OTDR dead zone.",
-                            "Las distancias usan el tiempo de ida-vuelta y el índice de la fibra (IOR). Un cable de lanzamiento saca el primer conector de la zona muerta del OTDR.");
-      // re-render opciones/prompt en el nuevo idioma sin perder si ya respondió
-      var prevAnswer=answeredType;
-      renderWl();
-      renderQuizPreserve(prevAnswer);
+      chrome();
+      if(MODE==="sandbox"){ $("scrhint").textContent=X("Drag markers A and B along the trace to measure distance, loss and reflectance.","Arrastra los marcadores A y B por la traza para medir distancia, pérdida y reflectancia."); }
+      else { $("scrhint").textContent=X("Use the controls to investigate, then drag markers A and B to read the trace.","Usa los controles para investigar, luego arrastra A y B para leer la traza."); }
     };
   });
 
-  // re-render de la pregunta conservando el estado respondido (para cambio de idioma)
-  // sin volver a contar el puntaje (answer() incrementa asked/score, así que los restauramos)
-  function renderQuizPreserve(prev){
-    var s=score, a=asked;
-    renderQuiz();
-    if(prev){ answeredType=null; answer(prev); score=s; asked=a; updateScore(); }
-  }
+  window.addEventListener("resize", function(){ draw(); renderReadouts(); });
 
-  window.addEventListener("resize", function(){ if(scenario) draw(); });
-
-  buildScenario();
+  // init
+  setMode("sandbox");
   chrome();
 })();
 </script>
