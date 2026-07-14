@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Optical Power Budget — Lab</title>
+<!-- TELECOM (azul) — Lab: calculadora interactiva de presupuesto óptico. Refuerza Módulo 2. -->
+<style>
+  :root{
+    --pg:#f3f6fc; --card:#ffffff; --ink:#0c1c34; --sub:#51618a; --line:#dde5f3;
+    --accent:#2563EB; --tint:rgba(37,99,235,.10);
+    --ok:#15803D; --okt:rgba(21,128,61,.12); --bad:#dc2626; --badt:rgba(220,38,38,.12);
+    --amber:#b45309; --ambt:rgba(180,83,9,.14);
+    --radius:16px; --shadow:0 1px 2px rgba(12,28,52,.05),0 10px 26px rgba(12,28,52,.08);
+  }
+  html[data-theme="dark"]{
+    --pg:#0a1120; --card:#141d30; --ink:#e9f0ff; --sub:#9db0d6; --line:#243149;
+    --accent:#4d8bff; --tint:rgba(77,139,255,.14);
+    --ok:#4ade80; --okt:rgba(74,222,128,.16); --bad:#f87171; --badt:rgba(248,113,113,.16);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  a{color:inherit;text-decoration:none}
+  .shell{max-width:900px;margin:0 auto;padding:14px 18px 60px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:11px;min-width:0}
+  .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#1e3a8a);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:700;display:block;line-height:1.15}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+
+  h1{font-size:20px;margin:14px 2px 4px}
+  .lead{color:var(--sub);font-size:13.5px;margin:0 2px 16px;max-width:640px}
+  .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+  @media(max-width:720px){ .grid{grid-template-columns:1fr} }
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+  .card h2{font-size:14px;margin:0 0 14px;text-transform:uppercase;letter-spacing:.03em;color:var(--sub)}
+
+  .ctrl{margin-bottom:15px}
+  .ctrl .row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+  .ctrl label{font-size:13.5px;font-weight:600}
+  .ctrl .val{font-size:13.5px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--accent);height:26px}
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .seg button{border:1px solid var(--line);background:var(--pg);color:var(--ink);cursor:pointer;padding:8px 12px;border-radius:9px;font-size:13px;font-family:inherit;font-weight:600}
+  .seg button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .hint{font-size:11.5px;color:var(--sub);margin-top:3px}
+
+  /* results */
+  .big{display:flex;align-items:baseline;gap:8px;margin-bottom:2px}
+  .big b{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums}
+  .verdict{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:13px;padding:6px 12px;border-radius:999px;margin:8px 0 14px}
+  .verdict.ok{background:var(--okt);color:var(--ok)} .verdict.no{background:var(--badt);color:var(--bad)}
+  .line{display:flex;justify-content:space-between;font-size:13.5px;padding:7px 0;border-bottom:1px dashed var(--line)}
+  .line:last-child{border-bottom:0}
+  .line b{font-variant-numeric:tabular-nums}
+  .bar{height:26px;border-radius:8px;background:var(--pg);border:1px solid var(--line);overflow:hidden;display:flex;margin:14px 0 4px}
+  .bar i{display:block;height:100%}
+  .bar .used{background:linear-gradient(90deg,var(--accent),#60a5fa)}
+  .bar .marg{background:var(--ok)} .bar .over{background:var(--bad)}
+  .barlbl{display:flex;justify-content:space-between;font-size:11.5px;color:var(--sub)}
+  .note{font-size:12px;color:var(--sub);margin-top:14px;border-left:3px solid var(--accent);padding-left:11px}
+  .foot{margin-top:24px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--sub);text-align:center}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+    <div class="top">
+      <div class="brand">
+        <span class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M4 20V8M9 20V4M14 20v-7M19 20v-10"/></svg></span>
+        <div><b id="brand"></b><small id="brandsub"></small></div>
+      </div>
+      <div class="tools">
+        <a class="tbtn" id="home" href="index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span id="homeTxt"></span></a>
+        <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+        <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+      </div>
+    </div>
+  </div>
+
+  <h1 id="title"></h1>
+  <p class="lead" id="lead"></p>
+
+  <div class="grid">
+    <div class="card">
+      <h2 id="inTitle"></h2>
+
+      <div class="ctrl">
+        <div class="row"><label id="lWl"></label></div>
+        <div class="seg" id="wl"></div>
+        <div class="hint" id="hWl"></div>
+      </div>
+
+      <div class="ctrl">
+        <div class="row"><label id="lTx"></label><span class="val" id="vTx"></span></div>
+        <input type="range" id="tx" min="-10" max="6" step="0.5">
+      </div>
+      <div class="ctrl">
+        <div class="row"><label id="lRx"></label><span class="val" id="vRx"></span></div>
+        <input type="range" id="rx" min="-40" max="-10" step="1">
+      </div>
+      <div class="ctrl">
+        <div class="row"><label id="lLen"></label><span class="val" id="vLen"></span></div>
+        <input type="range" id="len" min="0" max="120" step="1">
+      </div>
+      <div class="ctrl">
+        <div class="row"><label id="lCon"></label><span class="val" id="vCon"></span></div>
+        <input type="range" id="con" min="0" max="12" step="1">
+        <div class="hint" id="hCon"></div>
+      </div>
+      <div class="ctrl">
+        <div class="row"><label id="lSpl"></label><span class="val" id="vSpl"></span></div>
+        <input type="range" id="spl" min="0" max="20" step="1">
+        <div class="hint" id="hSpl"></div>
+      </div>
+      <div class="ctrl">
+        <div class="row"><label id="lMar"></label><span class="val" id="vMar"></span></div>
+        <input type="range" id="mar" min="0" max="6" step="0.5">
+        <div class="hint" id="hMar"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 id="outTitle"></h2>
+      <div class="big"><b id="rxpow"></b><span id="rxunit">dBm</span></div>
+      <div id="verdict"></div>
+
+      <div class="line"><span id="labBudget"></span><b id="valBudget"></b></div>
+      <div class="line"><span id="labLoss"></span><b id="valLoss"></b></div>
+      <div class="line"><span id="labMargin"></span><b id="valMargin"></b></div>
+
+      <div class="barlbl"><span id="barA"></span><span id="barB"></span></div>
+      <div class="bar" id="bar"></div>
+
+      <div class="note" id="note"></div>
+    </div>
+  </div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script src="../scripts/progress.js"></script>
+<script>
+(function(){
+  function $(id){ return document.getElementById(id); }
+  var LANG=(window.FOT&&FOT.getLang)?FOT.getLang():"en";
+  var THEME=(window.FOT&&FOT.getTheme)?FOT.getTheme():"light";
+  function X(en,es){ return LANG==="es"?es:en; }
+
+  var ICO={
+    sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+    moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+    ok:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+    no:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>'
+  };
+
+  // constantes de pérdida (valores de campo típicos)
+  var LOSS_CON=0.5, LOSS_SPL=0.1;      // dB por conector / empalme
+  var ATTEN={ "1310":0.35, "1550":0.22 }; // dB/km típicos G.652
+  var wl="1550";
+
+  function applyTheme(){ document.documentElement.setAttribute("data-theme",THEME);
+    $("temaIco").innerHTML=THEME==="dark"?ICO.sun:ICO.moon;
+    $("temaTxt").textContent=THEME==="dark"?X("Light","Claro"):X("Dark","Oscuro"); }
+
+  function chrome(){
+    applyTheme(); document.documentElement.lang=LANG;
+    $("brand").textContent=X("Optical Budget","Presupuesto óptico");
+    $("brandsub").textContent=X("Lab · Module 2","Lab · Módulo 2");
+    $("homeTxt").textContent=X("Labs","Labs");
+    $("lang").querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-l")===LANG); });
+    $("title").textContent=X("Optical power budget calculator","Calculadora de presupuesto óptico");
+    $("lead").textContent=X("A link works when the available power (TX minus RX sensitivity) is greater than the total loss plus your safety margin. Move the sliders and watch the received power and margin.",
+                           "Un enlace funciona cuando la potencia disponible (TX menos sensibilidad RX) supera la pérdida total más tu margen de seguridad. Mueve los deslizadores y observa la potencia recibida y el margen.");
+    $("inTitle").textContent=X("Inputs","Entradas");
+    $("outTitle").textContent=X("Received power & margin","Potencia recibida y margen");
+    $("lWl").textContent=X("Wavelength","Longitud de onda");
+    $("lTx").textContent=X("TX power (transmitter)","Potencia TX (transmisor)");
+    $("lRx").textContent=X("RX sensitivity (min.)","Sensibilidad RX (mín.)");
+    $("lLen").textContent=X("Fiber length","Longitud de fibra");
+    $("lCon").textContent=X("Connectors","Conectores");
+    $("lSpl").textContent=X("Fusion splices","Empalmes por fusión");
+    $("lMar").textContent=X("Safety margin","Margen de seguridad");
+    $("hCon").textContent=X("~"+LOSS_CON.toFixed(1)+" dB each","~"+LOSS_CON.toFixed(1)+" dB c/u");
+    $("hSpl").textContent=X("~"+LOSS_SPL.toFixed(2)+" dB each","~"+LOSS_SPL.toFixed(2)+" dB c/u");
+    $("hMar").textContent=X("Reserve for ageing, repairs, dirt","Reserva por envejecimiento, reparaciones, suciedad");
+    $("rxunit").textContent="dBm";
+    $("labBudget").textContent=X("Power budget (TX − RX sens.)","Presupuesto (TX − sens. RX)");
+    $("labLoss").textContent=X("Total loss + margin","Pérdida total + margen");
+    $("labMargin").textContent=X("Remaining margin","Margen restante");
+    renderWl();
+    compute();
+    $("foot").innerHTML=X("Typical field values: connector ≈0.5 dB, fusion splice ≈0.1 dB, G.652 fiber ≈0.35 dB/km @1310 nm, ≈0.22 dB/km @1550 nm.",
+                          "Valores de campo típicos: conector ≈0.5 dB, empalme por fusión ≈0.1 dB, fibra G.652 ≈0.35 dB/km @1310 nm, ≈0.22 dB/km @1550 nm.");
+  }
+
+  function renderWl(){
+    $("wl").innerHTML=["1310","1550"].map(function(w){
+      return '<button data-w="'+w+'" class="'+(w===wl?"on":"")+'">'+w+' nm</button>';
+    }).join("");
+    $("wl").querySelectorAll("button").forEach(function(b){
+      b.onclick=function(){ wl=b.getAttribute("data-w"); renderWl(); compute(); };
+    });
+    $("hWl").textContent=X("Attenuation used: "+ATTEN[wl].toFixed(2)+" dB/km",
+                          "Atenuación usada: "+ATTEN[wl].toFixed(2)+" dB/km");
+  }
+
+  function compute(){
+    var tx=+$("tx").value, rx=+$("rx").value, len=+$("len").value,
+        con=+$("con").value, spl=+$("spl").value, mar=+$("mar").value;
+    $("vTx").textContent=tx.toFixed(1)+" dBm";
+    $("vRx").textContent=rx.toFixed(0)+" dBm";
+    $("vLen").textContent=len+" km";
+    $("vCon").textContent=con;
+    $("vSpl").textContent=spl;
+    $("vMar").textContent=mar.toFixed(1)+" dB";
+
+    var fiberLoss=len*ATTEN[wl];
+    var conLoss=con*LOSS_CON;
+    var splLoss=spl*LOSS_SPL;
+    var totalLoss=fiberLoss+conLoss+splLoss;      // pérdida física
+    var lossPlusMargin=totalLoss+mar;
+    var budget=tx-rx;                              // potencia disponible
+    var rxPow=tx-totalLoss;                        // potencia que llega
+    var margin=budget-lossPlusMargin;             // margen restante
+    var pass=margin>=0 && rxPow>=rx;
+
+    $("rxpow").textContent=(rxPow>=0?"+":"")+rxPow.toFixed(2);
+    $("rxpow").style.color = rxPow>=rx ? "var(--ink)" : "var(--bad)";
+    $("valBudget").textContent=budget.toFixed(2)+" dB";
+    $("valLoss").textContent=lossPlusMargin.toFixed(2)+" dB ("+X("loss","pérd.")+" "+totalLoss.toFixed(2)+" + "+X("margin","margen")+" "+mar.toFixed(1)+")";
+    $("valMargin").textContent=(margin>=0?"+":"")+margin.toFixed(2)+" dB";
+    $("valMargin").style.color = margin>=0 ? "var(--ok)" : "var(--bad)";
+
+    $("verdict").innerHTML='<span class="verdict '+(pass?"ok":"no")+'">'+(pass?ICO.ok:ICO.no)+' '+
+      (pass?X("Link passes","El enlace pasa"):X("Link fails","El enlace falla"))+'</span>';
+
+    // barra: presupuesto = 100%. usado = lossPlusMargin, restante = margin (o exceso)
+    var b=$("bar"); b.innerHTML="";
+    if(budget<=0){ b.innerHTML='<i class="over" style="width:100%"></i>'; }
+    else if(margin>=0){
+      var usedPct=Math.min(100, lossPlusMargin/budget*100);
+      b.innerHTML='<i class="used" style="width:'+usedPct+'%"></i>'+
+                  '<i class="marg" style="width:'+(100-usedPct)+'%"></i>';
+    } else {
+      var okPct=Math.max(0, budget/lossPlusMargin*100);
+      b.innerHTML='<i class="used" style="width:'+okPct+'%"></i>'+
+                  '<i class="over" style="width:'+(100-okPct)+'%"></i>';
+    }
+    $("barA").textContent=X("Used (loss+margin)","Usado (pérdida+margen)");
+    $("barB").textContent=X("Budget "+budget.toFixed(1)+" dB","Presupuesto "+budget.toFixed(1)+" dB");
+
+    $("note").textContent = pass
+      ? X("Received power is within range and there is spare margin. In the field, verify with an OLTS (source + power meter).",
+          "La potencia recibida está en rango y hay margen de sobra. En campo, verifica con un OLTS (fuente + power meter).")
+      : (rxPow<rx
+          ? X("Received power is below the receiver sensitivity — the receiver can't recover the signal. Reduce loss (shorter fiber, fewer connectors) or use a higher-power/longer-reach optic.",
+              "La potencia recibida está por debajo de la sensibilidad del receptor — no puede recuperar la señal. Reduce pérdida (menos fibra, menos conectores) o usa una óptica de mayor potencia/alcance.")
+          : X("You are inside sensitivity but there is no safety margin left. Any ageing, dirt or repair could drop the link. Add margin.",
+              "Estás dentro de la sensibilidad pero sin margen de seguridad. Cualquier envejecimiento, suciedad o reparación podría caer el enlace. Agrega margen."));
+  }
+
+  // defaults
+  $("tx").value=0; $("rx").value=-23; $("len").value=20; $("con").value=4; $("spl").value=6; $("mar").value=3;
+
+  ["tx","rx","len","con","spl","mar"].forEach(function(id){ $(id).addEventListener("input",compute); });
+  $("tema").onclick=function(){ THEME=THEME==="dark"?"light":"dark"; if(window.FOT&&FOT.setTheme)FOT.setTheme(THEME); chrome(); };
+  $("lang").querySelectorAll("button").forEach(function(b){
+    b.onclick=function(){ LANG=b.getAttribute("data-l"); if(window.FOT&&FOT.setLang)FOT.setLang(LANG); chrome(); };
+  });
+
+  chrome();
+})();
+</script>
+</body>
+</html>

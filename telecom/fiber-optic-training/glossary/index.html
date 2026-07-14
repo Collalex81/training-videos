@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glossary — Fiber Optic Training</title>
+<!--
+  TELECOM (azul) — Glosario general bilingüe de fibra óptica.
+  TELECOM (blue) — Bilingual fiber-optic glossary. Buscador + filtro por categoría.
+  Términos derivados de los 5 módulos (con normas de referencia). EN por defecto.
+-->
+<style>
+  :root{
+    --pg:#f3f6fc; --card:#ffffff; --ink:#0c1c34; --sub:#51618a; --line:#dde5f3;
+    --accent:#2563EB; --tint:rgba(37,99,235,.10);
+    --radius:16px; --shadow:0 1px 2px rgba(12,28,52,.05),0 10px 26px rgba(12,28,52,.08);
+  }
+  html[data-theme="dark"]{
+    --pg:#0a1120; --card:#141d30; --ink:#e9f0ff; --sub:#9db0d6; --line:#243149;
+    --accent:#4d8bff; --tint:rgba(77,139,255,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  a{color:inherit}
+  .shell{max-width:900px;margin:0 auto;padding:14px 18px 60px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:11px;min-width:0}
+  .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#1e3a8a);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:700;display:block;line-height:1.15}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+
+  .hero{background:linear-gradient(135deg,#0b2e59,#12356b 55%,#1e3a8a);color:#eaf1ff;border-radius:var(--radius);padding:22px 22px;margin:14px 0 16px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+  .hero:after{content:"";position:absolute;right:-40px;top:-40px;width:220px;height:220px;background:radial-gradient(circle,rgba(77,139,255,.35),transparent 70%)}
+  .hero h1{font-size:clamp(20px,3vw,26px);margin:0 0 6px;font-weight:800;position:relative}
+  .hero p{margin:0;color:#c9d8f5;font-size:14px;position:relative;max-width:620px}
+
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .search{flex:1;min-width:220px;position:relative}
+  .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--sub)}
+  .search input{width:100%;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:11px 12px 11px 38px;font-size:14.5px;font-family:inherit}
+  .search input:focus{outline:none;border-color:var(--accent)}
+  .cats{display:flex;gap:7px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line);background:var(--card);color:var(--sub);cursor:pointer;padding:7px 12px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .count{font-size:12.5px;color:var(--sub);margin:0 2px 12px}
+
+  .glist{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,400px),1fr));gap:12px}
+  .term{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:14px 15px}
+  .term h3{margin:0 0 3px;font-size:15.5px;font-weight:700}
+  .term .cat{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:var(--tint);padding:2px 8px;border-radius:999px;margin-bottom:7px}
+  .term p{margin:0;font-size:13.5px;color:var(--sub)}
+  .empty{text-align:center;color:var(--sub);padding:30px;font-size:14px}
+  mark{background:rgba(37,99,235,.22);color:inherit;border-radius:3px;padding:0 1px}
+
+  .foot{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--sub);text-align:center}
+  @media(max-width:520px){ .shell{padding:12px 12px 40px} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+    <div class="top">
+      <div class="brand">
+        <span class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+        <div><b id="brand"></b><small id="brandsub"></small></div>
+      </div>
+      <div class="tools">
+        <a class="tbtn" id="home" href="../index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/></svg><span id="homeTxt"></span></a>
+        <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+        <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1 id="heroTitle"></h1>
+    <p id="heroLead"></p>
+  </div>
+
+  <div class="controls">
+    <div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="q" autocomplete="off">
+    </div>
+  </div>
+  <div class="cats" id="cats"></div>
+  <div class="count" id="count"></div>
+  <div class="glist" id="glist"></div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script src="../scripts/progress.js"></script>
+<script>
+(function(){
+  function $(id){ return document.getElementById(id); }
+  var LANG  = (window.FOT&&FOT.getLang)?FOT.getLang():"en";
+  var THEME = (window.FOT&&FOT.getTheme)?FOT.getTheme():"light";
+  function X(en,es){ return LANG==="es"?es:en; }
+  function esc(s){ return (s||"").replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];}); }
+
+  var ICO={
+    sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+    moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+  };
+
+  // categorías: fis=Physics, fib=Fiber&Cable, con=Connectors, net=Transport/WDM, test=Testing, saf=Safety
+  var CATS=[
+    {k:"all", t:["All","Todos"]},
+    {k:"fis", t:["Physics","Física"]},
+    {k:"fib", t:["Fiber & cable","Fibra y cable"]},
+    {k:"con", t:["Connectors","Conectores"]},
+    {k:"net", t:["Transport & WDM","Transporte y WDM"]},
+    {k:"test",t:["Testing","Pruebas"]},
+    {k:"saf", t:["Safety","Seguridad"]}
+  ];
+  var CATLBL={}; CATS.forEach(function(c){ CATLBL[c.k]=c.t; });
+
+  // Glosario. term:[en,es]  def:[en,es]  cat
+  var TERMS=[
+    {c:"fis", term:["Wavelength (λ)","Longitud de onda (λ)"], def:["Distance between wave peaks; telecom uses 850, 1310 and 1550 nm. Related to frequency by c = λ·f.","Distancia entre picos de la onda; telecom usa 850, 1310 y 1550 nm. Se relaciona con la frecuencia por c = λ·f."]},
+    {c:"fis", term:["Refractive index (n)","Índice de refracción (n)"], def:["n = c/v, how much a material slows light. Glass ≈ 1.47, so light travels ~2×10⁸ m/s in fiber.","n = c/v, cuánto frena un material la luz. El vidrio ≈ 1.47, así la luz viaja ~2×10⁸ m/s en la fibra."]},
+    {c:"fis", term:["Total internal reflection (TIR)","Reflexión interna total (TIR)"], def:["Light hitting the core–cladding boundary above the critical angle reflects fully, trapping it in the core.","La luz que llega al límite núcleo–cladding sobre el ángulo crítico se refleja por completo y queda atrapada en el núcleo."]},
+    {c:"fis", term:["Snell's law","Ley de Snell"], def:["n₁·sinθ₁ = n₂·sinθ₂; describes how light bends between media of different index.","n₁·sinθ₁ = n₂·sinθ₂; describe cómo se desvía la luz entre medios de distinto índice."]},
+    {c:"fis", term:["Numerical aperture (NA)","Apertura numérica (NA)"], def:["Light-gathering acceptance angle of a fiber, set by the core/cladding index difference.","Ángulo de aceptación de captación de luz de una fibra, fijado por la diferencia de índice núcleo/cladding."]},
+    {c:"fis", term:["Attenuation","Atenuación"], def:["Loss of optical power along the fiber, in dB/km. G.652 ≈ 0.35 dB/km @1310 nm and 0.20 dB/km @1550 nm.","Pérdida de potencia óptica a lo largo de la fibra, en dB/km. G.652 ≈ 0.35 dB/km @1310 nm y 0.20 dB/km @1550 nm."]},
+    {c:"fis", term:["Rayleigh scattering","Dispersión de Rayleigh"], def:["Intrinsic scattering off tiny density variations in the glass; dominant intrinsic loss, worse at short wavelengths.","Dispersión intrínseca por diminutas variaciones de densidad en el vidrio; pérdida intrínseca dominante, peor a longitudes de onda cortas."]},
+    {c:"fis", term:["Chromatic dispersion","Dispersión cromática"], def:["Different wavelengths travel at slightly different speeds, spreading the pulse. Dominant in single-mode (~17 ps/nm·km @1550 nm).","Distintas longitudes de onda viajan a velocidades algo distintas y ensanchan el pulso. Domina en monomodo (~17 ps/nm·km @1550 nm)."]},
+    {c:"fis", term:["Modal dispersion","Dispersión modal"], def:["Pulse spreading from many light paths (modes) in multimode fiber; limits its distance and bandwidth.","Ensanchamiento del pulso por muchos caminos de luz (modos) en fibra multimodo; limita su distancia y ancho de banda."]},
+    {c:"fis", term:["PMD (polarization mode dispersion)","PMD (dispersión por modo de polarización)"], def:["Small delay between polarization states that limits very high-rate long-haul links.","Pequeño retardo entre estados de polarización que limita enlaces de muy alta tasa y largo alcance."]},
+    {c:"fis", term:["dB (decibel)","dB (decibelio)"], def:["A ratio between two powers: dB = 10·log₁₀(P_out/P_in). Used for loss and gain. 3 dB ≈ half the power.","Una razón entre dos potencias: dB = 10·log₁₀(P_sal/P_ent). Se usa para pérdida y ganancia. 3 dB ≈ la mitad de la potencia."]},
+    {c:"fis", term:["dBm","dBm"], def:["Absolute power referenced to 1 mW: 0 dBm = 1 mW. Transmitter and receiver levels are given in dBm.","Potencia absoluta referida a 1 mW: 0 dBm = 1 mW. Los niveles de transmisor y receptor se dan en dBm."]},
+    {c:"fis", term:["Optical power budget","Presupuesto óptico"], def:["Available power (TX − RX sensitivity) vs. total loss (fiber + connectors + splices). Positive margin = link works.","Potencia disponible (TX − sensibilidad RX) vs. pérdida total (fibra + conectores + empalmes). Margen positivo = el enlace funciona."]},
+    {c:"fis", term:["Return loss / reflectance","Pérdida de retorno / reflectancia"], def:["How much light reflects back at an interface; higher return loss (dB) is better. APC ≥60 dB.","Cuánta luz se refleja de vuelta en una interfaz; mayor pérdida de retorno (dB) es mejor. APC ≥60 dB."]},
+
+    {c:"fib", term:["Core","Núcleo"], def:["Central glass region that carries the light; ~9 µm in single-mode, 50/62.5 µm in multimode.","Región central de vidrio que lleva la luz; ~9 µm en monomodo, 50/62.5 µm en multimodo."]},
+    {c:"fib", term:["Cladding","Cladding (revestimiento)"], def:["Lower-index glass around the core (125 µm) that enables total internal reflection.","Vidrio de menor índice alrededor del núcleo (125 µm) que permite la reflexión interna total."]},
+    {c:"fib", term:["Single-mode fiber (SMF)","Fibra monomodo (SMF)"], def:["~9 µm core carrying one mode; long distance, high bandwidth. OS1/OS2, ITU-T G.652/G.657.","Núcleo de ~9 µm que lleva un solo modo; larga distancia, gran ancho de banda. OS1/OS2, ITU-T G.652/G.657."]},
+    {c:"fib", term:["Multimode fiber (MMF)","Fibra multimodo (MMF)"], def:["50/62.5 µm core carrying many modes; short reach at 850/1300 nm. OM1–OM5.","Núcleo de 50/62.5 µm que lleva muchos modos; corto alcance a 850/1300 nm. OM1–OM5."]},
+    {c:"fib", term:["OS1 / OS2","OS1 / OS2"], def:["Single-mode fiber grades: OS1 indoor tight-buffered, OS2 outdoor loose-tube low water peak.","Grados de fibra monomodo: OS1 interior ajustado, OS2 exterior tubo holgado de bajo pico de agua."]},
+    {c:"fib", term:["OM3 / OM4 / OM5","OM3 / OM4 / OM5"], def:["Laser-optimized multimode grades for 10G+; OM5 adds wideband (SWDM) support.","Grados multimodo optimizados para láser para 10G+; OM5 agrega soporte de banda ancha (SWDM)."]},
+    {c:"fib", term:["Loose-tube cable","Cable de tubo holgado"], def:["Fibers float in gel-filled tubes; outdoor/OSP workhorse with water and temperature resistance.","Fibras flotando en tubos con gel; caballo de batalla de exterior/OSP con resistencia al agua y temperatura."]},
+    {c:"fib", term:["Tight-buffered cable","Cable ajustado (tight-buffered)"], def:["Buffer coating directly on each fiber; flexible, used indoors and for patch cords.","Recubrimiento buffer directo sobre cada fibra; flexible, para interior y patch cords."]},
+    {c:"fib", term:["Fusion splice","Empalme por fusión"], def:["Permanent joint made by welding two fibers with an arc; typical loss 0.02–0.05 dB.","Unión permanente hecha soldando dos fibras con un arco; pérdida típica 0.02–0.05 dB."]},
+    {c:"fib", term:["Mechanical splice","Empalme mecánico"], def:["Aligns and holds two fibers with index-matching gel; quick but higher loss than fusion.","Alinea y sujeta dos fibras con gel de índice; rápido pero con más pérdida que la fusión."]},
+    {c:"fib", term:["TIA-598-C color code","Código de color TIA-598-C"], def:["Standard jacket/buffer colors; e.g. yellow = single-mode, aqua = OM3/OM4.","Colores estándar de chaqueta/buffer; p. ej. amarillo = monomodo, aqua = OM3/OM4."]},
+
+    {c:"con", term:["Ferrule","Férula"], def:["Precision ceramic tube (1.25 or 2.5 mm) that holds and aligns the fiber end in a connector.","Tubo cerámico de precisión (1.25 o 2.5 mm) que sujeta y alinea el extremo de fibra en un conector."]},
+    {c:"con", term:["LC connector","Conector LC"], def:["Small 1.25 mm ferrule connector with a latch; the most common in high-density equipment.","Conector de férula pequeña de 1.25 mm con pestillo; el más común en equipos de alta densidad."]},
+    {c:"con", term:["SC connector","Conector SC"], def:["2.5 mm push-pull connector, widely used in patch panels and older gear.","Conector push-pull de 2.5 mm, muy usado en patch panels y equipos antiguos."]},
+    {c:"con", term:["MPO / MTP","MPO / MTP"], def:["Multi-fiber push-on connector (8–24 fibers) for parallel optics like 40G/100G and trunk cables.","Conector push-on multifibra (8–24 fibras) para óptica paralela como 40G/100G y troncales."]},
+    {c:"con", term:["PC / UPC polish","Pulido PC / UPC"], def:["Physical-contact end-faces; UPC (blue) is an ultra polish with ~50 dB return loss.","Caras de contacto físico; UPC (azul) es un pulido ultra con ~50 dB de pérdida de retorno."]},
+    {c:"con", term:["APC polish","Pulido APC"], def:["8° angled end-face (green) that reflects light into the cladding; ≥60 dB return loss.","Cara angulada 8° (verde) que refleja la luz hacia el cladding; ≥60 dB de pérdida de retorno."]},
+    {c:"con", term:["Inspect–Clean–Inspect","Inspeccionar–Limpiar–Inspeccionar"], def:["Mandatory routine before every mating (IEC 61300-3-35): inspect end-face, clean, inspect again.","Rutina obligatoria antes de cada acople (IEC 61300-3-35): inspeccionar la cara, limpiar, inspeccionar de nuevo."]},
+    {c:"con", term:["Pigtail","Pigtail"], def:["A short fiber with a connector on one end, spliced to a cable at the other.","Fibra corta con un conector en un extremo, empalmada a un cable en el otro."]},
+
+    {c:"net", term:["Transceiver (SFP)","Transceptor (SFP)"], def:["Pluggable module converting electrical ↔ optical. SFP/SFP+/SFP28/QSFP differ by rate and lanes.","Módulo enchufable que convierte eléctrico ↔ óptico. SFP/SFP+/SFP28/QSFP difieren por tasa y líneas."]},
+    {c:"net", term:["DOM / DDM","DOM / DDM"], def:["Digital diagnostics in an SFP (SFF-8472): live temperature, voltage, laser bias, TX/RX power.","Diagnóstico digital en un SFP (SFF-8472): temperatura, voltaje, bias del láser, potencia TX/RX en vivo."]},
+    {c:"net", term:["Simplex / Duplex","Simplex / Duplex"], def:["Simplex = one fiber; duplex = two fibers (one TX, one RX) at the same wavelength.","Simplex = una fibra; duplex = dos fibras (una TX, una RX) a la misma longitud de onda."]},
+    {c:"net", term:["BiDi","BiDi"], def:["Bidirectional single-fiber link using two wavelengths; needs a complementary A/B module pair.","Enlace bidireccional de una fibra con dos longitudes de onda; requiere un par de módulos complementario A/B."]},
+    {c:"net", term:["WDM","WDM"], def:["Wavelength-division multiplexing: many wavelengths (colors) share one fiber.","Multiplexación por división de longitud de onda: muchas longitudes de onda (colores) comparten una fibra."]},
+    {c:"net", term:["CWDM","CWDM"], def:["Coarse WDM with 20 nm channel spacing (ITU-T G.694.2), up to 18 channels, no cooling needed.","WDM grueso con separación de 20 nm (ITU-T G.694.2), hasta 18 canales, sin enfriamiento."]},
+    {c:"net", term:["DWDM","DWDM"], def:["Dense WDM on a tight grid (100/50 GHz, ITU-T G.694.1) for many channels in the C-band.","WDM denso en rejilla estrecha (100/50 GHz, ITU-T G.694.1) para muchos canales en la banda C."]},
+    {c:"net", term:["O/E/S/C/L/U bands","Bandas O/E/S/C/L/U"], def:["Wavelength bands from ~1260 nm (O) to ~1675 nm (U). C-band (1530–1565 nm) is used for DWDM.","Bandas de longitud de onda de ~1260 nm (O) a ~1675 nm (U). La banda C (1530–1565 nm) se usa para DWDM."]},
+    {c:"net", term:["CPRI / eCPRI","CPRI / eCPRI"], def:["Fronthaul protocols between radio and baseband. eCPRI is packet-based and uses PTP (IEEE 1588) + SyncE for timing.","Protocolos de fronthaul entre radio y banda base. eCPRI es por paquetes y usa PTP (IEEE 1588) + SyncE para el tiempo."]},
+    {c:"net", term:["PON (GPON/XGS-PON)","PON (GPON/XGS-PON)"], def:["Passive optical network: a shared tree with splitters delivering fiber to many subscribers.","Red óptica pasiva: un árbol compartido con divisores que lleva fibra a muchos abonados."]},
+    {c:"net", term:["10GBASE-SR / LR","10GBASE-SR / LR"], def:["Ethernet PHYs: SR = MMF 850 nm ~300–400 m; LR = SMF 1310 nm ~10 km.","PHYs de Ethernet: SR = MMF 850 nm ~300–400 m; LR = SMF 1310 nm ~10 km."]},
+
+    {c:"test", term:["OTDR","OTDR"], def:["Optical Time-Domain Reflectometer: sends pulses and maps events (loss, reflections) vs. distance.","Reflectómetro óptico en el dominio del tiempo: envía pulsos y mapea eventos (pérdida, reflexiones) vs. distancia."]},
+    {c:"test", term:["OLTS","OLTS"], def:["Optical Loss Test Set (light source + power meter) for Tier 1 end-to-end insertion loss.","Juego de prueba de pérdida óptica (fuente + power meter) para pérdida de inserción Tier 1 extremo a extremo."]},
+    {c:"test", term:["Power meter","Power meter"], def:["Measures absolute optical power (dBm) or, with a reference source, insertion loss (dB).","Mide potencia óptica absoluta (dBm) o, con una fuente de referencia, pérdida de inserción (dB)."]},
+    {c:"test", term:["VFL (visual fault locator)","VFL (localizador visual de fallas)"], def:["Red laser that makes breaks, sharp bends and bad connectors glow for quick visual checks.","Láser rojo que hace brillar roturas, dobleces agudos y malos conectores para chequeos visuales rápidos."]},
+    {c:"test", term:["IOR (index of refraction)","IOR (índice de refracción)"], def:["Value the OTDR uses to convert time to distance; a wrong IOR gives wrong distances.","Valor que el OTDR usa para convertir tiempo en distancia; un IOR incorrecto da distancias incorrectas."]},
+    {c:"test", term:["Dead zone","Zona muerta"], def:["Region after a strong reflection where the OTDR can't resolve events; managed with launch fiber.","Región tras una reflexión fuerte donde el OTDR no resuelve eventos; se maneja con cable de lanzamiento."]},
+    {c:"test", term:["Launch / receive fiber","Cable de lanzamiento / recepción"], def:["Reference fibers that move the first and last connectors out of the OTDR's dead zones.","Fibras de referencia que sacan el primer y último conector de las zonas muertas del OTDR."]},
+    {c:"test", term:["Gainer","Gainer (falsa ganancia)"], def:["A splice that looks like a gain on a one-way OTDR trace due to MFD mismatch; average both directions.","Un empalme que parece ganancia en una traza OTDR de un sentido por desajuste de MFD; promedia ambas direcciones."]},
+    {c:"test", term:["Reflective / non-reflective event","Evento reflectivo / no reflectivo"], def:["Connectors/breaks show as spikes (reflective); fusion splices show as steps (non-reflective).","Conectores/roturas aparecen como picos (reflectivos); los empalmes por fusión como escalones (no reflectivos)."]},
+    {c:"test", term:["Insertion loss","Pérdida de inserción"], def:["Total loss added by a component or link between input and output, measured in dB.","Pérdida total que agrega un componente o enlace entre entrada y salida, medida en dB."]},
+
+    {c:"saf", term:["Laser safety (IEC 60825-1)","Seguridad láser (IEC 60825-1)"], def:["Classifies laser products (1, 1M, 3R…). Telecom IR is invisible — never look into a fiber or connector.","Clasifica productos láser (1, 1M, 3R…). El IR de telecom es invisible — nunca mires una fibra o conector."]},
+    {c:"saf", term:["Class 1M","Clase 1M"], def:["Safe to the naked eye but hazardous through magnifying optics (like an inspection scope). Verify dark first.","Segura a simple vista pero peligrosa a través de ópticas de aumento (como un microscopio). Verifica apagado primero."]},
+    {c:"saf", term:["Fiber shards","Fragmentos de fibra"], def:["Sharp glass offcuts from cleaving; collect in a dedicated labeled container — never with bare hands or air.","Recortes de vidrio afilados del corte; recoge en un recipiente dedicado y etiquetado — nunca con manos ni aire."]},
+    {c:"saf", term:["IPA (isopropyl alcohol)","IPA (alcohol isopropílico)"], def:["Common cleaning solvent; flammable — keep away from the splicer arc and let fiber dry before arcing.","Solvente de limpieza común; inflamable — lejos del arco de la empalmadora y deja secar la fibra antes del arco."]},
+    {c:"saf", term:["Confined space (OSHA 1910.146)","Espacio confinado (OSHA 1910.146)"], def:["Vaults/manholes may need atmospheric testing, ventilation, an attendant and a rescue plan.","Cámaras/pozos pueden requerir prueba atmosférica, ventilación, vigía y plan de rescate."]},
+    {c:"saf", term:["JSA / tailboard","JSA / charla previa"], def:["Job Safety Analysis and pre-job talk that identify hazards and controls before work starts.","Análisis de Seguridad del Trabajo y charla previa que identifican peligros y controles antes de empezar."]},
+    {c:"saf", term:["PPE","EPP"], def:["Personal protective equipment: safety glasses, gloves and clean work practices when handling fiber.","Equipo de protección personal: gafas de seguridad, guantes y prácticas limpias al manipular fibra."]}
+  ];
+
+  var activeCat="all", query="";
+
+  function applyTheme(){ document.documentElement.setAttribute("data-theme",THEME);
+    $("temaIco").innerHTML=THEME==="dark"?ICO.sun:ICO.moon;
+    $("temaTxt").textContent=THEME==="dark"?X("Light","Claro"):X("Dark","Oscuro"); }
+
+  function norm(s){ return (s||"").toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g,""); }
+
+  function highlight(text){
+    if(!query) return esc(text);
+    var q=norm(query), t=text, nt=norm(text), out="", i=0;
+    while(i<t.length){
+      var idx=nt.indexOf(q,i);
+      if(idx<0){ out+=esc(t.slice(i)); break; }
+      out+=esc(t.slice(i,idx))+"<mark>"+esc(t.slice(idx,idx+q.length))+"</mark>";
+      i=idx+q.length;
+    }
+    return out;
+  }
+
+  function chrome(){
+    applyTheme(); document.documentElement.lang=LANG;
+    $("brand").textContent=X("Glossary","Glosario");
+    $("brandsub").textContent=X("Fiber Optic Training","Entrenamiento de fibra óptica");
+    $("homeTxt").textContent=X("Dashboard","Panel");
+    $("lang").querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-l")===LANG); });
+    $("heroTitle").textContent=X("Fiber Optic Glossary","Glosario de fibra óptica");
+    $("heroLead").textContent=X("Key terms from all five modules — physics, fiber & cable, connectors, transport, testing and safety. Search or filter by category.",
+                               "Términos clave de los cinco módulos — física, fibra y cable, conectores, transporte, pruebas y seguridad. Busca o filtra por categoría.");
+    $("q").placeholder=X("Search terms and definitions…","Buscar términos y definiciones…");
+    renderCats();
+    renderList();
+    $("foot").innerHTML=X(TERMS.length+" terms · bilingual EN/ES · sources: ITU-T, IEC, TIA, IEEE, OSHA, ANSI.",
+                          TERMS.length+" términos · bilingüe EN/ES · fuentes: ITU-T, IEC, TIA, IEEE, OSHA, ANSI.");
+  }
+
+  function renderCats(){
+    $("cats").innerHTML=CATS.map(function(c){
+      return '<button class="chip'+(c.k===activeCat?" on":"")+'" data-k="'+c.k+'">'+X(c.t[0],c.t[1])+'</button>';
+    }).join("");
+    $("cats").querySelectorAll(".chip").forEach(function(b){
+      b.onclick=function(){ activeCat=b.getAttribute("data-k"); renderCats(); renderList(); };
+    });
+  }
+
+  function renderList(){
+    var q=norm(query);
+    var rows=TERMS.filter(function(t){
+      if(activeCat!=="all" && t.c!==activeCat) return false;
+      if(!q) return true;
+      var hay=norm(t.term[0]+" "+t.term[1]+" "+t.def[0]+" "+t.def[1]);
+      return hay.indexOf(q)>=0;
+    });
+    rows.sort(function(a,b){ return X(a.term[0],a.term[1]).localeCompare(X(b.term[0],b.term[1])); });
+    $("count").textContent = rows.length+" "+X(rows.length===1?"term":"terms", rows.length===1?"término":"términos");
+    if(!rows.length){
+      $("glist").innerHTML='<div class="empty">'+X("No terms match your search.","Ningún término coincide con tu búsqueda.")+'</div>';
+      return;
+    }
+    $("glist").innerHTML=rows.map(function(t){
+      return '<div class="term"><span class="cat">'+X(CATLBL[t.c][0],CATLBL[t.c][1])+'</span>'+
+        '<h3>'+highlight(X(t.term[0],t.term[1]))+'</h3>'+
+        '<p>'+highlight(X(t.def[0],t.def[1]))+'</p></div>';
+    }).join("");
+  }
+
+  // events
+  $("q").addEventListener("input",function(){ query=this.value; renderList(); });
+  $("tema").onclick=function(){ THEME=THEME==="dark"?"light":"dark"; if(window.FOT&&FOT.setTheme)FOT.setTheme(THEME); chrome(); };
+  $("lang").querySelectorAll("button").forEach(function(b){
+    b.onclick=function(){ LANG=b.getAttribute("data-l"); if(window.FOT&&FOT.setLang)FOT.setLang(LANG); chrome(); };
+  });
+
+  chrome();
+})();
+</script>
+</body>
+</html>

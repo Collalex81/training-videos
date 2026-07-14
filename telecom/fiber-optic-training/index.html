@@ -105,6 +105,9 @@
   .wide .ic{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none}
   .wide.exam .ic{background:var(--ambt);color:var(--amber)}
   .wide.cert .ic{background:var(--okt);color:var(--ok)}
+  .wide.gloss .ic{background:var(--tint);color:var(--accent)}
+  .wide.labs .ic{background:var(--tint);color:var(--accent)}
+  .wide a.mini{margin-left:auto;flex:none}
   .wide .tx{flex:1;min-width:0}
   .wide .tx b{font-size:15px}
   .wide .tx span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
@@ -153,6 +156,12 @@
     <div class="wide cert" id="certCard"></div>
   </div>
 
+  <div class="sechead"><h2 id="secRes"></h2><span class="ln"></span></div>
+  <div class="two">
+    <div class="wide gloss" id="glossCard"></div>
+    <div class="wide labs" id="labsCard"></div>
+  </div>
+
   <div class="foot">
     <div id="footNote"></div>
     <div><button class="linkbtn" id="reset"></button></div>
@@ -174,7 +183,10 @@
     check:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
     play:'<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
     exam:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>',
-    cert:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><path d="M9 13.5 8 22l4-2 4 2-1-8.5"/></svg>'
+    cert:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><path d="M9 13.5 8 22l4-2 4 2-1-8.5"/></svg>',
+    book:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+    flask:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6l-5 9a2 2 0 0 0 1.7 3h12.6a2 2 0 0 0 1.7-3l-5-9V3"/><path d="M8 3h8"/></svg>',
+    arrow:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'
   };
 
   function applyTheme(){ document.documentElement.setAttribute("data-theme",THEME);
@@ -209,6 +221,7 @@
     $("kpiPass").textContent = X("Passing score","Nota para aprobar");
     $("secMods").textContent = X("Training modules","Módulos de entrenamiento");
     $("secFinal").textContent = X("Final exam & certificate","Examen final y certificado");
+    $("secRes").textContent = X("Study resources","Recursos de estudio");
 
     var pct = FOT.overallPercent();
     $("kpiPct").textContent = pct+"%";
@@ -218,6 +231,7 @@
     renderWho(pct, doneCount);
     renderCards();
     renderFinal(doneCount);
+    renderResources();
 
     $("footNote").innerHTML = X(
       "Progress is saved in this browser. Use the same device to continue where you left off.",
@@ -314,6 +328,19 @@
       '<span>'+(certOK? X("Available — pass the final exam earned it","Disponible — aprobaste el examen final")
                        : X("Pass the final exam to unlock","Aprueba el examen final para desbloquear"))+'</span></div>'+
       certBtn;
+  }
+
+  function renderResources(){
+    $("glossCard").innerHTML =
+      '<div class="ic">'+ICO.book+'</div>'+
+      '<div class="tx"><b>'+X("Glossary","Glosario")+'</b>'+
+      '<span>'+X("Bilingual reference of key fiber terms — search or filter by topic.","Referencia bilingüe de términos clave de fibra — busca o filtra por tema.")+'</span></div>'+
+      '<a class="btn sm mini" href="glossary/index.html" target="_top">'+X("Open","Abrir")+' '+ICO.arrow+'</a>';
+    $("labsCard").innerHTML =
+      '<div class="ic">'+ICO.flask+'</div>'+
+      '<div class="tx"><b>'+X("Labs & simulators","Laboratorios y simuladores")+'</b>'+
+      '<span>'+X("Optical budget, OTDR reader and connector trainer — ungraded practice.","Presupuesto óptico, lector OTDR y entrenador de conectores — práctica sin calificar.")+'</span></div>'+
+      '<a class="btn sm mini" href="labs/index.html" target="_top">'+X("Open","Abrir")+' '+ICO.arrow+'</a>';
   }
 
   // events

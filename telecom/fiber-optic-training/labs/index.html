@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Labs & Simulators — Fiber Optic Training</title>
+<!--
+  TELECOM (azul) — Hub de laboratorios/simuladores (práctica libre, sin calificar).
+  TELECOM (blue) — Labs & simulators hub (free practice, ungraded). EN por defecto.
+-->
+<style>
+  :root{
+    --pg:#f3f6fc; --card:#ffffff; --ink:#0c1c34; --sub:#51618a; --line:#dde5f3;
+    --accent:#2563EB; --tint:rgba(37,99,235,.10);
+    --radius:16px; --shadow:0 1px 2px rgba(12,28,52,.05),0 10px 26px rgba(12,28,52,.08);
+  }
+  html[data-theme="dark"]{
+    --pg:#0a1120; --card:#141d30; --ink:#e9f0ff; --sub:#9db0d6; --line:#243149;
+    --accent:#4d8bff; --tint:rgba(77,139,255,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  a{color:inherit;text-decoration:none}
+  .shell{max-width:1000px;margin:0 auto;padding:14px 18px 60px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:11px;min-width:0}
+  .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#1e3a8a);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:700;display:block;line-height:1.15}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+
+  .hero{background:linear-gradient(135deg,#0b2e59,#12356b 55%,#1e3a8a);color:#eaf1ff;border-radius:var(--radius);padding:24px 22px;margin:14px 0 18px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+  .hero:after{content:"";position:absolute;right:-40px;top:-40px;width:240px;height:240px;background:radial-gradient(circle,rgba(77,139,255,.35),transparent 70%)}
+  .hero h1{font-size:clamp(20px,3vw,28px);margin:0 0 6px;font-weight:800;position:relative}
+  .hero p{margin:0;color:#c9d8f5;font-size:14px;position:relative;max-width:640px}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:16px}
+  .lab{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;transition:transform .15s,border-color .15s}
+  .lab:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .lab .ic{width:48px;height:48px;border-radius:12px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+  .lab h3{margin:0 0 4px;font-size:16.5px;font-weight:700}
+  .lab .mod{font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--sub);margin-bottom:8px}
+  .lab p{margin:0 0 16px;font-size:13.5px;color:var(--sub);flex:1}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:10px 15px;border-radius:10px;font-size:13.5px;font-weight:600;font-family:inherit;min-height:40px;display:inline-flex;align-items:center;gap:7px;justify-content:center;align-self:flex-start}
+
+  .foot{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--sub);text-align:center}
+  @media(max-width:520px){ .shell{padding:12px 12px 40px} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+    <div class="top">
+      <div class="brand">
+        <span class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6l-5 9a2 2 0 0 0 1.7 3h12.6a2 2 0 0 0 1.7-3l-5-9V3"/><path d="M8 3h8"/></svg></span>
+        <div><b id="brand"></b><small id="brandsub"></small></div>
+      </div>
+      <div class="tools">
+        <a class="tbtn" id="home" href="../index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/></svg><span id="homeTxt"></span></a>
+        <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+        <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1 id="heroTitle"></h1>
+    <p id="heroLead"></p>
+  </div>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script src="../scripts/progress.js"></script>
+<script>
+(function(){
+  function $(id){ return document.getElementById(id); }
+  var LANG=(window.FOT&&FOT.getLang)?FOT.getLang():"en";
+  var THEME=(window.FOT&&FOT.getTheme)?FOT.getTheme():"light";
+  function X(en,es){ return LANG==="es"?es:en; }
+
+  var ICO={
+    sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+    moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+    arrow:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'
+  };
+  var LABS=[
+    { file:"optical-budget.html", mod:["Module 2 · Physics","Módulo 2 · Física"],
+      ic:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M4 20V8M9 20V4M14 20v-7M19 20v-10"/></svg>',
+      t:["Optical Power Budget","Presupuesto óptico"],
+      d:["Set TX power, fiber length, connectors and splices and see received power, loss and margin update live. Learn when a link passes or fails.",
+         "Ajusta potencia TX, longitud de fibra, conectores y empalmes y ve potencia recibida, pérdida y margen en vivo. Aprende cuándo un enlace pasa o falla."] },
+    { file:"otdr-reader.html", mod:["Module 4 · Testing","Módulo 4 · Pruebas"],
+      ic:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l2-7 3 15 2-9 2 4h6"/></svg>',
+      t:["OTDR Trace Reader","Lector de traza OTDR"],
+      d:["Generate random OTDR traces and identify each event — connector, fusion splice, macrobend or fiber end — then check your answer against the key.",
+         "Genera trazas OTDR al azar e identifica cada evento — conector, empalme por fusión, macrobend o fin de fibra — y verifica tu respuesta con la clave."] },
+    { file:"connector-trainer.html", mod:["Module 1 · Layer 1","Módulo 1 · Layer 1"],
+      ic:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>',
+      t:["Connector & Color Trainer","Entrenador de conectores y colores"],
+      d:["Flashcard practice on connector types, PC/UPC/APC polish and the TIA-598-C color code. Build speed and accuracy before you hit the field.",
+         "Práctica tipo flashcard de tipos de conector, pulido PC/UPC/APC y el código de color TIA-598-C. Gana velocidad y precisión antes del campo."] }
+  ];
+
+  function applyTheme(){ document.documentElement.setAttribute("data-theme",THEME);
+    $("temaIco").innerHTML=THEME==="dark"?ICO.sun:ICO.moon;
+    $("temaTxt").textContent=THEME==="dark"?X("Light","Claro"):X("Dark","Oscuro"); }
+
+  function render(){
+    applyTheme(); document.documentElement.lang=LANG;
+    $("brand").textContent=X("Labs & Simulators","Laboratorios y simuladores");
+    $("brandsub").textContent=X("Fiber Optic Training","Entrenamiento de fibra óptica");
+    $("homeTxt").textContent=X("Dashboard","Panel");
+    $("lang").querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-l")===LANG); });
+    $("heroTitle").textContent=X("Hands-on labs & simulators","Laboratorios y simuladores prácticos");
+    $("heroLead").textContent=X("Free-practice tools that reinforce the modules. Nothing here is graded — experiment, make mistakes and build intuition.",
+                               "Herramientas de práctica libre que refuerzan los módulos. Nada aquí se califica — experimenta, equivócate y gana intuición.");
+    $("cards").innerHTML=LABS.map(function(l){
+      return '<div class="lab"><div class="ic">'+l.ic+'</div>'+
+        '<div class="mod">'+X(l.mod[0],l.mod[1])+'</div>'+
+        '<h3>'+X(l.t[0],l.t[1])+'</h3>'+
+        '<p>'+X(l.d[0],l.d[1])+'</p>'+
+        '<a class="btn" href="'+l.file+'" target="_top">'+X("Open lab","Abrir laboratorio")+' '+ICO.arrow+'</a></div>';
+    }).join("");
+    $("foot").innerHTML=X("Practice tools · your progress is not affected by these labs.",
+                          "Herramientas de práctica · estos laboratorios no afectan tu progreso.");
+  }
+
+  $("tema").onclick=function(){ THEME=THEME==="dark"?"light":"dark"; if(window.FOT&&FOT.setTheme)FOT.setTheme(THEME); render(); };
+  $("lang").querySelectorAll("button").forEach(function(b){
+    b.onclick=function(){ LANG=b.getAttribute("data-l"); if(window.FOT&&FOT.setLang)FOT.setLang(LANG); render(); };
+  });
+  render();
+})();
+</script>
+</body>
+</html>

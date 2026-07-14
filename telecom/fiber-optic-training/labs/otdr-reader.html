@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OTDR Trace Reader — Lab</title>
+<!-- TELECOM (azul) — Lab: lector de traza OTDR en canvas. Refuerza Módulo 4. -->
+<style>
+  :root{
+    --pg:#f3f6fc; --card:#ffffff; --ink:#0c1c34; --sub:#51618a; --line:#dde5f3;
+    --accent:#2563EB; --tint:rgba(37,99,235,.10);
+    --ok:#15803D; --okt:rgba(21,128,61,.12); --bad:#dc2626; --badt:rgba(220,38,38,.12);
+    --amber:#b45309; --ambt:rgba(180,83,9,.14);
+    --radius:16px; --shadow:0 1px 2px rgba(12,28,52,.05),0 10px 26px rgba(12,28,52,.08);
+    --scr:#08152b; --grid:#123a63; --trace:#31d67a;
+  }
+  html[data-theme="dark"]{
+    --pg:#0a1120; --card:#141d30; --ink:#e9f0ff; --sub:#9db0d6; --line:#243149;
+    --accent:#4d8bff; --tint:rgba(77,139,255,.14);
+    --ok:#4ade80; --okt:rgba(74,222,128,.16); --bad:#f87171; --badt:rgba(248,113,113,.16);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+    --scr:#020b18; --grid:#0f3057; --trace:#31d67a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  a{color:inherit;text-decoration:none}
+  .shell{max-width:920px;margin:0 auto;padding:14px 18px 60px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:11px;min-width:0}
+  .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#1e3a8a);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:700;display:block;line-height:1.15}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+
+  h1{font-size:20px;margin:14px 2px 4px}
+  .lead{color:var(--sub);font-size:13.5px;margin:0 2px 14px;max-width:660px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+  .screen{background:var(--scr);border-radius:12px;padding:10px;position:relative}
+  canvas{width:100%;height:auto;display:block;border-radius:8px}
+  .bararea{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-top:12px}
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .seg button{border:1px solid var(--line);background:var(--pg);color:var(--ink);cursor:pointer;padding:8px 12px;border-radius:9px;font-size:12.5px;font-family:inherit;font-weight:600}
+  .seg button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:9px 14px;border-radius:9px;font-size:13px;font-weight:600;font-family:inherit;min-height:38px;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+  .btn.ghost{background:transparent;color:var(--accent)}
+
+  .quiz{margin-top:16px}
+  .prompt{font-size:14.5px;font-weight:600;margin-bottom:4px}
+  .prompt .em{color:var(--accent)}
+  .subprompt{font-size:12.5px;color:var(--sub);margin-bottom:10px}
+  .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px}
+  .opt{border:1px solid var(--line);background:var(--pg);color:var(--ink);cursor:pointer;padding:11px 12px;border-radius:10px;font-size:13.5px;font-family:inherit;text-align:left;display:flex;gap:9px;align-items:center}
+  .opt:hover{border-color:var(--accent)}
+  .opt .dot{width:12px;height:12px;border-radius:50%;flex:none}
+  .opt.correct{border-color:var(--ok);background:var(--okt);color:var(--ok);font-weight:600}
+  .opt.wrong{border-color:var(--bad);background:var(--badt);color:var(--bad);font-weight:600}
+  .opt[disabled]{cursor:default}
+  .fb{margin-top:11px;font-size:13px;color:var(--sub);border-left:3px solid var(--accent);padding-left:11px;display:none}
+  .fb.show{display:block}
+  .fb b{color:var(--ink)}
+  .scorebar{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--sub);margin-top:12px}
+  .scorebar b{color:var(--ink)}
+  .foot{margin-top:24px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--sub);text-align:center}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+    <div class="top">
+      <div class="brand">
+        <span class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l2-7 3 15 2-9 2 4h6"/></svg></span>
+        <div><b id="brand"></b><small id="brandsub"></small></div>
+      </div>
+      <div class="tools">
+        <a class="tbtn" id="home" href="index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span id="homeTxt"></span></a>
+        <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+        <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+      </div>
+    </div>
+  </div>
+
+  <h1 id="title"></h1>
+  <p class="lead" id="lead"></p>
+
+  <div class="card">
+    <div class="screen"><canvas id="cv"></canvas></div>
+    <div class="bararea">
+      <div class="seg" id="wl"></div>
+      <button class="btn ghost" id="newt"></button>
+    </div>
+
+    <div class="quiz">
+      <div class="prompt" id="prompt"></div>
+      <div class="subprompt" id="subprompt"></div>
+      <div class="opts" id="opts"></div>
+      <div class="fb" id="fb"></div>
+      <div class="scorebar"><span id="scoreLbl"></span><button class="btn" id="next" style="display:none"></button></div>
+    </div>
+  </div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script src="../scripts/progress.js"></script>
+<script>
+(function(){
+  function $(id){ return document.getElementById(id); }
+  var LANG=(window.FOT&&FOT.getLang)?FOT.getLang():"en";
+  var THEME=(window.FOT&&FOT.getTheme)?FOT.getTheme():"light";
+  function X(en,es){ return LANG==="es"?es:en; }
+
+  var ICO={
+    sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+    moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+    refresh:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>'
+  };
+
+  var TYPES={
+    connector:{ col:"#4d8bff", label:["Connector (reflective)","Conector (reflectivo)"],
+      why:["Connectors cause a sharp reflective spike plus a small loss step. Common at panels and mating points.",
+            "Los conectores causan un pico reflectivo agudo más un pequeño escalón de pérdida. Comunes en paneles y acoples."] },
+    splice:{ col:"#31d67a", label:["Fusion splice (non-reflective)","Empalme por fusión (no reflectivo)"],
+      why:["A fusion splice is a small step DOWN with no reflection — typically 0.02–0.1 dB.",
+            "Un empalme por fusión es un pequeño escalón hacia ABAJO sin reflexión — típicamente 0.02–0.1 dB."] },
+    macrobend:{ col:"#fbbf24", label:["Macrobend","Macrocurvatura"],
+      why:["A macrobend is a non-reflective loss step that is clearly WORSE at 1550 nm than at 1310 nm.",
+            "Un macrobend es un escalón de pérdida no reflectivo claramente PEOR a 1550 nm que a 1310 nm."] },
+    end:{ col:"#f87171", label:["End of fiber","Fin de la fibra"],
+      why:["The fiber end shows a final reflection (or just a drop) into the noise floor — nothing beyond it.",
+            "El fin de la fibra muestra una reflexión final (o solo una caída) hacia el piso de ruido — no hay nada más allá."] }
+  };
+  var OPT_ORDER=["connector","splice","macrobend","end"];
+
+  var wl="1550";
+  var cv=$("cv"), ctx=cv.getContext("2d");
+  var MAXD=25;          // km eje X
+  var scenario=null, current=0, answeredType=null, score=0, asked=0;
+
+  function rnd(a,b){ return a+Math.random()*(b-a); }
+
+  function buildScenario(){
+    var n=Math.floor(rnd(3,5)); // 3-4 eventos intermedios + fin
+    var evs=[]; var d=rnd(1.5,3);
+    for(var i=0;i<n;i++){
+      var t=OPT_ORDER[Math.floor(rnd(0,3))]; // connector/splice/macrobend
+      evs.push({ dist:d, type:t,
+        refl: t==="connector"?rnd(2.5,4):0,
+        loss: t==="connector"?rnd(0.2,0.6):(t==="splice"?rnd(0.03,0.12):rnd(0.4,1.1)),
+        bendExtra: t==="macrobend"?rnd(0.6,1.6):0 });
+      d+=rnd(3,6);
+    }
+    evs.push({ dist:Math.min(MAXD-1.5,d), type:"end", refl:rnd(2,4), loss:0, bendExtra:0 });
+    scenario={ evs:evs, atten: wl==="1550"?0.22:0.35, start:rnd(-2,-4) };
+    current=0; asked=0; score=0; answeredType=null;
+  }
+
+  // efecto de pérdida real de un evento según wl (macrobend depende de wl)
+  function evLoss(e){ return e.loss + (e.type==="macrobend" ? (wl==="1550"? e.bendExtra : e.bendExtra*0.25) : 0); }
+
+  function fit(){
+    var w=cv.clientWidth||cv.parentNode.clientWidth-20; if(!w) w=640;
+    var h=Math.max(240,Math.round(w*0.5));
+    var dpr=window.devicePixelRatio||1;
+    cv.width=w*dpr; cv.height=h*dpr; cv.style.height=h+"px";
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    return {w:w,h:h};
+  }
+
+  function cssv(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+  function draw(){
+    var s=fit(), w=s.w, h=s.h;
+    var padL=42, padR=14, padT=14, padB=28;
+    var x0=padL, x1=w-padR, y0=padT, y1=h-padB;
+    var gx=function(km){ return x0+(km/MAXD)*(x1-x0); };
+    var DBTOP=1, DBBOT=-32;
+    var gy=function(db){ return y0+((DBTOP-db)/(DBTOP-DBBOT))*(y1-y0); };
+
+    ctx.clearRect(0,0,w,h);
+    // grid
+    ctx.strokeStyle=cssv("--grid"); ctx.lineWidth=1; ctx.fillStyle="#7fa8d6"; ctx.font="10px system-ui";
+    ctx.textAlign="right"; ctx.textBaseline="middle";
+    for(var db=0; db>=DBBOT; db-=8){ var yy=gy(db); ctx.globalAlpha=.5; ctx.beginPath(); ctx.moveTo(x0,yy); ctx.lineTo(x1,yy); ctx.stroke(); ctx.globalAlpha=1; ctx.fillText(db+"", x0-6, yy); }
+    ctx.textAlign="center"; ctx.textBaseline="top";
+    for(var km=0; km<=MAXD; km+=5){ var xx=gx(km); ctx.globalAlpha=.5; ctx.beginPath(); ctx.moveTo(xx,y0); ctx.lineTo(xx,y1); ctx.stroke(); ctx.globalAlpha=1; ctx.fillText(km+(km===MAXD?" km":""), xx, y1+5); }
+
+    // trace
+    var atten=scenario.atten;
+    var pts=[]; var db0=scenario.start; var lastD=0;
+    pts.push([0,db0]);
+    scenario.evs.forEach(function(e){
+      var dbAt=db0-(e.dist-lastD)*atten; // backscatter cae con la fibra
+      pts.push([e.dist,dbAt,"pre",e]);
+      if(e.refl>0){ pts.push([e.dist,dbAt+e.refl,"spike",e]); pts.push([e.dist,dbAt,"spikedown",e]); }
+      var after=dbAt-evLoss(e);
+      pts.push([e.dist,after,"drop",e]);
+      db0=after; lastD=e.dist;
+    });
+
+    // dibujar segmentos de fibra + eventos
+    ctx.strokeStyle=cssv("--trace"); ctx.lineWidth=2; ctx.lineJoin="round";
+    ctx.beginPath();
+    var started=false, endReached=false, endDist=scenario.evs[scenario.evs.length-1].dist;
+    // reconstruir línea continua
+    db0=scenario.start; lastD=0;
+    ctx.moveTo(gx(0),gy(db0));
+    scenario.evs.forEach(function(e){
+      var dbAt=db0-(e.dist-lastD)*atten;
+      ctx.lineTo(gx(e.dist),gy(dbAt));            // pendiente de fibra
+      if(e.refl>0){ ctx.lineTo(gx(e.dist),gy(dbAt+e.refl)); ctx.lineTo(gx(e.dist),gy(dbAt)); } // pico
+      var after=dbAt-evLoss(e);
+      ctx.lineTo(gx(e.dist),gy(after));           // escalón de pérdida
+      db0=after; lastD=e.dist;
+    });
+    ctx.stroke();
+
+    // ruido tras el fin
+    ctx.strokeStyle="rgba(150,180,210,.55)"; ctx.lineWidth=1; ctx.beginPath();
+    var ny=gy(db0-2);
+    ctx.moveTo(gx(endDist),gy(db0));
+    for(var xk=endDist; xk<=MAXD; xk+=0.3){ ctx.lineTo(gx(xk), ny+rnd(-6,6)); }
+    ctx.stroke();
+
+    // marcador del evento en cuestión
+    var e=scenario.evs[current];
+    var mx=gx(e.dist);
+    ctx.strokeStyle=cssv("--accent"); ctx.setLineDash([5,4]); ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(mx,y0); ctx.lineTo(mx,y1); ctx.stroke(); ctx.setLineDash([]);
+    // etiqueta ?
+    ctx.fillStyle=cssv("--accent");
+    var lbW=22; var lx=Math.min(Math.max(mx-lbW/2,x0),x1-lbW);
+    ctx.fillRect(lx,y0,lbW,16);
+    ctx.fillStyle="#fff"; ctx.font="bold 11px system-ui"; ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText("? ",lx+lbW/2,y0+8);
+    // distancia del evento
+    ctx.fillStyle="#7fa8d6"; ctx.font="10px system-ui"; ctx.textAlign="center"; ctx.textBaseline="top";
+    ctx.fillText(e.dist.toFixed(1)+" km", mx, y0+18);
+  }
+
+  function applyTheme(){ document.documentElement.setAttribute("data-theme",THEME);
+    $("temaIco").innerHTML=THEME==="dark"?ICO.sun:ICO.moon;
+    $("temaTxt").textContent=THEME==="dark"?X("Light","Claro"):X("Dark","Oscuro"); }
+
+  function renderWl(){
+    $("wl").innerHTML=["1310","1550"].map(function(w){
+      return '<button data-w="'+w+'" class="'+(w===wl?"on":"")+'">'+w+' nm</button>';
+    }).join("");
+    $("wl").querySelectorAll("button").forEach(function(b){
+      b.onclick=function(){ wl=b.getAttribute("data-w"); scenario.atten= wl==="1550"?0.22:0.35; draw(); };
+    });
+  }
+
+  function renderQuiz(){
+    var e=scenario.evs[current];
+    $("prompt").innerHTML=X('Event <span class="em">'+(current+1)+'</span> of '+scenario.evs.length+' — what is it?',
+                            'Evento <span class="em">'+(current+1)+'</span> de '+scenario.evs.length+' — ¿qué es?');
+    $("subprompt").textContent=X("Read the marked point on the trace (spike? step down? worse at 1550 nm? into the noise?). Toggle wavelength to help decide.",
+                                "Lee el punto marcado en la traza (¿pico? ¿escalón hacia abajo? ¿peor a 1550 nm? ¿hacia el ruido?). Cambia la longitud de onda para decidir.");
+    $("opts").innerHTML=OPT_ORDER.map(function(t){
+      return '<button class="opt" data-t="'+t+'"><span class="dot" style="background:'+TYPES[t].col+'"></span>'+X(TYPES[t].label[0],TYPES[t].label[1])+'</button>';
+    }).join("");
+    $("opts").querySelectorAll(".opt").forEach(function(b){ b.onclick=function(){ answer(b.getAttribute("data-t")); }; });
+    $("fb").classList.remove("show"); $("fb").innerHTML="";
+    $("next").style.display="none";
+    updateScore();
+    draw();
+  }
+
+  function answer(t){
+    if(answeredType) return;
+    answeredType=t; asked++;
+    var e=scenario.evs[current];
+    var correct=e.type;
+    $("opts").querySelectorAll(".opt").forEach(function(b){
+      var bt=b.getAttribute("data-t"); b.disabled=true;
+      if(bt===correct) b.classList.add("correct");
+      else if(bt===t) b.classList.add("wrong");
+    });
+    if(t===correct) score++;
+    $("fb").innerHTML='<b>'+(t===correct?X("Correct.","Correcto."):X("Not quite.","No exactamente."))+'</b> '+X(TYPES[correct].why[0],TYPES[correct].why[1]);
+    $("fb").classList.add("show");
+    updateScore();
+    $("next").style.display=(current<scenario.evs.length-1)?"inline-flex":"inline-flex";
+    $("next").textContent=(current<scenario.evs.length-1)?X("Next event","Siguiente evento"):X("New trace","Nueva traza");
+    $("next").onclick=function(){
+      if(current<scenario.evs.length-1){ current++; answeredType=null; renderQuiz(); }
+      else { newTrace(); }
+    };
+  }
+
+  function updateScore(){
+    $("scoreLbl").innerHTML=X("Score","Puntaje")+': <b>'+score+'/'+asked+'</b>';
+  }
+
+  function newTrace(){ buildScenario(); answeredType=null; renderWl(); renderQuiz(); }
+
+  function chrome(){
+    applyTheme(); document.documentElement.lang=LANG;
+    $("brand").textContent=X("OTDR Reader","Lector OTDR");
+    $("brandsub").textContent=X("Lab · Module 4","Lab · Módulo 4");
+    $("homeTxt").textContent=X("Labs","Labs");
+    $("lang").querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-l")===LANG); });
+    $("title").textContent=X("OTDR trace reader","Lector de traza OTDR");
+    $("lead").textContent=X("The trace shows backscattered power (dB) versus distance (km). Identify each marked event. Reflective spikes = connectors/ends; steps down without reflection = splices; bends get worse at 1550 nm.",
+                           "La traza muestra potencia retrodispersada (dB) vs. distancia (km). Identifica cada evento marcado. Picos reflectivos = conectores/fines; escalones sin reflexión = empalmes; los dobleces empeoran a 1550 nm.");
+    $("newt").innerHTML=ICO.refresh+" "+X("New trace","Nueva traza");
+    $("newt").onclick=newTrace;
+    $("foot").innerHTML=X("Distances use round-trip time and the fiber index (IOR). A launch fiber moves the first connector out of the OTDR dead zone.",
+                          "Las distancias usan el tiempo de ida-vuelta y el índice de la fibra (IOR). Un cable de lanzamiento saca el primer conector de la zona muerta del OTDR.");
+    renderWl(); renderQuiz();
+  }
+
+  $("tema").onclick=function(){ THEME=THEME==="dark"?"light":"dark"; if(window.FOT&&FOT.setTheme)FOT.setTheme(THEME); applyTheme(); draw(); };
+  $("lang").querySelectorAll("button").forEach(function(b){
+    b.onclick=function(){ LANG=b.getAttribute("data-l"); if(window.FOT&&FOT.setLang)FOT.setLang(LANG);
+      // re-render textos manteniendo el escenario y el estado de la pregunta
+      applyTheme(); document.documentElement.lang=LANG;
+      $("brand").textContent=X("OTDR Reader","Lector OTDR");
+      $("brandsub").textContent=X("Lab · Module 4","Lab · Módulo 4");
+      $("homeTxt").textContent=X("Labs","Labs");
+      $("lang").querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x.getAttribute("data-l")===LANG); });
+      $("title").textContent=X("OTDR trace reader","Lector de traza OTDR");
+      $("lead").textContent=X("The trace shows backscattered power (dB) versus distance (km). Identify each marked event. Reflective spikes = connectors/ends; steps down without reflection = splices; bends get worse at 1550 nm.",
+                             "La traza muestra potencia retrodispersada (dB) vs. distancia (km). Identifica cada evento marcado. Picos reflectivos = conectores/fines; escalones sin reflexión = empalmes; los dobleces empeoran a 1550 nm.");
+      $("newt").innerHTML=ICO.refresh+" "+X("New trace","Nueva traza");
+      $("foot").innerHTML=X("Distances use round-trip time and the fiber index (IOR). A launch fiber moves the first connector out of the OTDR dead zone.",
+                            "Las distancias usan el tiempo de ida-vuelta y el índice de la fibra (IOR). Un cable de lanzamiento saca el primer conector de la zona muerta del OTDR.");
+      // re-render opciones/prompt en el nuevo idioma sin perder si ya respondió
+      var prevAnswer=answeredType;
+      renderWl();
+      renderQuizPreserve(prevAnswer);
+    };
+  });
+
+  // re-render de la pregunta conservando el estado respondido (para cambio de idioma)
+  // sin volver a contar el puntaje (answer() incrementa asked/score, así que los restauramos)
+  function renderQuizPreserve(prev){
+    var s=score, a=asked;
+    renderQuiz();
+    if(prev){ answeredType=null; answer(prev); score=s; asked=a; updateScore(); }
+  }
+
+  window.addEventListener("resize", function(){ if(scenario) draw(); });
+
+  buildScenario();
+  chrome();
+})();
+</script>
+</body>
+</html>
