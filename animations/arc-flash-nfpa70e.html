@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arc Flash &amp; NFPA 70E / Arco eléctrico y NFPA 70E</title>
+<!--
+  SEGURIDAD (verde) — Arco eléctrico (Arc Flash) y NFPA 70E / Arc Flash & NFPA 70E.
+  SAFETY (green) — Arc flash & arc blast hazards, boundaries, incident energy, PPE, NFPA 70E work practices.
+  Motor basado en animations/defensive-driving-fatigue.html (que a su vez deriva de loto-lockout-tagout.html).
+  Bilingüe EN/ES (EN por defecto). Canvas analizador. NO se inventaron datos.
+  Fuentes / Sources:
+   · NFPA 70E-2024 Standard for Electrical Safety in the Workplace (3-year cycle; current edition).
+   · IEEE Std 1584-2018 Guide for Performing Arc-Flash Hazard Calculations (1800+ tests; 208–15,000 V).
+   · NFPA 70E Table 130.7(C)(15)(c)/130.5(G) PPE categories: 4 / 8 / 25 / 40 cal/cm². >40 → no energized work.
+   · NFPA 70E Table 130.4 shock approach boundaries (Limited / Restricted). Prohibited boundary removed in 2015.
+   · Arc Flash Boundary = distance where incident energy = 1.2 cal/cm² (onset 2nd-degree burn, Stoll).
+   · NFPA 70E Art.120 electrically safe work condition; 130.2/130.3 energized work & EEWP; 110.5(H) hierarchy of controls.
+   · Ralph Lee, "The Other Electrical Hazard: Electric Arc Blast Burns," IEEE Trans. Ind. Appl. (foundational).
+   · OSHA 1910.331–.335 (references NFPA 70E as recognized practice). CSA Z462 = Canadian counterpart.
+   · Physics: arc ~35,000 °F (~19,400 °C, ~4× sun surface); copper vaporizes → ~67,000× volume; blast sound often >140 dB.
+   · NOTE: the interactive incident-energy / boundary tools are educational illustrations. Real values come from an
+     IEEE 1584 study and the equipment's arc flash label — never from these sliders.
+-->
+<style>
+  :root{
+    --pg:#f2f7f3; --card:#ffffff; --ink:#0c2417; --sub:#4f6a5b; --line:#dfeae3;
+    --bar:#0b3a22; --accent:#15803D; --tint:rgba(21,128,61,.10);
+    --ok:#15803D; --okt:rgba(21,128,61,.10); --bad:#dc2626; --badt:rgba(220,38,38,.10);
+    --amber:#b45309; --ambt:rgba(180,83,9,.12); --radius:14px;
+    --shadow:0 1px 2px rgba(12,36,23,.05),0 10px 26px rgba(12,36,23,.08);
+  }
+  html[data-theme="dark"]{
+    --pg:#0a1310; --card:#12201a; --ink:#e9f6ee; --sub:#a3c2b1; --line:#22352b;
+    --bar:#07130c; --accent:#4ade80; --tint:rgba(74,222,128,.14);
+    --ok:#4ade80; --okt:rgba(74,222,128,.14); --bad:#f87171; --badt:rgba(248,113,113,.14);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  .shell{max-width:940px;margin:0 auto;padding:14px 16px 34px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0 8px;box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:600;display:block;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+  .prog{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:6px 0 4px}
+  .prog>i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);gap:8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;min-height:360px}
+  .step-ico{width:44px;height:44px;border-radius:12px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+  h1{font-size:clamp(20px,3.3vw,26px);margin:0 0 8px;font-weight:700;line-height:1.2}
+  h2{font-size:15.5px;margin:16px 0 8px;font-weight:600}
+  p{margin:0 0 12px}
+  .lead{color:var(--sub);font-size:15px}
+  ul,ol{margin:6px 0 12px;padding-left:20px}
+  li{margin:6px 0}
+  .pill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:var(--tint);padding:5px 11px;border-radius:999px;margin-bottom:10px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:8px 0}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin:8px 0}
+  .box{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:13px}
+  .box h3{margin:0 0 6px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px}
+  .box p{margin:0;font-size:12.5px;color:var(--sub)}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:var(--accent);color:#fff;font-weight:800;font-size:14px;flex:none}
+  .stat3{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
+  .stat3 .s{flex:1;min-width:120px;background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center}
+  .stat3 .s b{display:block;font-size:24px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+  .stat3 .s span{font-size:12px;color:var(--sub)}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;min-height:42px;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;flex:1}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line);border:0;cursor:pointer;padding:0}
+  .dot.on{background:var(--accent);transform:scale(1.3)}
+  .note{font-size:13px;color:var(--sub);border-left:3px solid var(--accent);background:var(--tint);padding:9px 12px;margin:12px 0;border-radius:0 8px 8px 0}
+  .warn{border-left-color:var(--amber);color:var(--amber);background:var(--ambt)}
+  .bad{border-left-color:var(--bad);color:var(--bad);background:var(--badt)}
+  .good{border-left-color:var(--ok);color:var(--ink);background:var(--okt)}
+  .good b{color:var(--ok)}
+  .illus{position:relative;aspect-ratio:16/10;background:#08140d;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .illus svg,.illus canvas{width:100%;height:100%}
+  .illus.top{background:#0d1a10}
+  .mcap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);margin:8px 2px 2px;justify-content:center}
+  .steps{margin:8px 0}
+  .steps .st{display:flex;gap:12px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:7px 0}
+  .steps .st .txt b{font-size:13.5px}.steps .st .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .chk{display:flex;gap:11px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:8px 0;cursor:pointer}
+  .chk .bx{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;margin-top:1px}
+  .chk.done .bx{background:var(--ok);border-color:var(--ok)}
+  .chk.done .txt b{text-decoration:line-through;opacity:.7}
+  .chk .txt b{font-size:13.5px}.chk .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .row{display:flex;align-items:center;gap:12px;margin:10px 0;flex-wrap:wrap}
+  .ctrl{display:flex;flex-direction:column;gap:4px;margin:10px 0}
+  .ctrl label{font-size:12.5px;color:var(--sub);display:flex;justify-content:space-between;gap:10px}
+  .ctrl label b{color:var(--ink);font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--accent);height:26px}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;flex-wrap:wrap}
+  .seg button{border:0;background:var(--card);color:var(--sub);padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;min-height:38px}
+  .seg button.on{background:var(--accent);color:#fff}
+  .q{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:12px}
+  .q h3{margin:0 0 10px;font-size:14px}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:11px 14px;border-radius:10px;margin:7px 0;cursor:pointer;font-size:14px;font-family:inherit}
+  .opt.correct{border-color:var(--ok);background:var(--okt);color:var(--ok);font-weight:600}
+  .opt.wrong{border-color:var(--bad);background:var(--badt);color:var(--bad)}
+  .opt:disabled{cursor:default}
+  .score{font-size:16px;font-weight:700;text-align:center;padding:10px}
+  .verdict{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;font-weight:700;font-size:15px}
+  .verdict.ok{background:var(--okt);color:var(--ok)}
+  .ref{font-size:12.5px;color:var(--sub);border-bottom:1px solid var(--line);padding:8px 0}
+  .ref b{color:var(--ink)}
+  .lbl{background:#0b1220;border:1px solid #24406b;border-radius:10px;overflow:hidden;color:#e8eef8;font-family:ui-monospace,monospace;margin:10px 0}
+  .lbl .hd{background:#b91c1c;color:#fff;font-weight:800;letter-spacing:.06em;padding:8px 12px;font-size:13px;display:flex;align-items:center;gap:8px}
+  .lbl .bd{padding:12px}
+  .lbl .lrow{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:4px 0;border-bottom:1px dashed #24406b}
+  .lbl .lrow span:first-child{color:#9fb4d8}
+  .lbl .lrow b{color:#fff}
+  @media(max-width:520px){ .card{padding:15px} .shell{padding:12px 12px 28px} .brand small{display:none} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+  <div class="top">
+    <div class="brand">
+      <span class="logo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span>
+      <div><b id="brand"></b><small id="brandsub"></small></div>
+    </div>
+    <div class="tools">
+      <a class="tbtn" id="home" href="../index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span id="homeTxt"></span></a>
+      <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+      <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+    </div>
+  </div>
+  <div class="prog"><i id="progbar"></i></div>
+  <div class="meta"><span id="mStep"></span><span id="mDur"></span></div>
+  </div>
+  <div class="card" id="card"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev"></button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="next"></button>
+  </div>
+</div>
+
+<script>
+/* ===================== CONFIG ===================== */
+var CONFIG = {
+  brand:   ["Arc Flash & NFPA 70E","Arco eléctrico y NFPA 70E"],
+  subtitle:["Electrical safety · Safety","Seguridad eléctrica · Seguridad"],
+  duration:"≈ 25 min",
+  defaultLang:"en"
+};
+
+/* ===================== helpers ===================== */
+var params=new URLSearchParams(location.search);
+var LANG=params.get("lang")?(params.get("lang").toLowerCase().startsWith("es")?"es":"en"):CONFIG.defaultLang;
+function X(en,es){ return LANG==="es"?es:en; }
+function $(id){ return document.getElementById(id); }
+function tit(en,es){ return '<div class="step-ico">'+STEPS[cur].ico+'</div><h1>'+X(en,es)+'</h1>'; }
+var ICO={
+  bolt:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+  flame:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c2 3 5 4.5 5 9a5 5 0 0 1-10 0c0-2 1-3 1-3 .5 1.5 2 2 2 2-.5-3 2-6 2-8z"/></svg>',
+  shock:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/><path d="M2 12h2M20 12h2"/></svg>',
+  warn:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.6 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+  danger:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 20h20z"/><path d="M12 9v4M12 17h.01"/></svg>',
+  gauge:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14 16 9"/><path d="M4 18a8 8 0 1 1 16 0"/><circle cx="12" cy="14" r="1.4"/></svg>',
+  ruler:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15 15 3l6 6L9 21z"/><path d="M7 11l2 2M11 7l2 2M15 3l2 2"/></svg>',
+  tag:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="7.5" r="1.4"/></svg>',
+  layers:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5z"/><path d="M2 12l10 5 10-5M2 16l10 5 10-5"/></svg>',
+  shield:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 5 3.5 8 7 9 3.5-1 7-4 7-9V6z"/><path d="m9 12 2 2 4-4"/></svg>',
+  lock:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+  wrench:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.2L3 17.8 6.2 21l6.3-6.3a4 4 0 0 0 5.2-5.4l-2.5 2.5-2.3-2.3z"/></svg>',
+  list:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
+  gear:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>',
+  eye:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  people:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 6a3 3 0 0 1 0 6M21 20a6 6 0 0 0-4-5.6"/></svg>',
+  check:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  quiz:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.1 9a3 3 0 1 1 4.2 2.7c-.8.4-1.3 1-1.3 2M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>',
+  book:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h9a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-1a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h2z"/></svg>',
+  sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moonm:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+};
+function stepRow(n,en,es,den,des){ return '<div class="st"><span class="num">'+n+'</span><span class="txt"><b>'+X(en,es)+'</b><span>'+X(den,des)+'</span></span></div>'; }
+function bx(icon,tEn,tEs,dEn,dEs){ return '<div class="box"><h3>'+icon+X(tEn,tEs)+'</h3><p>'+X(dEn,dEs)+'</p></div>'; }
+/* canvas helper (DPR-aware). Returns {c,x,fit}. */
+function cv(id){ var c=$(id); if(!c) return null; var x=c.getContext("2d");
+  function fit(){ var r=c.getBoundingClientRect(); var d=Math.min(2,window.devicePixelRatio||1); c.width=Math.max(1,Math.round(r.width*d)); c.height=Math.max(1,Math.round(r.height*d)); x.setTransform(d,0,0,d,0,0); return {w:r.width,h:r.height}; }
+  return {c:c,x:x,fit:fit};
+}
+function raf(gen,step){ (function fr(){ if(gen!==_gen) return; step(); requestAnimationFrame(fr); })(); }
+function RR(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
+
+/* ===================== STEPS ===================== */
+var STEPS = [
+  /* 1 — Overview */
+  { ico:ICO.bolt, t:["Overview","Introducción"], b:function(){
+      return tit("Arc flash & NFPA 70E","Arco eléctrico y NFPA 70E")+
+        '<span class="pill">NFPA 70E-2024 · IEEE 1584 · OSHA</span>'+
+        '<p class="lead">'+X("An arc flash is a violent release of energy from an electrical fault through the air. In a fraction of a second it produces heat several times hotter than the surface of the sun, a blinding flash, and an explosive pressure blast. This module builds real understanding: the hazards, how energy and boundaries are measured, how PPE is selected, and the NFPA 70E work practices that keep you alive — with interactive tools.","Un arco eléctrico (arc flash) es una liberación violenta de energía de una falla eléctrica a través del aire. En una fracción de segundo produce calor varias veces más caliente que la superficie del sol, un destello cegador y una explosión de presión. Este módulo construye comprensión real: los peligros, cómo se miden la energía y las fronteras, cómo se elige el EPP y las prácticas de NFPA 70E que te mantienen vivo — con herramientas interactivas.")+'</p>'+
+        '<div class="stat3"><div class="s"><b>35,000°F</b><span>'+X("arc temperature","temperatura del arco")+'</span></div><div class="s"><b>1.2</b><span>'+X("cal/cm² = burn","cal/cm² = quemadura")+'</span></div><div class="s"><b>≈25</b><span>min</span></div></div>'+
+        '<p class="note">'+X("This is a safety-awareness overview aligned with NFPA 70E-2024 and IEEE 1584-2018. It does not replace your employer’s hands-on qualified-person training or a site-specific arc flash study.","Es un resumen de concientización alineado con NFPA 70E-2024 e IEEE 1584-2018. No reemplaza la capacitación práctica de persona calificada de tu empleador ni un estudio de arco eléctrico específico del sitio.")+'</p>';
+  }},
+  /* 2 — Two (three) hazards */
+  { ico:ICO.warn, t:["The hazards","Los peligros"], b:function(){
+      return tit("Two hazards, one event","Dos peligros, un mismo evento")+
+        '<p class="lead">'+X("Energized electrical work exposes you to two distinct hazards. Both can kill, and an arcing fault can create the arc flash and arc blast at the same time.","El trabajo eléctrico energizado te expone a dos peligros distintos. Ambos pueden matar, y una falla por arco puede crear el arc flash y el arc blast a la vez.")+'</p>'+
+        '<div class="grid2">'+
+          bx(ICO.shock,"Electric shock","Choque eléctrico","Current through the body. Historically it kills more electrical workers than arc flash. A shock hazard is generally presumed at 50 V or more; about 0.020 A across the body can be fatal.","Corriente a través del cuerpo. Históricamente mata a más trabajadores que el arc flash. El peligro de choque se presume a 50 V o más; unos 0.020 A por el cuerpo pueden ser fatales.")+
+          bx(ICO.flame,"Arc flash","Arco eléctrico","The thermal (heat/light) hazard of an arcing fault. Measured as incident energy in cal/cm². This is what PPE categories and the arc flash boundary are built around.","El peligro térmico (calor/luz) de una falla por arco. Se mide como energía incidente en cal/cm². Sobre esto se construyen las categorías de EPP y la frontera de arco.")+
+        '</div>'+
+        '<p class="note warn"><b>'+X("And a third effect: arc blast.","Y un tercer efecto: arc blast.")+'</b> '+X("The pressure wave, sound, and flying molten metal of the same fault. NFPA 70E and IEEE 1584 quantify only the thermal energy — not the blast — which is why keeping distance and de-energizing matter so much.","La onda de presión, el sonido y el metal fundido que salen despedidos de la misma falla. NFPA 70E e IEEE 1584 cuantifican solo la energía térmica — no la explosión — por eso importan tanto la distancia y desenergizar.")+'</p>';
+  }},
+  /* 3 — What causes an arc flash */
+  { ico:ICO.bolt, t:["What causes it","Qué lo causa"], b:function(){
+      return tit("What starts an arc flash","Qué inicia un arc flash")+
+        '<p class="lead">'+X("An arc starts when current jumps through the air between conductors, or a conductor and ground. Once the air ionizes into plasma, it becomes a very low-resistance path that feeds on the available fault current. Common triggers on our sites:","Un arco inicia cuando la corriente salta por el aire entre conductores, o entre un conductor y tierra. Cuando el aire se ioniza en plasma, se vuelve un camino de muy baja resistencia que se alimenta de la corriente de falla disponible. Disparadores comunes en nuestros sitios:")+'</p>'+
+        '<div class="grid3">'+
+          bx(ICO.wrench,"Dropped tool","Herramienta caída","A wrench or probe slips across bus bars or terminals.","Una llave o punta cae y cruza barras o terminales.")+
+          bx(ICO.warn,"Loose / hot connection","Conexión floja / caliente","Loose lugs and overheated terminals arc over time.","Terminales flojos o sobrecalentados arquean con el tiempo.")+
+          bx(ICO.gear,"Dust & corrosion","Polvo y corrosión","Contamination bridges a path across insulation.","La contaminación crea un puente sobre el aislamiento.")+
+          bx(ICO.flame,"Condensation","Condensación","Moisture inside gear tracks and flashes over.","La humedad dentro del equipo hace tracking y flashea.")+
+          bx(ICO.people,"Rodents / debris","Roedores / basura","An animal or object bridges energized parts.","Un animal u objeto puentea partes energizadas.")+
+          bx(ICO.bolt,"Bad work practice","Mala práctica","Racking breakers or probing live gear the wrong way.","Insertar breakers o medir energizado de forma incorrecta.")+
+        '</div>'+
+        '<p class="note bad">'+X("Most arc flashes happen during interaction with the equipment — racking breakers, opening doors, taking readings. That is why the standard treats even closed-door operation as a potential arc flash task.","La mayoría de los arc flash ocurren al interactuar con el equipo — insertar breakers, abrir puertas, tomar lecturas. Por eso la norma trata incluso operar a puerta cerrada como una tarea con riesgo de arco.")+'</p>';
+  }},
+  /* 4 — Arc ignition animation (canvas) */
+  { ico:ICO.flame, t:["Arc ignition","Ignición del arco"], b:function(){
+      return tit("Watch an arc ignite","Observa cómo se enciende un arco")+
+        '<p class="lead">'+X("A fault bridges two energized conductors. The air ionizes into a plasma arc that erupts outward as radiant heat and light. Everything in front of it — tools, gloves, skin — receives that energy in milliseconds.","Una falla puentea dos conductores energizados. El aire se ioniza en un arco de plasma que estalla hacia afuera como calor y luz radiante. Todo lo que esté enfrente — herramientas, guantes, piel — recibe esa energía en milisegundos.")+'</p>'+
+        '<div class="illus top"><canvas id="afArc"></canvas></div>'+
+        '<div class="mcap">'+ICO.flame+'<span>'+X("Simulated arcing fault inside a panel","Falla por arco simulada dentro de un panel")+'</span></div>'+
+        '<p class="note bad">'+X("The arc is self-sustaining: once started it keeps drawing current until an upstream breaker or fuse clears it. Faster clearing time = less incident energy. This is why protective-device settings are a safety issue, not just an engineering one.","El arco se autosostiene: una vez iniciado sigue tomando corriente hasta que un breaker o fusible aguas arriba lo despeja. Menor tiempo de despeje = menos energía incidente. Por eso los ajustes de los dispositivos de protección son un asunto de seguridad, no solo de ingeniería.")+'</p>';
+    }, i:function(){ var gen=_gen; var o=cv("afArc"); if(!o) return; var dim=o.fit();
+      window.addEventListener("resize",function(){ if(gen===_gen&&o) dim=o.fit(); });
+      var sparks=[]; var t0=performance.now();
+      raf(gen,function(){ var w=dim.w,h=dim.h,x=o.x,now=performance.now(); var tt=(now-t0)/1000; var cyc=2.6, ph=tt%cyc; var live=ph>0.6;
+        x.fillStyle="#0a0f16"; x.fillRect(0,0,w,h);
+        /* enclosure */
+        x.strokeStyle="#28323f"; x.lineWidth=2; RR(x,w*0.08,h*0.1,w*0.84,h*0.8,10); x.stroke();
+        /* two bus bars */
+        var bx1=w*0.34, bx2=w*0.62, by=h*0.16, bh=h*0.68, bw=w*0.06;
+        x.fillStyle="#b45309"; x.fillRect(bx1-bw/2,by,bw,bh); x.fillRect(bx2-bw/2,by,bw,bh);
+        x.fillStyle="#7c4a10"; x.fillRect(bx1-bw/2,by,bw,6); x.fillRect(bx2-bw/2,by,bw,6);
+        var ax=(bx1+bx2)/2, ay=h*0.5;
+        if(live){
+          var e=Math.min(1,(ph-0.6)/0.4);
+          /* radiant rings */
+          for(var k=0;k<4;k++){ var rr=e*Math.max(w,h)*(0.18+k*0.16); x.strokeStyle="rgba(255,"+(180-k*30)+",60,"+(0.5*(1-e)).toFixed(3)+")"; x.lineWidth=3; x.beginPath(); x.arc(ax,ay,rr,0,Math.PI*2); x.stroke(); }
+          /* arc core */
+          var grd=x.createRadialGradient(ax,ay,2,ax,ay,60*e+18); grd.addColorStop(0,"#ffffff"); grd.addColorStop(0.3,"#fff2b0"); grd.addColorStop(0.7,"#ff9d2e"); grd.addColorStop(1,"rgba(255,90,20,0)");
+          x.fillStyle=grd; x.beginPath(); x.arc(ax,ay,60*e+18,0,Math.PI*2); x.fill();
+          /* jagged arc channel between bars */
+          x.strokeStyle="#fff"; x.strokeStyle="#ffffff"; x.lineWidth=2.4; x.beginPath(); x.moveTo(bx1+bw/2,ay);
+          var segs=6; for(var s=1;s<segs;s++){ var px=bx1+ (bx2-bx1)*(s/segs); var py=ay+(Math.random()-0.5)*36*e; x.lineTo(px,py); } x.lineTo(bx2-bw/2,ay); x.stroke();
+          /* spawn sparks */
+          if(Math.random()<0.9){ var a=Math.random()*Math.PI*2, sp=2+Math.random()*4; sparks.push({x:ax,y:ay,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1,life:1}); }
+          x.fillStyle="rgba(255,60,40,0.13)"; x.fillRect(0,0,w,h); /* flash wash */
+        }
+        /* sparks */
+        for(var i=sparks.length-1;i>=0;i--){ var p=sparks[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.12; p.life-=0.02; if(p.life<=0){ sparks.splice(i,1); continue; } x.fillStyle="rgba(255,"+Math.round(160+p.life*80)+",80,"+p.life.toFixed(2)+")"; x.fillRect(p.x,p.y,2.4,2.4); }
+        /* label */
+        x.fillStyle=live?"#fecaca":"#7c8b99"; x.font="700 12px ui-monospace,monospace"; x.textAlign="center";
+        x.fillText(live?X("ARC — energy radiating outward","ARCO — energía radiando"):X("Fault bridging conductors...","Falla puenteando conductores..."), w/2, h-14);
+      });
+    }
+  },
+  /* 5 — The heat */
+  { ico:ICO.flame, t:["The heat","El calor"], b:function(){
+      return tit("Hotter than the surface of the sun","Más caliente que la superficie del sol")+
+        '<p class="lead">'+X("The arc plasma reaches about 35,000 °F (19,400 °C) — roughly four times the temperature of the sun’s surface. That exceeds the melting and boiling point of every metal in the equipment.","El plasma del arco llega a unos 35,000 °F (19,400 °C) — cerca de cuatro veces la temperatura de la superficie del sol. Supera el punto de fusión y ebullición de todo metal en el equipo.")+'</p>'+
+        '<div class="stat3"><div class="s"><b>35,000°F</b><span>'+X("≈ 4× the sun’s surface","≈ 4× superficie del sol")+'</span></div><div class="s"><b>67,000×</b><span>'+X("copper vapor expansion","expansión vapor de cobre")+'</span></div><div class="s"><b>1.2</b><span>cal/cm² = '+X("2nd-degree burn","quemadura 2° grado")+'</span></div></div>'+
+        '<p>'+X("At that heat, copper conductors vaporize and expand to about 67,000 times their solid volume (1 in³ → ~1.44 yd³). Radiant heat can cause second- and third-degree burns to bare skin more than 10 feet away and instantly ignite ordinary clothing.","A ese calor, los conductores de cobre se vaporizan y se expanden unas 67,000 veces su volumen sólido (1 in³ → ~1.44 yd³). El calor radiante puede causar quemaduras de 2° y 3° grado a más de 3 metros e incendiar al instante la ropa común.")+'</p>'+
+        '<p class="note bad">'+X("The burn threshold is tiny: just 1.2 cal/cm² on bare skin causes the onset of a second-degree burn. That single number defines the arc flash boundary you’ll see next.","El umbral de quemadura es diminuto: apenas 1.2 cal/cm² en piel desnuda inicia una quemadura de 2° grado. Ese único número define la frontera de arco que verás a continuación.")+'</p>';
+  }},
+  /* 6 — Arc blast animation (canvas) */
+  { ico:ICO.danger, t:["Arc blast","Explosión (blast)"], b:function(){
+      return tit("The arc blast: pressure, sound, shrapnel","El arc blast: presión, sonido, metralla")+
+        '<p class="lead">'+X("The explosive expansion of vaporized metal and superheated air launches a pressure wave and molten shrapnel outward. It can throw a worker off a ladder or across a room, blow enclosure doors open, and produce sound loud enough to cause permanent hearing loss.","La expansión explosiva del metal vaporizado y el aire sobrecalentado lanza hacia afuera una onda de presión y metralla fundida. Puede tirar a un trabajador de una escalera o lanzarlo, reventar las puertas del gabinete y generar un sonido capaz de causar sordera permanente.")+'</p>'+
+        '<div class="illus top"><canvas id="abCv"></canvas></div>'+
+        '<div class="mcap">'+ICO.danger+'<span>'+X("Pressure wave + molten metal + sound","Onda de presión + metal fundido + sonido")+'</span></div>'+
+        '<p class="note warn">'+X("Sound from a blast is often reported above 140 dB — comparable to a jet engine. Molten metal can be propelled at high speed. Because NFPA 70E / IEEE 1584 do not rate PPE for blast, distance and de-energizing are the real defenses.","El sonido de una explosión suele reportarse por encima de 140 dB — comparable a un motor a reacción. El metal fundido puede salir despedido a gran velocidad. Como NFPA 70E / IEEE 1584 no califican el EPP para la explosión, la distancia y desenergizar son las defensas reales.")+'</p>';
+    }, i:function(){ var gen=_gen; var o=cv("abCv"); if(!o) return; var dim=o.fit();
+      window.addEventListener("resize",function(){ if(gen===_gen&&o) dim=o.fit(); });
+      var frag=[]; var t0=performance.now();
+      raf(gen,function(){ var w=dim.w,h=dim.h,x=o.x,now=performance.now(); var tt=(now-t0)/1000; var cyc=3.0, ph=tt%cyc; var boom=ph<1.4;
+        x.fillStyle="#0a0f16"; x.fillRect(0,0,w,h);
+        var sx=w*0.2, sy=h*0.5; /* source */
+        /* worker silhouette on the right */
+        var wx=w*0.8, base=h*0.86, push=boom?Math.min(1,ph/0.5):0; var lean=push*16;
+        x.save(); x.translate(wx+lean,0);
+        x.fillStyle="#38414c"; x.beginPath(); x.arc(0,base-64,10,0,Math.PI*2); x.fill();
+        x.fillStyle="#2b333d"; RR(x,-12,base-52,24,34,7); x.fill(); x.fillRect(-11,base-20,9,20); x.fillRect(2,base-20,9,20);
+        x.restore();
+        if(boom){
+          var e=ph/1.4;
+          /* shock rings */
+          for(var k=0;k<5;k++){ var rr=e*w*0.9*(0.2+k*0.14); x.strokeStyle="rgba(255,"+(200-k*24)+",120,"+(0.55*(1-e)).toFixed(3)+")"; x.lineWidth=4; x.beginPath(); x.arc(sx,sy,rr,0,Math.PI*2); x.stroke(); }
+          /* core */
+          var grd=x.createRadialGradient(sx,sy,2,sx,sy,70); grd.addColorStop(0,"#fff"); grd.addColorStop(0.35,"#ffe37a"); grd.addColorStop(1,"rgba(255,110,30,0)");
+          x.fillStyle=grd; x.beginPath(); x.arc(sx,sy,70,0,Math.PI*2); x.fill();
+          if(frag.length<70 && Math.random()<0.9){ var a=(Math.random()*0.8-0.4); var sp=4+Math.random()*7; frag.push({x:sx,y:sy,vx:Math.cos(a)*sp+3,vy:Math.sin(a)*sp,life:1,r:1+Math.random()*2}); }
+          x.fillStyle="rgba(255,70,30,0.12)"; x.fillRect(0,0,w,h);
+        }
+        for(var i=frag.length-1;i>=0;i--){ var p=frag[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.14; p.life-=0.012; if(p.life<=0||p.x>w){ frag.splice(i,1); continue; } x.fillStyle="rgba(255,"+Math.round(120+p.life*120)+",50,"+p.life.toFixed(2)+")"; x.beginPath(); x.arc(p.x,p.y,p.r,0,Math.PI*2); x.fill(); }
+        /* readouts */
+        x.fillStyle="#9fb4d8"; x.font="700 12px ui-monospace,monospace"; x.textAlign="left";
+        x.fillText(boom? X(">140 dB  ·  molten metal ejected",">140 dB  ·  metal fundido eyectado") : X("standby...","en espera..."), 12, 20);
+        if(boom){ x.fillStyle="#fecaca"; x.textAlign="right"; x.fillText(X("worker pushed back","trabajador empujado"), w-12, 20); }
+      });
+    }
+  },
+  /* 7 — Incident energy */
+  { ico:ICO.gauge, t:["Incident energy","Energía incidente"], b:function(){
+      return tit("Incident energy & working distance","Energía incidente y distancia de trabajo")+
+        '<p class="lead">'+X("Incident energy is the amount of thermal energy a worker would receive at a given distance from the arc, measured in calories per square centimeter (cal/cm²). It is always tied to a working distance — the typical low-voltage reference is 18 inches (455 mm), roughly your torso to the equipment.","La energía incidente es la cantidad de energía térmica que recibiría un trabajador a cierta distancia del arco, medida en calorías por centímetro cuadrado (cal/cm²). Siempre va ligada a una distancia de trabajo — la referencia típica en baja tensión es 18 pulgadas (455 mm), aproximadamente de tu torso al equipo.")+'</p>'+
+        '<div class="grid2">'+
+          bx(ICO.gauge,"cal/cm²","cal/cm²","The unit of incident energy. Your PPE’s arc rating must be ≥ the incident energy at your working distance.","La unidad de energía incidente. El arc rating de tu EPP debe ser ≥ la energía incidente a tu distancia de trabajo.")+
+          bx(ICO.ruler,"Working distance","Distancia de trabajo","Where the energy is evaluated (often 18 in). Energy rises fast as you get closer to the arc.","Dónde se evalúa la energía (a menudo 18 in). La energía sube rápido al acercarte al arco.")+
+        '</div>'+
+        '<p class="note">'+X("Three things drive incident energy: available fault current, how long the protective device takes to clear the arc, and your distance. Only a study (IEEE 1584) or the equipment label gives the real number.","Tres cosas determinan la energía incidente: la corriente de falla disponible, cuánto tarda el dispositivo de protección en despejar el arco, y tu distancia. Solo un estudio (IEEE 1584) o la etiqueta del equipo dan el número real.")+'</p>';
+  }},
+  /* 8 — Incident energy vs distance simulator (canvas) */
+  { ico:ICO.gauge, t:["Distance sim","Sim de distancia"], b:function(){
+      return tit("Interactive: energy vs distance","Interactivo: energía vs distancia")+
+        '<p class="lead">'+X("Pick an example equipment energy and drag the working distance. Watch incident energy fall as you back away, and see where it crosses 1.2 cal/cm² — that crossing point is the arc flash boundary.","Elige una energía de equipo de ejemplo y mueve la distancia de trabajo. Observa cómo cae la energía incidente al alejarte y dónde cruza 1.2 cal/cm² — ese cruce es la frontera de arco.")+'</p>'+
+        '<div class="row"><div class="seg" id="ieSeg"><button data-e="4" class="on">4</button><button data-e="8">8</button><button data-e="25">25</button><button data-e="40">40</button></div><span class="lead" style="font-size:12.5px">'+X("cal/cm² at 18 in (example)","cal/cm² a 18 in (ejemplo)")+'</span></div>'+
+        '<div class="ctrl"><label>'+X("Working distance","Distancia de trabajo")+': <b id="ieDV">18 in</b></label><input type="range" id="ieD" min="6" max="72" step="1" value="18"></div>'+
+        '<div class="illus" style="aspect-ratio:16/8;background:#08140d"><canvas id="ieCv"></canvas></div>'+
+        '<div class="stat3"><div class="s"><b id="ieIE">–</b><span>'+X("cal/cm² at distance","cal/cm² a la distancia")+'</span></div><div class="s"><b id="ieAFB">–</b><span>'+X("arc flash boundary","frontera de arco")+'</span></div><div class="s"><b id="ieCat">–</b><span>'+X("min PPE","EPP mín.")+'</span></div></div>'+
+        '<div class="note" id="ieMsg"></div>'+
+        '<p class="note warn">'+X("Illustrative inverse-square model for learning only. Real incident energy and the arc flash boundary come from an IEEE 1584 study and the equipment’s arc flash label — not from this slider.","Modelo inverso al cuadrado solo con fines educativos. La energía incidente real y la frontera de arco vienen de un estudio IEEE 1584 y de la etiqueta del equipo — no de este control.")+'</p>';
+    }, i:function(){ var gen=_gen; var e18=4; var d=$("ieD"), o=cv("ieCv"); if(!o) return; var dim=o.fit();
+      window.addEventListener("resize",function(){ if(gen===_gen&&o){ dim=o.fit(); calc(); } });
+      document.querySelectorAll("#ieSeg button").forEach(function(b){ b.onclick=function(){ document.querySelectorAll("#ieSeg button").forEach(function(z){z.classList.remove("on");}); b.classList.add("on"); e18=+b.dataset.e; calc(); }; });
+      function cat(ie){ if(ie<1.2) return X("No AR clothing req.","Sin ropa AR req."); if(ie<=4) return "CAT 1"; if(ie<=8) return "CAT 2"; if(ie<=25) return "CAT 3"; if(ie<=40) return "CAT 4"; return X("Do NOT work energized","NO trabajar energizado"); }
+      function calc(){ var dist=+d.value; $("ieDV").textContent=dist+" in";
+        var ie=e18*Math.pow(18/dist,2); var afb=18*Math.sqrt(e18/1.2);
+        $("ieIE").textContent=ie.toFixed(1); $("ieAFB").textContent=Math.round(afb)+' in';
+        var c=cat(ie); var ce=$("ieCat"); ce.textContent=c; ce.style.color = ie>40?"#f87171":(ie>1.2?"#15803D":"#4f6a5b");
+        var m=$("ieMsg"); if(dist<afb){ m.className="note bad"; m.textContent=X("You are INSIDE the arc flash boundary — arc-rated PPE is required here.","Estás DENTRO de la frontera de arco — aquí se requiere EPP con arc rating."); } else { m.className="note good"; m.textContent=X("You are outside the arc flash boundary (thermal). Blast/sound can still reach you.","Estás fuera de la frontera de arco (térmica). La explosión/sonido aún pueden alcanzarte."); }
+        draw(dist,ie,afb);
+      }
+      function draw(dist,ie,afb){ var w=dim.w,h=dim.h,x=o.x; x.fillStyle="#08140d"; x.fillRect(0,0,w,h);
+        var padL=34,padR=10,padT=12,padB=24, gw=w-padL-padR, gh=h-padT-padB; var maxD=72, maxE=Math.max(e18*1.05,8);
+        function PX(D){ return padL+(D/maxD)*gw; } function PY(E){ return padT+gh-(Math.min(E,maxE)/maxE)*gh; }
+        /* 1.2 line */
+        x.strokeStyle="#3f7a58"; x.setLineDash([4,4]); x.lineWidth=1; x.beginPath(); x.moveTo(padL,PY(1.2)); x.lineTo(w-padR,PY(1.2)); x.stroke(); x.setLineDash([]);
+        x.fillStyle="#8fd6ac"; x.font="10px ui-monospace,monospace"; x.textAlign="left"; x.fillText("1.2", padL+2, PY(1.2)-3);
+        /* curve */
+        x.strokeStyle="#f2c14e"; x.lineWidth=2.4; x.beginPath(); for(var D=6;D<=maxD;D++){ var E=e18*Math.pow(18/D,2); var px=PX(D),py=PY(E); if(D===6)x.moveTo(px,py); else x.lineTo(px,py); } x.stroke();
+        /* AFB vertical */
+        if(afb<=maxD){ x.strokeStyle="#ef4444"; x.setLineDash([3,3]); x.beginPath(); x.moveTo(PX(afb),padT); x.lineTo(PX(afb),padT+gh); x.stroke(); x.setLineDash([]); x.fillStyle="#fca5a5"; x.textAlign="center"; x.fillText(X("AFB","FA"),PX(afb),padT+9); }
+        /* marker */
+        var mx=PX(dist),my=PY(ie); x.fillStyle="#4ade80"; x.beginPath(); x.arc(mx,my,5,0,Math.PI*2); x.fill(); x.strokeStyle="#4ade80"; x.setLineDash([2,3]); x.beginPath(); x.moveTo(mx,my); x.lineTo(mx,padT+gh); x.stroke(); x.setLineDash([]);
+        /* axes labels */
+        x.fillStyle="#5b8c72"; x.textAlign="center"; x.fillText(X("distance (in) →","distancia (in) →"), padL+gw/2, h-6);
+      }
+      d.oninput=calc; calc();
+    }
+  },
+  /* 9 — Boundaries concept */
+  { ico:ICO.ruler, t:["Boundaries","Fronteras"], b:function(){
+      return tit("Approach & arc flash boundaries","Fronteras de aproximación y de arco")+
+        '<p class="lead">'+X("NFPA 70E defines lines you must not cross without the right protection. Two are about shock; one is about the arc flash. They are independent — the arc flash boundary can be nearer or farther than the shock boundaries.","NFPA 70E define líneas que no debes cruzar sin la protección correcta. Dos son por choque; una es por arc flash. Son independientes — la frontera de arco puede estar más cerca o más lejos que las de choque.")+'</p>'+
+        '<div class="steps">'+
+          stepRow("1","Limited Approach Boundary (shock)","Frontera de aproximación limitada (choque)","Unqualified persons may not cross unless escorted by a qualified person. From Table 130.4.","Los no calificados no la cruzan salvo escoltados por una persona calificada. De la Tabla 130.4.")+
+          stepRow("2","Restricted Approach Boundary (shock)","Frontera de aproximación restringida (choque)","Qualified persons only, with shock PPE / insulation and an energized work permit. From Table 130.4.","Solo personas calificadas, con EPP de choque / aislamiento y permiso de trabajo energizado. De la Tabla 130.4.")+
+          stepRow("3","Arc Flash Boundary (thermal)","Frontera de arco (térmica)","The distance where incident energy = 1.2 cal/cm². Anyone inside must wear arc-rated PPE. From the study / label.","La distancia donde la energía incidente = 1.2 cal/cm². Quien esté dentro usa EPP con arc rating. Del estudio / etiqueta.")+
+        '</div>'+
+        '<p class="note">'+X("Note: the older Prohibited Approach Boundary was removed in the 2015 edition. Current NFPA 70E uses only Limited and Restricted (shock) plus the Arc Flash Boundary.","Nota: la antigua frontera de aproximación prohibida se eliminó en la edición 2015. La NFPA 70E vigente usa solo Limitada y Restringida (choque) más la frontera de arco.")+'</p>';
+  }},
+  /* 10 — Boundaries interactive (canvas top view) */
+  { ico:ICO.ruler, t:["Boundary sim","Sim de fronteras"], b:function(){
+      return tit("Interactive: where do you stand?","Interactivo: ¿dónde estás parado?")+
+        '<p class="lead">'+X("Example: a 480 V panel. Slide your distance from the exposed live parts and see which boundary you are in and what is required. (Shock distances are example values from Table 130.4; the arc flash boundary depends on the study.)","Ejemplo: un panel de 480 V. Mueve tu distancia a las partes vivas expuestas y observa en qué frontera estás y qué se requiere. (Las distancias de choque son valores de ejemplo de la Tabla 130.4; la frontera de arco depende del estudio.)")+'</p>'+
+        '<div class="ctrl"><label>'+X("Distance from live parts","Distancia a partes vivas")+': <b id="bnDV">48 in</b></label><input type="range" id="bnD" min="1" max="80" step="1" value="48"></div>'+
+        '<div class="illus top" style="aspect-ratio:16/9"><canvas id="bndCv"></canvas></div>'+
+        '<div class="note" id="bnMsg"></div>';
+    }, i:function(){ var gen=_gen; var d=$("bnD"), o=cv("bndCv"); if(!o) return; var dim=o.fit();
+      window.addEventListener("resize",function(){ if(gen===_gen&&o){ dim=o.fit(); calc(); } });
+      var RAB=12, LAB=42, AFB=36; /* example inches: 480V RAB 12in, LAB 42in; AFB example 36in */
+      function calc(){ var dist=+d.value; $("bnDV").textContent=dist+" in";
+        var m=$("bnMsg"); var t,cls;
+        if(dist<=RAB){ cls="note bad"; t=X("Inside RESTRICTED approach (≤"+RAB+" in): qualified persons only, shock PPE + insulated tools + energized work permit, AND arc-rated PPE.","Dentro de la aproximación RESTRINGIDA (≤"+RAB+" in): solo calificados, EPP de choque + herramientas aisladas + permiso, Y EPP con arc rating."); }
+        else if(dist<=AFB){ cls="note bad"; t=X("Inside the ARC FLASH boundary (≤"+AFB+" in) and Limited approach: arc-rated PPE required; only qualified persons or escorted.","Dentro de la frontera de ARCO (≤"+AFB+" in) y aproximación Limitada: EPP con arc rating requerido; solo calificados o escoltados."); }
+        else if(dist<=LAB){ cls="note warn"; t=X("Inside LIMITED approach (≤"+LAB+" in) but past the example arc flash boundary: unqualified persons must be escorted by a qualified person.","Dentro de la aproximación LIMITADA (≤"+LAB+" in) pero fuera de la frontera de arco de ejemplo: los no calificados deben ir escoltados por un calificado."); }
+        else { cls="note good"; t=X("Outside all example boundaries. Still keep clear during energized operations — blast/sound can travel farther.","Fuera de todas las fronteras de ejemplo. Aun así mantente lejos durante operaciones energizadas — la explosión/sonido pueden llegar más lejos."); }
+        m.className=cls; m.textContent=t; draw(dist);
+      }
+      function draw(dist){ var w=dim.w,h=dim.h,x=o.x; x.fillStyle="#0d1a10"; x.fillRect(0,0,w,h);
+        var cx=w*0.5, cy=h*0.86; var scale=(Math.min(w,h)*0.9)/80; /* 80 in fits */
+        function R(inch){ return inch*scale; }
+        /* boundary rings (half circles opening upward from gear at bottom) */
+        var rings=[[LAB,"#f2c14e",X("Limited","Limitada")],[AFB,"#fb7185",X("Arc flash","Arco")],[RAB,"#ef4444",X("Restricted","Restringida")]];
+        rings.forEach(function(rg){ x.strokeStyle=rg[1]; x.lineWidth=2; x.setLineDash([6,5]); x.beginPath(); x.arc(cx,cy,R(rg[0]),Math.PI,Math.PI*2); x.stroke(); x.setLineDash([]); x.fillStyle=rg[1]; x.font="10px ui-monospace,monospace"; x.textAlign="center"; x.fillText(rg[2]+" "+rg[0]+'"', cx, cy-R(rg[0])-4); });
+        /* gear */
+        x.fillStyle="#b45309"; RR(x,cx-16,cy-6,32,14,3); x.fill(); x.fillStyle="#7c8b99"; x.font="10px ui-monospace,monospace"; x.fillText("480V",cx,cy+16);
+        /* worker */
+        var wy=cy-R(dist); x.fillStyle="#4ade80"; x.beginPath(); x.arc(cx,Math.max(10,wy),7,0,Math.PI*2); x.fill(); x.strokeStyle="#4ade80"; x.setLineDash([2,3]); x.beginPath(); x.moveTo(cx,cy); x.lineTo(cx,Math.max(10,wy)); x.stroke(); x.setLineDash([]);
+      }
+      d.oninput=calc; calc();
+    }
+  },
+  /* 11 — The label */
+  { ico:ICO.tag, t:["The label","La etiqueta"], b:function(){
+      return tit("Reading the arc flash label","Leer la etiqueta de arco")+
+        '<p class="lead">'+X("Equipment that may be worked energized must carry an arc flash label (NFPA 70E 130.5(H)). It tells you what to wear before you open the door — read it every time.","El equipo que pueda trabajarse energizado debe llevar una etiqueta de arco (NFPA 70E 130.5(H)). Te dice qué usar antes de abrir la puerta — léela siempre.")+'</p>'+
+        '<div class="lbl"><div class="hd">'+ICO.danger+X("WARNING · ARC FLASH & SHOCK HAZARD","ADVERTENCIA · PELIGRO DE ARCO Y CHOQUE")+'</div><div class="bd">'+
+          '<div class="lrow"><span>'+X("Nominal system voltage","Tensión nominal")+'</span><b>480 V</b></div>'+
+          '<div class="lrow"><span>'+X("Arc flash boundary","Frontera de arco")+'</span><b>36 in</b></div>'+
+          '<div class="lrow"><span>'+X("Incident energy @ working dist.","Energía incidente @ dist. trabajo")+'</span><b>6.4 cal/cm² @ 18 in</b></div>'+
+          '<div class="lrow"><span>'+X("Required PPE","EPP requerido")+'</span><b>≥ 8 cal/cm² (CAT 2)</b></div>'+
+          '<div class="lrow"><span>'+X("Limited / Restricted approach","Aprox. limitada / restringida")+'</span><b>42 in / 12 in</b></div>'+
+          '<div class="lrow"><span>'+X("Glove class","Clase de guante")+'</span><b>Class 0 (1000 V)</b></div>'+
+        '</div></div>'+
+        '<p class="note">'+X("Example values only. A label shows either an incident energy + working distance (analysis method) or a PPE category (table method) — plus shock information. If the label is missing, damaged, or the equipment is not in normal condition, stop and get direction.","Solo valores de ejemplo. Una etiqueta muestra una energía incidente + distancia de trabajo (método de análisis) o una categoría de EPP (método de tablas) — más información de choque. Si falta la etiqueta, está dañada o el equipo no está en condición normal, detente y pide indicaciones.")+'</p>';
+  }},
+  /* 12 — Two methods */
+  { ico:ICO.list, t:["Two methods","Dos métodos"], b:function(){
+      return tit("Two ways to pick protection","Dos formas de elegir la protección")+
+        '<p class="lead">'+X("NFPA 70E allows two methods to determine arc flash PPE. You must not mix them for the same task.","NFPA 70E permite dos métodos para determinar el EPP de arco. No debes mezclarlos en la misma tarea.")+'</p>'+
+        '<div class="grid2">'+
+          bx(ICO.gauge,"Incident energy analysis","Análisis de energía incidente","An engineering study (IEEE 1584-2018) calculates the exact cal/cm² at the working distance and the arc flash boundary. Most precise; drives the label. PPE arc rating must be ≥ the calculated value.","Un estudio de ingeniería (IEEE 1584-2018) calcula los cal/cm² exactos a la distancia de trabajo y la frontera de arco. Es el más preciso; genera la etiqueta. El arc rating del EPP debe ser ≥ al valor calculado.")+
+          bx(ICO.list,"PPE category (table) method","Método de categorías (tablas)","Match your task + equipment in Table 130.5(C) to a PPE category (1–4). Tables 130.7(C)(15)(a) AC / (b) DC give the details when no study is available.","Ubica tu tarea + equipo en la Tabla 130.5(C) para una categoría (1–4). Las Tablas 130.7(C)(15)(a) CA / (b) CC dan el detalle cuando no hay estudio.")+
+        '</div>'+
+        '<p class="note warn">'+X("The category method only applies within specific limits (e.g., known fault current, clearing time, working distance, and normal operating condition). If the equipment falls outside those limits, an incident energy analysis is required.","El método de categorías solo aplica dentro de límites específicos (corriente de falla, tiempo de despeje, distancia de trabajo y condición normal conocidos). Si el equipo cae fuera, se requiere un análisis de energía incidente.")+'</p>';
+  }},
+  /* 13 — PPE category selector (interactive) */
+  { ico:ICO.shield, t:["PPE category","Categoría EPP"], b:function(){
+      return tit("Interactive: category from energy","Interactivo: categoría según energía")+
+        '<p class="lead">'+X("Enter an incident energy and see the minimum arc rating and PPE category. Your gear’s arc rating (ATPV/EBT) must meet or exceed the hazard.","Ingresa una energía incidente y ve el arc rating mínimo y la categoría de EPP. El arc rating de tu equipo (ATPV/EBT) debe alcanzar o superar el peligro.")+'</p>'+
+        '<div class="ctrl"><label>'+X("Incident energy","Energía incidente")+': <b id="pcV">6.0 cal/cm²</b></label><input type="range" id="pcE" min="0" max="50" step="0.5" value="6"></div>'+
+        '<div class="illus" style="aspect-ratio:16/5;background:#08140d"><canvas id="pcCv"></canvas></div>'+
+        '<div class="stat3"><div class="s"><b id="pcCat">–</b><span>'+X("PPE category","Categoría EPP")+'</span></div><div class="s"><b id="pcAR">–</b><span>'+X("min arc rating","arc rating mín.")+'</span></div></div>'+
+        '<div class="note" id="pcMsg"></div>'+
+        '<p class="note">'+X("Category minimum arc ratings (Table 130.7(C)(15)(c)): CAT 1 = 4, CAT 2 = 8, CAT 3 = 25, CAT 4 = 40 cal/cm².","Arc rating mínimo por categoría (Tabla 130.7(C)(15)(c)): CAT 1 = 4, CAT 2 = 8, CAT 3 = 25, CAT 4 = 40 cal/cm².")+'</p>';
+    }, i:function(){ var gen=_gen; var e=$("pcE"), o=cv("pcCv"); if(!o) return; var dim=o.fit();
+      window.addEventListener("resize",function(){ if(gen===_gen&&o){ dim=o.fit(); calc(); } });
+      function pick(ie){ if(ie<1.2) return {c:X("No AR clothing required","Sin ropa AR requerida"),ar:"—",col:"#4f6a5b",band:0}; if(ie<=4) return {c:"CAT 1",ar:"4 cal/cm²",col:"#15803D",band:1}; if(ie<=8) return {c:"CAT 2",ar:"8 cal/cm²",col:"#15803D",band:2}; if(ie<=25) return {c:"CAT 3",ar:"25 cal/cm²",col:"#b45309",band:3}; if(ie<=40) return {c:"CAT 4",ar:"40 cal/cm²",col:"#b45309",band:4}; return {c:X("DO NOT WORK ENERGIZED","NO TRABAJAR ENERGIZADO"),ar:">40 cal/cm²",col:"#dc2626",band:5}; }
+      function calc(){ var ie=+e.value; $("pcV").textContent=ie.toFixed(1)+" cal/cm²"; var r=pick(ie);
+        var ce=$("pcCat"); ce.textContent=r.c; ce.style.color=r.col; $("pcAR").textContent=r.ar;
+        var m=$("pcMsg"); if(r.band===5){ m.className="note bad"; m.textContent=X("Over 40 cal/cm²: NFPA 70E — do not perform energized work. No PPE reliably protects against the blast at this level. De-energize.","Más de 40 cal/cm²: NFPA 70E — no realizar trabajo energizado. Ningún EPP protege de forma confiable contra la explosión a este nivel. Desenergiza."); } else if(r.band===0){ m.className="note good"; m.textContent=X("Below 1.2 cal/cm²: arc-rated clothing not required, but still wear non-melting clothing, safety glasses and leather gloves.","Bajo 1.2 cal/cm²: no se requiere ropa con arc rating, pero usa ropa no fundible, lentes de seguridad y guantes de cuero."); } else { m.className="note good"; m.textContent=X("Select clothing and gear whose system arc rating is ≥ "+r.ar.replace(" cal/cm²","")+" cal/cm².","Elige ropa y equipo cuyo arc rating de sistema sea ≥ "+r.ar.replace(" cal/cm²","")+" cal/cm²."); }
+        draw(ie,r); }
+      function draw(ie,r){ var w=dim.w,h=dim.h,x=o.x; x.fillStyle="#08140d"; x.fillRect(0,0,w,h);
+        var pad=12, bw=w-pad*2, y=h*0.5, bh=16, max=50;
+        var stops=[[1.2,"#334155"],[4,"#15803D"],[8,"#22a34a"],[25,"#b45309"],[40,"#c2410c"],[50,"#dc2626"]]; var prev=0;
+        stops.forEach(function(s){ var x1=pad+(prev/max)*bw, x2=pad+(s[0]/max)*bw; x.fillStyle=s[1]; x.fillRect(x1,y,x2-x1,bh); prev=s[0]; });
+        /* threshold ticks */
+        [1.2,4,8,25,40].forEach(function(v){ var px=pad+(v/max)*bw; x.strokeStyle="#0b1512"; x.lineWidth=1; x.beginPath(); x.moveTo(px,y); x.lineTo(px,y+bh); x.stroke(); x.fillStyle="#8fd6ac"; x.font="9px ui-monospace,monospace"; x.textAlign="center"; x.fillText(v,px,y-4); });
+        /* marker */
+        var mx=pad+(Math.min(ie,max)/max)*bw; x.fillStyle="#e9f6ee"; x.beginPath(); x.moveTo(mx,y-8); x.lineTo(mx-5,y-16); x.lineTo(mx+5,y-16); x.closePath(); x.fill();
+        x.fillStyle=r.col; x.font="700 13px system-ui"; x.textAlign="center"; x.fillText(r.c, w/2, y+bh+16);
+      }
+      e.oninput=calc; calc();
+    }
+  },
+  /* 14 — Arc rating / AR vs FR / meltables */
+  { ico:ICO.layers, t:["Arc rating","Arc rating"], b:function(){
+      return tit("Arc rating, AR vs FR, and meltables","Arc rating, AR vs FR y ropa fundible")+
+        '<div class="grid2">'+
+          bx(ICO.shield,"Arc rating (ATPV / EBT)","Arc rating (ATPV / EBT)","The cal/cm² a garment or layered system can absorb before a 50% chance of a second-degree burn. Printed on the garment. Higher = more protection (and usually heavier).","Los cal/cm² que una prenda o sistema por capas absorbe antes de un 50% de probabilidad de quemadura de 2° grado. Impreso en la prenda. Mayor = más protección (y más pesada).")+
+          bx(ICO.flame,"AR vs FR","AR vs FR","All arc-rated (AR) clothing is flame-resistant, but not all FR clothing is arc-rated. For arc flash you need a tested arc rating.","Toda ropa con arc rating (AR) es resistente a la flama, pero no toda ropa FR tiene arc rating. Para arco necesitas un arc rating probado.")+
+        '</div>'+
+        '<p class="note bad"><b>'+X("Meltables kill.","La ropa fundible mata.")+'</b> '+X("Polyester, nylon, and spandex melt into the skin during an arc flash, turning a survivable burn into a fatal one. Never wear them for electrical work. Layer AR over natural-fiber underlayers.","El poliéster, nylon y spandex se funden en la piel durante un arc flash, convirtiendo una quemadura sobrevivible en fatal. Nunca los uses para trabajo eléctrico. Pon capas AR sobre ropa interior de fibra natural.")+'</p>'+
+        '<p class="note">'+X("2024 terminology note: throughout NFPA 70E, “leather protectors” are now simply called “protectors” — a glove worn over rubber insulating gloves. Rubber insulating gloves protect against shock; arc-rated gear protects against the flash.","Nota de terminología 2024: en toda la NFPA 70E, los “protectores de cuero” ahora se llaman solo “protectores” — un guante sobre los guantes aislantes de goma. Los guantes aislantes de goma protegen del choque; el equipo con arc rating protege del arco.")+'</p>';
+  }},
+  /* 15 — PPE per category (visual) */
+  { ico:ICO.shield, t:["PPE by category","EPP por categoría"], b:function(){
+      return tit("What each category requires","Qué requiere cada categoría")+
+        '<div class="steps">'+
+          stepRow("1","CAT 1 · 4 cal/cm²","CAT 1 · 4 cal/cm²","AR long-sleeve shirt + pants (or coverall), AR face shield, hard hat, safety glasses, hearing protection, heavy-duty leather (protector) gloves, leather footwear.","Camisa manga larga + pantalón AR (o overol), careta AR, casco, lentes, protección auditiva, guantes de cuero (protector), calzado de cuero.")+
+          stepRow("2","CAT 2 · 8 cal/cm²","CAT 2 · 8 cal/cm²","Same as CAT 1 plus an arc-rated balaclava with the face shield, or an arc flash hood.","Igual que CAT 1 más balaclava AR con la careta, o capucha de arco (hood).")+
+          stepRow("3","CAT 3 · 25 cal/cm²","CAT 3 · 25 cal/cm²","Multi-layer arc flash suit jacket + pants (or coverall), arc flash hood, arc-rated/insulating gloves. Layers tested together as a system.","Traje de arco multicapa: chaqueta + pantalón (u overol), capucha de arco, guantes AR/aislantes. Capas probadas juntas como sistema.")+
+          stepRow("4","CAT 4 · 40 cal/cm²","CAT 4 · 40 cal/cm²","Full 40 cal/cm² arc flash suit and hood, insulating gloves with protectors. The practical maximum for energized work.","Traje y capucha de arco completos de 40 cal/cm², guantes aislantes con protectores. El máximo práctico para trabajo energizado.")+
+        '</div>'+
+        '<p class="note warn">'+X("More is not always better: unnecessary CAT 4 causes heat stress and limits mobility, which creates its own errors. Match the gear to the assessed hazard — no less, no needless excess.","Más no siempre es mejor: usar CAT 4 sin necesidad causa estrés térmico y limita el movimiento, generando otros errores. Ajusta el equipo al peligro evaluado — ni menos, ni exceso innecesario.")+'</p>';
+  }},
+  /* 16 — Hierarchy of controls */
+  { ico:ICO.list, t:["Controls","Controles"], b:function(){
+      return tit("Hierarchy of controls","Jerarquía de controles")+
+        '<p class="lead">'+X("NFPA 70E requires controls in order of effectiveness. PPE is the LAST line, not the first — it only limits injury if everything else fails.","NFPA 70E exige controles en orden de eficacia. El EPP es la ÚLTIMA línea, no la primera — solo limita la lesión si todo lo demás falla.")+'</p>'+
+        '<div class="steps">'+
+          stepRow("1","Elimination","Eliminación","De-energize and establish an electrically safe work condition. The only way to remove the hazard.","Desenergizar y establecer una condición de trabajo eléctricamente segura. La única forma de eliminar el peligro.")+
+          stepRow("2","Substitution","Sustitución","Use lower-energy equipment or reduce available fault current / clearing time.","Usar equipo de menor energía o reducir corriente de falla / tiempo de despeje.")+
+          stepRow("3","Engineering controls","Controles de ingeniería","Remote racking, arc-resistant gear, current-limiting devices, barriers.","Racking remoto, equipo resistente al arco, dispositivos limitadores, barreras.")+
+          stepRow("4","Awareness","Concientización","Labels, signs, alarms, barricades that warn of the hazard.","Etiquetas, señales, alarmas, barricadas que advierten del peligro.")+
+          stepRow("5","Administrative controls","Controles administrativos","Procedures, permits, training, job briefings.","Procedimientos, permisos, capacitación, charlas de trabajo.")+
+          stepRow("6","PPE","EPP","Arc-rated clothing and shock protection — the last resort.","Ropa con arc rating y protección de choque — el último recurso.")+
+        '</div>'+
+        '<p class="note good"><b>'+X("The #1 defense is simple:","La defensa #1 es simple:")+'</b> '+X("if it can be de-energized, de-energize it. No PPE beats not being in front of a live arc.","si se puede desenergizar, desenergízalo. Ningún EPP supera a no estar frente a un arco vivo.")+'</p>';
+  }},
+  /* 17 — ESWC / LOTO link */
+  { ico:ICO.lock, t:["Safe condition","Condición segura"], b:function(){
+      return tit("Establishing an electrically safe work condition","Establecer una condición eléctricamente segura")+
+        '<p class="lead">'+X("De-energizing is a verified process, not just flipping a switch (NFPA 70E Article 120). Until every step is done, the circuit is treated as live.","Desenergizar es un proceso verificado, no solo bajar un switch (NFPA 70E Artículo 120). Hasta completar cada paso, el circuito se trata como vivo.")+'</p>'+
+        '<div class="steps">'+
+          stepRow("1","Identify all sources","Identifica todas las fuentes","Use drawings; find every source feeding the equipment, including backfeeds.","Usa planos; halla toda fuente que alimente el equipo, incluidos retornos (backfeed).")+
+          stepRow("2","Interrupt the load","Interrumpe la carga","Open disconnects; remove the load properly.","Abre los desconectadores; retira la carga correctamente.")+
+          stepRow("3","Open & visually verify","Abre y verifica visualmente","Open each disconnect; confirm the blades are open where visible.","Abre cada desconectador; confirma que las cuchillas estén abiertas donde sea visible.")+
+          stepRow("4","Lock out / tag out","Bloqueo / etiquetado","Apply LOTO to every source (see the LOTO module).","Aplica LOTO a cada fuente (ver el módulo de LOTO).")+
+          stepRow("5","Test absence of voltage","Prueba ausencia de tensión","Live-Dead-Live: test the tester on a known source, test the circuit, retest the tester.","Vivo-Muerto-Vivo: prueba el instrumento en fuente conocida, prueba el circuito, vuelve a probar el instrumento.")+
+          stepRow("6","Ground if required","Aterriza si aplica","Apply temporary protective grounds where stored energy or induced voltage is possible.","Aplica tierras temporales donde haya energía almacenada o tensión inducida.")+
+        '</div>'+
+        '<p class="note bad"><b>'+X("Test before you touch.","Prueba antes de tocar.")+'</b> '+X("Verifying absence of voltage at the point of work is what actually protects you — while doing it, you are still exposed, so wear the shock and arc PPE the live circuit requires.","Verificar la ausencia de tensión en el punto de trabajo es lo que realmente te protege — mientras lo haces, sigues expuesto, así que usa el EPP de choque y arco que exige el circuito vivo.")+'</p>';
+  }},
+  /* 18 — When energized work is allowed */
+  { ico:ICO.wrench, t:["Energized work","Trabajo energizado"], b:function(){
+      return tit("When is energized work allowed?","¿Cuándo se permite trabajo energizado?")+
+        '<p class="lead">'+X("Almost never by choice. NFPA 70E 130.2 permits energized work in only two situations:","Casi nunca por elección. NFPA 70E 130.2 permite trabajo energizado solo en dos situaciones:")+'</p>'+
+        '<div class="grid2">'+
+          bx(ICO.warn,"Added hazard","Peligro adicional","De-energizing would introduce additional or increased hazards — e.g., life-support equipment, emergency alarms, or hazardous-location ventilation.","Desenergizar introduciría peligros adicionales o mayores — p. ej., soporte vital, alarmas de emergencia o ventilación en área peligrosa.")+
+          bx(ICO.gear,"Infeasibility","Inviabilidad","The task is not feasible de-energized by equipment design — e.g., troubleshooting/diagnostics that require the circuit live.","La tarea no es viable desenergizada por diseño del equipo — p. ej., diagnóstico/localización de fallas que requieren el circuito vivo.")+
+        '</div>'+
+        '<p class="note bad">'+X("Inconvenience, production pressure, or “it’ll only take a second” are NOT valid justifications. Not wanting to shut down a panel is never a reason to work it live.","La inconveniencia, la presión de producción o “es solo un segundo” NO son justificaciones válidas. No querer apagar un panel nunca es razón para trabajarlo vivo.")+'</p>'+
+        '<p class="note">'+X("When energized work is justified, an Energized Electrical Work Permit (EEWP) is generally required to cross the restricted approach boundary — approved by management, not by the worker doing the task. Testing/troubleshooting have specific exceptions but still require the correct PPE.","Cuando se justifica, generalmente se requiere un Permiso de Trabajo Eléctrico Energizado (EEWP) para cruzar la frontera restringida — aprobado por la gerencia, no por quien hace la tarea. La prueba/localización de fallas tiene excepciones específicas pero igual exige el EPP correcto.")+'</p>';
+  }},
+  /* 19 — Decision tool (interactive) */
+  { ico:ICO.quiz, t:["Decision","Decisión"], b:function(){
+      return tit("Interactive: can I work this energized?","Interactivo: ¿puedo trabajarlo energizado?")+
+        '<p class="lead">'+X("Answer honestly. The tool walks the NFPA 70E logic.","Responde con honestidad. La herramienta recorre la lógica de NFPA 70E.")+'</p>'+
+        '<div class="q"><h3>'+X("1. Is the voltage ≥ 50 V (shock/arc hazard present)?","1. ¿La tensión es ≥ 50 V (hay peligro de choque/arco)?")+'</h3><div class="seg" id="dq1"><button data-v="y">'+X("Yes","Sí")+'</button><button data-v="n">'+X("No / <50 V","No / <50 V")+'</button></div></div>'+
+        '<div class="q"><h3>'+X("2. Can it be de-energized without introducing a greater hazard?","2. ¿Se puede desenergizar sin introducir un peligro mayor?")+'</h3><div class="seg" id="dq2"><button data-v="y">'+X("Yes","Sí")+'</button><button data-v="n">'+X("No (life-support, etc.)","No (soporte vital, etc.)")+'</button></div></div>'+
+        '<div class="q"><h3>'+X("3. Is the calculated incident energy over 40 cal/cm²?","3. ¿La energía incidente calculada supera 40 cal/cm²?")+'</h3><div class="seg" id="dq3"><button data-v="y">'+X("Yes","Sí")+'</button><button data-v="n">'+X("No / ≤ 40","No / ≤ 40")+'</button></div></div>'+
+        '<div class="note" id="dqMsg">'+X("Answer the questions above.","Responde las preguntas de arriba.")+'</div>';
+    }, i:function(){ var a={}; function set(q,v){ a[q]=v; ev(); }
+      ["dq1","dq2","dq3"].forEach(function(id){ document.querySelectorAll("#"+id+" button").forEach(function(b){ b.onclick=function(){ document.querySelectorAll("#"+id+" button").forEach(function(z){z.classList.remove("on");}); b.classList.add("on"); set(id,b.dataset.v); }; }); });
+      function ev(){ var m=$("dqMsg"); if(!("dq1" in a)||!("dq2" in a)||!("dq3" in a)){ m.className="note"; m.textContent=X("Answer the questions above.","Responde las preguntas de arriba."); return; }
+        if(a.dq1==="n"){ m.className="note good"; m.textContent=X("Under 50 V and no increased arc-flash likelihood: generally not an arc flash task — still avoid shorts and wear basic protection.","Bajo 50 V y sin mayor probabilidad de arco: en general no es tarea de arco — aun así evita cortos y usa protección básica."); return; }
+        if(a.dq3==="y"){ m.className="note bad"; m.textContent=X("Over 40 cal/cm²: STOP. Do not work energized. Find a way to de-energize or reduce the energy first.","Más de 40 cal/cm²: DETENTE. No trabajes energizado. Busca desenergizar o reducir la energía primero."); return; }
+        if(a.dq2==="y"){ m.className="note good"; m.textContent=X("It can be de-energized safely → you MUST establish an electrically safe work condition (LOTO + test). Energized work is not justified.","Se puede desenergizar con seguridad → DEBES establecer una condición eléctricamente segura (LOTO + prueba). El trabajo energizado no se justifica."); return; }
+        m.className="note warn"; m.textContent=X("Energized work may be justified: complete an Energized Electrical Work Permit, do the shock & arc flash risk assessments, set boundaries, wear arc-rated PPE to the label, hold a job briefing.","El trabajo energizado puede justificarse: completa un EEWP, haz las evaluaciones de riesgo de choque y arco, define fronteras, usa EPP con arc rating según la etiqueta, haz una charla previa."); }
+    }
+  },
+  /* 20 — Normal operating condition / closed doors (2024) */
+  { ico:ICO.gear, t:["Normal condition","Condición normal"], b:function(){
+      return tit("Normal operating condition & closed doors","Condición normal de operación y puertas cerradas")+
+        '<p class="lead">'+X("The 2024 edition emphasizes “normal operating condition.” Interacting with gear that is NOT in normal condition raises the arc flash risk — and closed doors do not make the risk disappear.","La edición 2024 enfatiza la “condición normal de operación.” Interactuar con equipo que NO está en condición normal aumenta el riesgo de arco — y las puertas cerradas no hacen desaparecer el riesgo.")+'</p>'+
+        '<p>'+X("Equipment is in normal operating condition only when all of these are true:","El equipo está en condición normal de operación solo cuando se cumple todo esto:")+'</p>'+
+        '<ul>'+
+          '<li>'+X("It is properly installed and properly maintained.","Está correctamente instalado y mantenido.")+'</li>'+
+          '<li>'+X("Doors are closed and secured; covers are in place.","Puertas cerradas y aseguradas; cubiertas colocadas.")+'</li>'+
+          '<li>'+X("There is no evidence of impending failure (no arcing, overheating, burning smell, damage).","No hay evidencia de falla inminente (sin arqueo, sobrecalentamiento, olor a quemado, daño).")+'</li>'+
+          '<li>'+X("It is rated for the available fault current and used per instructions.","Está clasificado para la corriente de falla disponible y se usa según instrucciones.")+'</li>'+
+        '</ul>'+
+        '<p class="note bad">'+X("A closed door is not guaranteed to contain an arc — panels can blow open. In 2024, anyone inside the arc flash boundary must wear hearing protection, whether or not they are actively working.","Una puerta cerrada no garantiza contener un arco — los paneles pueden reventar. En 2024, quien esté dentro de la frontera de arco debe usar protección auditiva, esté o no trabajando activamente.")+'</p>';
+  }},
+  /* 21 — Why it matters (facts) */
+  { ico:ICO.warn, t:["Why it matters","Por qué importa"], b:function(){
+      return tit("Why these rules exist","Por qué existen estas reglas")+
+        '<p class="lead">'+X("Arc flash was not always recognized. In 1982 Ralph Lee’s paper “The Other Electrical Hazard: Electric Arc Blast Burns” introduced the calculations that eventually became IEEE 1584 and shaped NFPA 70E. The rules are written from real injuries and deaths.","El arc flash no siempre se reconoció. En 1982 el artículo de Ralph Lee “The Other Electrical Hazard: Electric Arc Blast Burns” introdujo los cálculos que se volvieron IEEE 1584 y dieron forma a NFPA 70E. Las reglas nacen de lesiones y muertes reales.")+'</p>'+
+        '<div class="grid2">'+
+          bx(ICO.flame,"Survivable by design","Sobrevivible por diseño","Arc-rated PPE is not meant to prevent all injury — it is engineered to keep a burn survivable (around the 1.2 cal/cm² threshold) if an arc occurs.","El EPP con arc rating no busca evitar toda lesión — se diseña para mantener la quemadura sobrevivible (cerca del umbral de 1.2 cal/cm²) si ocurre un arco.")+
+          bx(ICO.shield,"OSHA backs it","OSHA lo respalda","OSHA does not write detailed arc flash rules; it references NFPA 70E as the recognized industry practice (29 CFR 1910.331–.335).","OSHA no escribe reglas detalladas de arco; referencia NFPA 70E como la práctica reconocida (29 CFR 1910.331–.335).")+
+        '</div>'+
+        '<p class="note">'+X("Bottom line: the safest arc flash is the one that never happens because the equipment was de-energized, verified, and locked out before the work began.","En resumen: el arc flash más seguro es el que nunca ocurre porque el equipo se desenergizó, verificó y bloqueó antes de empezar el trabajo.")+'</p>';
+  }},
+  /* 22 — Field checklist */
+  { ico:ICO.check, t:["Field checklist","Lista de campo"], b:function(){
+      var items=[
+        ["Established an electrically safe work condition, or a valid reason to work energized","Establecí una condición eléctricamente segura, o tengo razón válida para trabajar energizado"],
+        ["EEWP completed and approved (if energized), risk assessments done","EEWP completado y aprobado (si energizado), evaluaciones de riesgo hechas"],
+        ["Read the arc flash label; boundaries identified","Leí la etiqueta de arco; fronteras identificadas"],
+        ["Correct arc-rated PPE and shock PPE selected to the hazard","EPP con arc rating y de choque correctos, según el peligro"],
+        ["Tested absence of voltage (Live-Dead-Live) before touching","Probé ausencia de tensión (Vivo-Muerto-Vivo) antes de tocar"],
+        ["Unqualified persons barricaded out; job briefing held","No calificados fuera con barricada; charla previa realizada"]
+      ];
+      return tit("Before you open the equipment","Antes de abrir el equipo")+'<p class="lead">'+X("Tap each item you can honestly confirm.","Toca cada punto que puedas confirmar con honestidad.")+'</p>'+
+        items.map(function(it){return '<div class="chk"><span class="bx">'+ICO.check+'</span><span class="txt"><b>'+X(it[0],it[1])+'</b></span></div>';}).join("")+
+        '<p class="note good" id="ckMsg"></p>';
+    }, i:function(){ var t=document.querySelectorAll(".chk").length; function u(){var d=document.querySelectorAll(".chk.done").length;$("ckMsg").textContent=X("Confirmed: ","Confirmado: ")+d+"/"+t+(d===t?X(" — clear to proceed ✓"," — listo para proceder ✓"):"");} document.querySelectorAll(".chk").forEach(function(c){c.onclick=function(){c.classList.toggle("done");u();};}); u(); }
+  },
+  /* 23 — Quiz */
+  { ico:ICO.quiz, t:["Quiz","Evaluación"], b:function(){
+      var QUIZ=[
+        {en:"Incident energy is measured in…",es:"La energía incidente se mide en…",
+         o_en:["Volts","cal/cm²","Amps"],o_es:["Voltios","cal/cm²","Amperios"],a:1},
+        {en:"The arc flash boundary is the distance where incident energy equals…",es:"La frontera de arco es la distancia donde la energía incidente es igual a…",
+         o_en:["40 cal/cm²","1.2 cal/cm²","50 volts"],o_es:["40 cal/cm²","1.2 cal/cm²","50 voltios"],a:1},
+        {en:"Minimum arc rating for PPE Category 2 is…",es:"El arc rating mínimo para EPP Categoría 2 es…",
+         o_en:["4 cal/cm²","8 cal/cm²","25 cal/cm²"],o_es:["4 cal/cm²","8 cal/cm²","25 cal/cm²"],a:1},
+        {en:"If the incident energy is over 40 cal/cm², you should…",es:"Si la energía incidente supera 40 cal/cm², debes…",
+         o_en:["Wear two layers and proceed","Not perform energized work","Stand a bit farther back"],o_es:["Usar dos capas y proceder","No realizar trabajo energizado","Pararte un poco más lejos"],a:1},
+        {en:"In the hierarchy of controls, PPE is…",es:"En la jerarquía de controles, el EPP es…",
+         o_en:["The first line of defense","The last line of defense","Not required if trained"],o_es:["La primera línea de defensa","La última línea de defensa","No requerido si estás capacitado"],a:1},
+        {en:"Which justifies energized work under NFPA 70E?",es:"¿Qué justifica trabajo energizado según NFPA 70E?",
+         o_en:["It’s faster / more convenient","De-energizing introduces a greater hazard","The panel is behind a locked door"],o_es:["Es más rápido / conveniente","Desenergizar introduce un peligro mayor","El panel está tras una puerta con llave"],a:1},
+        {en:"Before touching a de-energized circuit you must…",es:"Antes de tocar un circuito desenergizado debes…",
+         o_en:["Assume it’s dead if the breaker is off","Test absence of voltage (Live-Dead-Live)","Wait five minutes"],o_es:["Suponer que está muerto si el breaker está abierto","Probar ausencia de tensión (Vivo-Muerto-Vivo)","Esperar cinco minutos"],a:1},
+        {en:"Polyester/nylon clothing for electrical work is…",es:"La ropa de poliéster/nylon para trabajo eléctrico es…",
+         o_en:["Fine if it’s a thin layer","Dangerous — it melts into skin","Required under AR gear"],o_es:["Aceptable si es capa delgada","Peligrosa — se funde en la piel","Requerida bajo el equipo AR"],a:1}
+      ];
+      window._QZ=QUIZ;
+      var qs=QUIZ.map(function(q,i){var o=(LANG==="es"?q.o_es:q.o_en).map(function(x,j){return '<button class="opt" data-q="'+i+'" data-o="'+j+'">'+x+'</button>';}).join("");return '<div class="q"><h3>'+(i+1)+'. '+X(q.en,q.es)+'</h3>'+o+'</div>';}).join("");
+      return tit("Quick check","Evaluación rápida")+qs+'<div class="score" id="score"></div>';
+    }, i:function(){ var QUIZ=window._QZ,ans={},ok=0; document.querySelectorAll(".opt").forEach(function(b){b.onclick=function(){var qi=+b.dataset.q;if(ans[qi])return;ans[qi]=1;var a=QUIZ[qi].a;document.querySelectorAll('.opt[data-q="'+qi+'"]').forEach(function(z){z.disabled=true;if(+z.dataset.o===a)z.classList.add("correct");});if(+b.dataset.o===a)ok++;else b.classList.add("wrong");if(Object.keys(ans).length===QUIZ.length){var sc=$("score");sc.textContent=X("Score: ","Puntaje: ")+ok+"/"+QUIZ.length+(ok>=6?X(" — well done ✓"," — bien hecho ✓"):X(" — review and retry"," — repasa y repite"));}};}); }
+  },
+  /* 24 — Takeaways & references */
+  { ico:ICO.book, t:["Sources","Fuentes"], b:function(){
+      return tit("Key takeaways & references","Ideas clave y referencias")+
+        '<ul>'+
+          '<li>'+X("De-energize first. Establish and verify an electrically safe work condition — PPE is the last line, not the plan.","Desenergiza primero. Establece y verifica una condición eléctricamente segura — el EPP es la última línea, no el plan.")+'</li>'+
+          '<li>'+X("Read the label, respect the boundaries, and match arc-rated PPE (≥ the hazard). Over 40 cal/cm² = do not work energized.","Lee la etiqueta, respeta las fronteras y usa EPP con arc rating (≥ al peligro). Más de 40 cal/cm² = no trabajar energizado.")+'</li>'+
+          '<li>'+X("Test before you touch. Never wear meltable clothing. Barricade unqualified people out.","Prueba antes de tocar. Nunca uses ropa fundible. Deja fuera con barricada a los no calificados.")+'</li>'+
+        '</ul>'+
+        '<h2>'+X("References","Referencias")+'</h2>'+
+        '<div class="ref"><b>NFPA 70E-2024</b> — Standard for Electrical Safety in the Workplace (boundaries, PPE categories 130.5/130.7, work practices 110/120/130).</div>'+
+        '<div class="ref"><b>IEEE Std 1584-2018</b> — Guide for Performing Arc-Flash Hazard Calculations (incident energy & arc flash boundary).</div>'+
+        '<div class="ref"><b>NFPA 70E Table 130.7(C)(15)(c)</b> — PPE categories: 4 / 8 / 25 / 40 cal/cm². Table 130.4 — shock approach boundaries.</div>'+
+        '<div class="ref"><b>OSHA 29 CFR 1910.331–.335</b> — safe work practices; references NFPA 70E as recognized practice. <b>CSA Z462</b> — Canadian counterpart.</div>'+
+        '<div class="ref"><b>Ralph H. Lee</b> — “The Other Electrical Hazard: Electric Arc Blast Burns,” IEEE Trans. Ind. Appl. (foundational research).</div>'+
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px"><span class="verdict ok">'+ICO.check+' '+X("Module complete","Módulo completo")+'</span><a class="btn ghost" href="../index.html" target="_top">'+X("Back to portal","Volver al portal")+'</a></div>'+
+        '<p class="note">'+X("Training overview only. Always follow your employer’s electrical safety program, the site-specific arc flash study and labels, OSHA requirements, and — where applicable — NFPA 70E / CSA Z462.","Solo es un resumen de entrenamiento. Sigue siempre el programa de seguridad eléctrica de tu empleador, el estudio y etiquetas de arco del sitio, los requisitos de OSHA y — donde aplique — NFPA 70E / CSA Z462.")+'</p>';
+  }}
+];
+var cur=0;
+var _gen=0;
+
+/* ===================== engine ===================== */
+function pintarChrome(){
+  document.documentElement.lang=LANG;
+  $("brand").textContent=X(CONFIG.brand[0],CONFIG.brand[1]);
+  $("brandsub").textContent=X(CONFIG.subtitle[0],CONFIG.subtitle[1]);
+  $("homeTxt").textContent=X("Home","Inicio");
+  document.querySelectorAll("#lang button").forEach(function(b){ b.classList.toggle("on", b.dataset.l===LANG); });
+  var dark=document.documentElement.getAttribute("data-theme")==="dark";
+  $("temaIco").innerHTML=dark?ICO.sun:ICO.moonm; $("temaTxt").textContent=dark?X("Light","Claro"):X("Dark","Oscuro");
+  $("prev").innerHTML="‹ "+X("Back","Anterior");
+  $("next").innerHTML=(cur>=STEPS.length-1?X("Restart","Reiniciar"):X("Next","Siguiente")+" ›");
+}
+function render(){
+  _gen++;
+  pintarChrome();
+  var s=STEPS[cur];
+  $("card").innerHTML=s.b();
+  if(s.i) s.i();
+  $("progbar").style.width=((cur+1)/STEPS.length*100)+"%";
+  $("mStep").textContent=X("Step ","Paso ")+(cur+1)+" / "+STEPS.length+" · "+X(s.t[0],s.t[1]);
+  $("mDur").textContent=CONFIG.duration;
+  $("prev").disabled=(cur===0);
+  $("dots").innerHTML=STEPS.map(function(_,i){return '<button class="dot'+(i===cur?' on':'')+'" data-i="'+i+'" aria-label="'+(i+1)+'"></button>';}).join("");
+  document.querySelectorAll(".dot").forEach(function(d){ d.onclick=function(){ cur=+d.dataset.i; render(); }; });
+  window.scrollTo(0,0);
+}
+$("prev").onclick=function(){ if(cur>0){cur--;render();} };
+$("next").onclick=function(){ cur=(cur>=STEPS.length-1)?0:cur+1; render(); };
+document.querySelectorAll("#lang button").forEach(function(b){ b.onclick=function(){ LANG=b.dataset.l; render(); }; });
+$("tema").onclick=function(){ var d=document.documentElement.getAttribute("data-theme")==="dark"; document.documentElement.setAttribute("data-theme", d?"light":"dark"); pintarChrome(); };
+document.addEventListener("keydown",function(e){ if(e.key==="ArrowRight")$("next").click(); if(e.key==="ArrowLeft")$("prev").click(); });
+render();
+</script>
+</body>
+</html>

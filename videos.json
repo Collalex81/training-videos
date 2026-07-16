@@ -247,6 +247,25 @@
     "tipo": "animacion"
   },
   {
+    "area": "seguridad",
+    "titulo": {
+      "es": "Arco eléctrico (Arc Flash) y NFPA 70E",
+      "en": "Arc Flash & NFPA 70E"
+    },
+    "descripcion": {
+      "es": "Peligros del arco eléctrico (calor extremo y explosión), qué lo causa, energía incidente (cal/cm²) y distancia de trabajo, fronteras de aproximación, la etiqueta de arc flash, los dos métodos (estudio IEEE 1584 vs tabla de categorías de EPP de NFPA 70E), arc rating y EPP por categoría, la condición eléctrica segura y el trabajo energizado. Con simuladores de distancia y de fronteras, calculadoras, checklist y quiz.",
+      "en": "Arc flash hazards (extreme heat and blast), what causes it, incident energy (cal/cm²) and working distance, approach boundaries, the arc flash label, the two methods (IEEE 1584 study vs NFPA 70E PPE-category table), arc rating and PPE by category, the electrically safe work condition and energized work. With distance and boundary simulators, calculators, checklist and quiz."
+    },
+    "categoria": {
+      "es": "Seguridad",
+      "en": "Safety"
+    },
+    "duracion": "25:00",
+    "video": "animations/arc-flash-nfpa70e.html",
+    "poster": "assets/poster-arc-flash.svg",
+    "tipo": "animacion"
+  },
+  {
     "area": "electricidad",
     "titulo": {
       "es": "Multímetro y electricidad (DC, AC, ohms, watts, breakers, -48V)",
