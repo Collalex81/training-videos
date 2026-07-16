@@ -83,6 +83,11 @@
   .good b{color:var(--ok)}
   .illus{position:relative;aspect-ratio:16/10;background:#08140d;border:1px solid var(--line);border-radius:12px;overflow:hidden}
   .illus svg,.illus canvas{width:100%;height:100%}
+  .illus.top{background:#0d1a10}
+  .veh .spin{transform-box:fill-box;transform-origin:center}
+  @keyframes whlspin{to{transform:rotate(360deg)}}
+  .rolling .spin{animation:whlspin .42s linear infinite}
+  .rolling.slow .spin{animation-duration:.7s}
   .mcap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);margin:8px 2px 2px;justify-content:center}
   .steps{counter-reset:s;margin:8px 0}
   .steps .st{display:flex;gap:12px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:7px 0}
@@ -194,6 +199,122 @@ function cv(id){ var c=$(id); if(!c) return null; var x=c.getContext("2d");
 }
 function raf(gen,step){ (function fr(){ if(gen!==_gen) return; step(); requestAnimationFrame(fr); })(); }
 
+/* ===================== VEHICLE ART (SVG) ===================== */
+function wheelSide(cx,cy,r,k,spin){
+  var rot='<g class="'+(spin?'spin':'')+'">'+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="'+(r*0.58)+'" fill="url(#rim'+k+')" stroke="#6b7280" stroke-width="1"/>'+
+    [0,1,2,3,4,5].map(function(i){var a=i/6*Math.PI*2;return '<circle cx="'+(cx+Math.cos(a)*r*0.36).toFixed(1)+'" cy="'+(cy+Math.sin(a)*r*0.36).toFixed(1)+'" r="'+(r*0.06)+'" fill="#5b6572"/>';}).join('')+
+    '<g stroke="#7c8794" stroke-width="'+(r*0.09)+'" stroke-linecap="round">'+
+    [0,1,2].map(function(i){var a=i/3*Math.PI;return '<line x1="'+(cx-Math.cos(a)*r*0.5).toFixed(1)+'" y1="'+(cy-Math.sin(a)*r*0.5).toFixed(1)+'" x2="'+(cx+Math.cos(a)*r*0.5).toFixed(1)+'" y2="'+(cy+Math.sin(a)*r*0.5).toFixed(1)+'"/>';}).join('')+
+    '</g><circle cx="'+cx+'" cy="'+cy+'" r="'+(r*0.16)+'" fill="#9aa4af"/></g>';
+  return '<g class="veh"><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="url(#tire'+k+')" stroke="#0a0a0a" stroke-width="1.5"/>'+rot+'</g>';
+}
+function truckSide(k,cab,spin){ cab=cab||'#1f6feb';
+  return '<defs>'+
+    '<linearGradient id="tbody'+k+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f7fa"/><stop offset="0.5" stop-color="#dfe6ee"/><stop offset="1" stop-color="#b7c2ce"/></linearGradient>'+
+    '<linearGradient id="cab'+k+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+cab+'"/><stop offset="1" stop-color="#0f294d"/></linearGradient>'+
+    '<linearGradient id="glass'+k+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#dff1ff"/><stop offset="0.5" stop-color="#8fb9dd"/><stop offset="1" stop-color="#3f6f9c"/></linearGradient>'+
+    '<radialGradient id="tire'+k+'" cx="0.4" cy="0.35" r="0.75"><stop offset="0" stop-color="#3a3f45"/><stop offset="0.6" stop-color="#1c2024"/><stop offset="1" stop-color="#0a0c0e"/></radialGradient>'+
+    '<radialGradient id="rim'+k+'" cx="0.4" cy="0.35" r="0.8"><stop offset="0" stop-color="#e8edf2"/><stop offset="0.6" stop-color="#aeb7c2"/><stop offset="1" stop-color="#6b7280"/></radialGradient>'+
+    '<radialGradient id="hl'+k+'" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#fff9d6"/><stop offset="0.5" stop-color="#ffe37a"/><stop offset="1" stop-color="#ffe37a" stop-opacity="0"/></radialGradient>'+
+    '</defs>'+
+    '<ellipse cx="180" cy="132" rx="176" ry="10" fill="#000" opacity="0.33"/>'+
+    '<rect x="10" y="24" width="228" height="86" rx="6" fill="url(#tbody'+k+')" stroke="#9aa7b4" stroke-width="1.5"/>'+
+    '<rect x="10" y="24" width="228" height="16" rx="6" fill="#ffffff" opacity="0.35"/>'+
+    '<line x1="18" y1="24" x2="18" y2="110" stroke="#9aa7b4" stroke-width="1.4"/>'+
+    '<g stroke="#aab5c1" stroke-width="1" opacity="0.7"><line x1="70" y1="24" x2="70" y2="110"/><line x1="140" y1="24" x2="140" y2="110"/></g>'+
+    '<rect x="10" y="103" width="228" height="9" fill="#7f8b99"/>'+
+    '<rect x="150" y="110" width="5" height="14" fill="#5b6572"/>'+
+    wheelSide(56,116,17,k+'ta',spin)+wheelSide(88,116,17,k+'tb',spin)+
+    '<rect x="238" y="96" width="52" height="10" fill="#3a4048"/>'+
+    '<ellipse cx="262" cy="104" rx="15" ry="9" fill="url(#rim'+k+')" stroke="#8a94a0" stroke-width="1"/>'+
+    '<path d="M290 110 V44 q0 -8 8 -8 h20 l26 26 v48 z" fill="url(#cab'+k+')" stroke="#0c2547" stroke-width="1.5"/>'+
+    '<rect x="284" y="40" width="16" height="70" rx="4" fill="url(#cab'+k+')" stroke="#0c2547" stroke-width="1"/>'+
+    '<path d="M320 40 l22 22 v6 h-24 V40 z" fill="url(#glass'+k+')" stroke="#0c2547" stroke-width="1"/>'+
+    '<path d="M322 42 l14 14" stroke="#ffffff" stroke-width="2" opacity="0.5"/>'+
+    '<rect x="298" y="52" width="16" height="16" rx="2" fill="url(#glass'+k+')" stroke="#0c2547" stroke-width="0.8"/>'+
+    '<line x1="300" y1="74" x2="314" y2="74" stroke="#0c2547" stroke-width="1"/>'+
+    '<rect x="300" y="78" width="8" height="2.5" rx="1" fill="#0c2547"/>'+
+    '<rect x="340" y="70" width="6" height="30" rx="2" fill="#c7ced6"/>'+
+    '<rect x="336" y="60" width="8" height="10" fill="#243247"/>'+
+    '<circle cx="344" cy="88" r="10" fill="url(#hl'+k+')"/><circle cx="343" cy="88" r="3.4" fill="#fff7cf" stroke="#e6c85a" stroke-width="1"/>'+
+    '<rect x="279" y="10" width="6" height="98" rx="2" fill="url(#rim'+k+')" stroke="#8a94a0" stroke-width="0.8"/>'+
+    '<rect x="316" y="46" width="3" height="12" fill="#0c2547"/><rect x="317" y="44" width="6" height="9" rx="1.5" fill="#243247"/>'+
+    wheelSide(300,116,17,k+'d1',spin)+wheelSide(268,116,17,k+'d2',spin);
+}
+function pickupSide(k,body,spin){ body=body||'#2f7d32';
+  return '<defs>'+
+    '<linearGradient id="pb'+k+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+body+'"/><stop offset="1" stop-color="#123a15"/></linearGradient>'+
+    '<linearGradient id="pg'+k+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#dff1ff"/><stop offset="1" stop-color="#5a86ad"/></linearGradient>'+
+    '<radialGradient id="tire'+k+'" cx="0.4" cy="0.35" r="0.75"><stop offset="0" stop-color="#3a3f45"/><stop offset="0.7" stop-color="#15181c"/><stop offset="1" stop-color="#0a0c0e"/></radialGradient>'+
+    '<radialGradient id="rim'+k+'" cx="0.4" cy="0.35" r="0.8"><stop offset="0" stop-color="#eef2f6"/><stop offset="0.6" stop-color="#aeb7c2"/><stop offset="1" stop-color="#6b7280"/></radialGradient>'+
+    '<radialGradient id="phl'+k+'" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#fff9d6"/><stop offset="0.5" stop-color="#ffe37a"/><stop offset="1" stop-color="#ffe37a" stop-opacity="0"/></radialGradient>'+
+    '</defs>'+
+    '<ellipse cx="150" cy="112" rx="140" ry="8" fill="#000" opacity="0.32"/>'+
+    '<rect x="14" y="52" width="150" height="42" rx="4" fill="url(#pb'+k+')" stroke="#0d2b10" stroke-width="1.5"/>'+
+    '<rect x="20" y="58" width="138" height="18" rx="3" fill="#0d2b10" opacity="0.55"/>'+
+    '<path d="M150 94 V40 q0 -6 6 -6 h44 q6 0 10 6 l14 20 v34 z" fill="url(#pb'+k+')" stroke="#0d2b10" stroke-width="1.5"/>'+
+    '<path d="M156 36 h42 q5 0 8 5 l8 12 h-58 z" fill="#ffffff" opacity="0.12"/>'+
+    '<path d="M158 40 h34 v18 h-34 z" fill="url(#pg'+k+')" stroke="#0d2b10" stroke-width="0.8"/>'+
+    '<path d="M196 40 h6 q4 0 7 5 l7 13 h-20 z" fill="url(#pg'+k+')" stroke="#0d2b10" stroke-width="0.8"/>'+
+    '<line x1="193" y1="40" x2="193" y2="58" stroke="#0d2b10" stroke-width="1.4"/>'+
+    '<rect x="168" y="66" width="10" height="2.6" rx="1" fill="#0d2b10"/>'+
+    '<rect x="212" y="82" width="10" height="16" rx="2" fill="#c7ced6"/>'+
+    '<rect x="206" y="64" width="12" height="10" rx="1" fill="#12331a"/>'+
+    '<circle cx="214" cy="76" r="8" fill="url(#phl'+k+')"/><circle cx="213" cy="76" r="3" fill="#fff7cf" stroke="#e6c85a" stroke-width="0.8"/>'+
+    '<path d="M46 94 a22 22 0 0 1 44 0" fill="#0d2b10"/>'+
+    '<path d="M150 94 a22 22 0 0 1 44 0" fill="#0d2b10"/>'+
+    wheelSide(68,94,16,k+'pf',spin)+wheelSide(172,94,16,k+'pr',spin);
+}
+function carSide(k,body,spin){ body=body||'#c62828';
+  return '<defs>'+
+    '<linearGradient id="cb'+k+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+body+'"/><stop offset="1" stop-color="#5e0f0f"/></linearGradient>'+
+    '<linearGradient id="cg'+k+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eaf6ff"/><stop offset="1" stop-color="#5a86ad"/></linearGradient>'+
+    '<radialGradient id="tire'+k+'" cx="0.4" cy="0.35" r="0.75"><stop offset="0" stop-color="#3a3f45"/><stop offset="0.7" stop-color="#15181c"/><stop offset="1" stop-color="#0a0c0e"/></radialGradient>'+
+    '<radialGradient id="rim'+k+'" cx="0.4" cy="0.35" r="0.8"><stop offset="0" stop-color="#eef2f6"/><stop offset="0.6" stop-color="#aeb7c2"/><stop offset="1" stop-color="#6b7280"/></radialGradient>'+
+    '<radialGradient id="chl'+k+'" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#fff9d6"/><stop offset="0.5" stop-color="#ffe37a"/><stop offset="1" stop-color="#ffe37a" stop-opacity="0"/></radialGradient>'+
+    '</defs>'+
+    '<ellipse cx="130" cy="94" rx="122" ry="7" fill="#000" opacity="0.3"/>'+
+    '<path d="M12 82 q4 -22 26 -24 l34 -2 q14 -18 40 -18 h34 q22 0 40 20 l30 4 q16 3 18 20 v2 q0 4 -6 4 H16 q-4 0 -4 -6 z" fill="url(#cb'+k+')" stroke="#4a0c0c" stroke-width="1.5"/>'+
+    '<path d="M84 40 q10 -14 30 -14 h30 q18 0 34 16 l-6 6 H92 q-8 0 -8 -8 z" fill="url(#cg'+k+')" stroke="#4a0c0c" stroke-width="1"/>'+
+    '<line x1="120" y1="26" x2="120" y2="48" stroke="#4a0c0c" stroke-width="1.4"/>'+
+    '<path d="M86 42 q8 -12 26 -12" stroke="#ffffff" stroke-width="2" opacity="0.5" fill="none"/>'+
+    '<line x1="120" y1="50" x2="120" y2="72" stroke="#4a0c0c" stroke-width="1"/>'+
+    '<rect x="126" y="56" width="12" height="3" rx="1.5" fill="#4a0c0c"/>'+
+    '<circle cx="214" cy="70" r="7" fill="url(#chl'+k+')"/><circle cx="213" cy="70" r="2.6" fill="#fff7cf"/>'+
+    '<rect x="14" y="64" width="6" height="8" rx="2" fill="#e2413a"/>'+
+    '<path d="M44 82 a20 20 0 0 1 40 0" fill="#2a0808"/><path d="M150 82 a20 20 0 0 1 40 0" fill="#2a0808"/>'+
+    wheelSide(64,82,15,k+'cf',spin)+wheelSide(170,82,15,k+'cr',spin);
+}
+function truckTop(k,cab){ cab=cab||'#1f6feb';
+  return '<defs>'+
+    '<linearGradient id="ttb'+k+'" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b7c2ce"/><stop offset="0.5" stop-color="#eef3f8"/><stop offset="1" stop-color="#b7c2ce"/></linearGradient>'+
+    '<linearGradient id="ttc'+k+'" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0f294d"/><stop offset="0.5" stop-color="'+cab+'"/><stop offset="1" stop-color="#0f294d"/></linearGradient>'+
+    '</defs>'+
+    '<rect x="24" y="96" width="72" height="196" rx="8" fill="url(#ttb'+k+')" stroke="#8a97a5" stroke-width="1.5"/>'+
+    '<g stroke="#aab5c1" stroke-width="1" opacity="0.7"><line x1="24" y1="150" x2="96" y2="150"/><line x1="24" y1="210" x2="96" y2="210"/><line x1="24" y1="270" x2="96" y2="270"/></g>'+
+    '<line x1="60" y1="96" x2="60" y2="292" stroke="#c2cdd8" stroke-width="1"/>'+
+    '<rect x="16" y="250" width="10" height="26" rx="3" fill="#15181c"/><rect x="94" y="250" width="10" height="26" rx="3" fill="#15181c"/>'+
+    '<rect x="40" y="86" width="40" height="12" fill="#3a4048"/>'+
+    '<rect x="26" y="14" width="68" height="74" rx="10" fill="url(#ttc'+k+')" stroke="#0c2547" stroke-width="1.5"/>'+
+    '<path d="M30 30 h60 v14 q-30 8 -60 0 z" fill="#bcd7f0" opacity="0.92"/>'+
+    '<rect x="34" y="18" width="52" height="8" rx="3" fill="#0c2547" opacity="0.5"/>'+
+    '<rect x="16" y="40" width="12" height="5" rx="2" fill="#0c2547"/><rect x="92" y="40" width="12" height="5" rx="2" fill="#0c2547"/>'+
+    '<rect x="18" y="60" width="10" height="24" rx="3" fill="#15181c"/><rect x="92" y="60" width="10" height="24" rx="3" fill="#15181c"/>'+
+    '<circle cx="36" cy="18" r="3.4" fill="#fff7cf"/><circle cx="84" cy="18" r="3.4" fill="#fff7cf"/>';
+}
+function carTop(k,body){ body=body||'#2563eb';
+  return '<defs>'+
+    '<linearGradient id="ctb'+k+'" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0c356e"/><stop offset="0.5" stop-color="'+body+'"/><stop offset="1" stop-color="#0c356e"/></linearGradient>'+
+    '</defs>'+
+    '<rect x="8" y="6" width="58" height="140" rx="20" fill="url(#ctb'+k+')" stroke="#0a2450" stroke-width="1.5"/>'+
+    '<path d="M14 40 q23 -8 46 0 v6 q-23 6 -46 0 z" fill="#cfeaff" opacity="0.92"/>'+
+    '<rect x="16" y="52" width="42" height="40" rx="8" fill="#0a2450" opacity="0.5"/>'+
+    '<path d="M14 104 q23 8 46 0 v-6 q-23 -6 -46 0 z" fill="#bfe3ff" opacity="0.85"/>'+
+    '<rect x="2" y="46" width="8" height="5" rx="2" fill="#0a2450"/><rect x="64" y="46" width="8" height="5" rx="2" fill="#0a2450"/>'+
+    '<rect x="16" y="8" width="10" height="5" rx="2" fill="#fff7cf"/><rect x="48" y="8" width="10" height="5" rx="2" fill="#fff7cf"/>';
+}
+
 /* ===================== STEPS ===================== */
 var STEPS = [
   /* 1 — Overview */
@@ -236,59 +357,31 @@ var STEPS = [
         '<p class="note bad">'+X("So a technician who woke at 5 a.m. and drives home at 10 p.m. is impaired like a person over the legal alcohol limit — stone-cold sober. You would never let them drive “drunk”; don’t let them drive that tired.","Así que un técnico que despertó a las 5 a.m. y maneja a casa a las 10 p.m. está tan afectado como alguien sobre el límite legal de alcohol — completamente sobrio. Nunca lo dejarías manejar “ebrio”; no lo dejes manejar así de cansado.")+'</p>'+
         '<p class="note">'+X("Source: NIOSH/CDC training module; Dawson & Reid (1997), Nature; Williamson & Feyer (2000).","Fuente: módulo de capacitación NIOSH/CDC; Dawson & Reid (1997), Nature; Williamson & Feyer (2000).")+'</p>';
   }},
-  /* 5 — Microsleep canvas (auto animation) */
+  /* 5 - Microsleep (SVG, auto) */
   { ico:ICO.eyes, t:["Microsleep","Microsueño"], b:function(){
       return tit("The microsleep: driving blind","El microsueño: manejar a ciegas")+
-        '<p class="lead">'+X("A microsleep is an involuntary 2–30 second lapse where the brain sleeps with your eyes open or half-closed. At highway speed you travel the length of several vehicles — or a whole field — with no one driving. Watch the eyelids drop and the truck drift.","Un microsueño es un lapso involuntario de 2–30 segundos en que el cerebro duerme con los ojos abiertos o entrecerrados. A velocidad de autopista recorres el largo de varios vehículos — o un campo entero — sin nadie manejando. Observa cómo caen los párpados y el vehículo se desvía.")+'</p>'+
-        '<div class="illus"><canvas id="msCv"></canvas></div>'+
+        '<p class="lead">'+X("A microsleep is an involuntary 2-30 second lapse where the brain sleeps with your eyes open or half-closed. At highway speed you travel the length of several vehicles with no one driving. Watch the eyelids drop and the vehicle drift toward oncoming traffic.","Un microsueño es un lapso involuntario de 2-30 segundos en que el cerebro duerme con los ojos abiertos o entrecerrados. A velocidad de autopista recorres el largo de varios vehículos sin nadie manejando. Observa cómo caen los párpados y el vehículo se va hacia el carril contrario.")+'</p>'+
+        '<div class="illus top"><svg id="msSvg" viewBox="0 0 340 210" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">'+
+          '<rect x="0" y="0" width="70" height="210" fill="#12331f"/><rect x="270" y="0" width="70" height="210" fill="#12331f"/>'+
+          '<rect x="70" y="0" width="200" height="210" fill="#22262c"/>'+
+          '<line x1="70" y1="0" x2="70" y2="210" stroke="#e8edf2" stroke-width="3"/><line x1="270" y1="0" x2="270" y2="210" stroke="#e8edf2" stroke-width="3"/>'+
+          '<line id="msDash" x1="170" y1="-20" x2="170" y2="230" stroke="#f2c14e" stroke-width="5" stroke-dasharray="20 18"/>'+
+          '<g id="msVeh"><g transform="translate(190,66) scale(0.82)">'+carTop("MS","#2f6fe0")+'</g></g>'+
+          '<rect id="msLidT" x="0" y="0" width="340" height="0" fill="#050f0a"/><rect id="msLidB" x="0" y="210" width="340" height="0" fill="#050f0a"/>'+
+          '<g id="msBadge" opacity="0"><rect x="104" y="12" width="132" height="40" rx="9" fill="#b91c1c"/><text x="170" y="29" fill="#fff" font-family="system-ui" font-size="13" font-weight="700" text-anchor="middle">'+X("MICROSLEEP","MICROSUEÑO")+'</text><text id="msFt" x="170" y="46" fill="#fecaca" font-family="ui-monospace,monospace" font-size="14" font-weight="700" text-anchor="middle">0 ft</text></g>'+
+        '</svg></div>'+
         '<div class="mcap">'+ICO.eye+'<span id="msCap"></span></div>'+
-        '<p class="note bad">'+X("You cannot feel a microsleep coming and you don’t remember it after. That is why “waiting until I’m really sleepy” fails — by then you’re already gambling with lapses.","No sientes venir un microsueño y no lo recuerdas después. Por eso “esperar a tener mucho sueño” falla — para entonces ya estás apostando con lapsos.")+'</p>';
-    }, i:function(){ var gen=_gen; var o=cv("msCv"); if(!o)return; var dim=o.fit(); var x=o.x;
-      var t0=performance.now(); var speed=95; /* ft/s ~ 65 mph */
-      window.addEventListener("resize", function(){ if(gen===_gen) dim=o.fit(); });
-      raf(gen, function(){
-        var w=dim.w,h=dim.h; var now=performance.now(); var tt=(now-t0)/1000;
-        /* cycle: 4.5s awake, 4s microsleep */
-        var cyc=8.5, ph=tt%cyc; var asleep=ph>4.5; var sp=asleep?(ph-4.5):0; /* seconds asleep */
-        x.fillStyle="#08140d"; x.fillRect(0,0,w,h);
-        /* road */
-        var road=w, cx=w/2;
-        x.fillStyle="#10231a"; x.fillRect(0,h*0.30,w,h*0.70);
-        /* side lines */
-        x.strokeStyle="#2f5a42"; x.lineWidth=2; x.beginPath(); x.moveTo(w*0.14,h); x.lineTo(w*0.40,h*0.30); x.moveTo(w*0.86,h); x.lineTo(w*0.60,h*0.30); x.stroke();
-        /* dashes scrolling */
-        var off=(now/40)%40;
-        x.strokeStyle="#d7e35a"; x.lineWidth=3; x.setLineDash([16,20]); x.lineDashOffset=-off*3;
-        x.beginPath(); x.moveTo(cx,h); x.lineTo(cx,h*0.30); x.stroke(); x.setLineDash([]);
-        /* car drifts right when asleep */
-        var drift=asleep?Math.min(1,sp/4):0; var carX=cx + drift*(w*0.30) - drift*0; var carY=h*0.72; var cw=Math.max(34,w*0.13);
-        x.save(); x.translate(carX,carY);
-        x.fillStyle=asleep?"#b91c1c":"#2563eb"; roundRect(x,-cw/2,-cw*0.62,cw,cw*1.15,7); x.fill();
-        x.fillStyle="#9ec5ff"; roundRect(x,-cw/2+5,-cw*0.5,cw-10,cw*0.34,4); x.fill();
-        x.fillStyle="#dc2626"; x.fillRect(-cw/2+3,cw*0.40,6,7); x.fillRect(cw/2-9,cw*0.40,6,7);
-        x.restore();
-        /* eyelids overlay */
-        var lid = asleep? Math.min(1, sp/1.2) : Math.max(0, 0.12*Math.sin(now/500)); /* almost closed when asleep */
-        x.fillStyle="rgba(4,10,7,"+(asleep?0.55:0)+")"; x.fillRect(0,0,w,h*0.30*lid); x.fillRect(0,h-h*0.14*lid,w,h*0.14*lid);
-        /* eye icon top-left */
-        var eh=Math.max(6,h*0.05*(1-lid));
-        x.strokeStyle=asleep?"#f87171":"#8fd6ac"; x.lineWidth=2.4; x.beginPath();
-        x.ellipse(w*0.10,h*0.12,w*0.045,eh,0,0,Math.PI*2); x.stroke();
-        if(!asleep){ x.fillStyle="#8fd6ac"; x.beginPath(); x.arc(w*0.10,h*0.12,Math.max(2,eh*0.4),0,Math.PI*2); x.fill(); }
-        /* blind distance counter */
-        if(asleep){
-          var ft=Math.round(sp*speed);
-          x.fillStyle="rgba(120,10,10,.82)"; roundRect(x,w*0.5-70,10,140,40,8); x.fill();
-          x.fillStyle="#fff"; x.textAlign="center"; x.font="700 13px system-ui";
-          x.fillText(X("MICROSLEEP","MICROSUEÑO"),w*0.5,27);
-          x.font="700 15px ui-monospace,monospace"; x.fillStyle="#fecaca";
-          x.fillText(ft+" ft "+X("blind","a ciegas"),w*0.5,44);
-        }
-        var capEl=$("msCap"); if(capEl) capEl.textContent = asleep
-          ? X("Asleep at 65 mph — traveling ~95 ft every second with no control.","Dormido a 65 mph — ~95 ft por segundo sin control.")
-          : X("Awake and scanning the road.","Despierto y observando el camino.");
-      });
-      function roundRect(c,x1,y1,w1,h1,r){ c.beginPath(); c.moveTo(x1+r,y1); c.arcTo(x1+w1,y1,x1+w1,y1+h1,r); c.arcTo(x1+w1,y1+h1,x1,y1+h1,r); c.arcTo(x1,y1+h1,x1,y1,r); c.arcTo(x1,y1,x1+w1,y1,r); c.closePath(); }
+        '<p class="note bad">'+X("You cannot feel a microsleep coming and you do not remember it after. That is why waiting until you feel very sleepy fails - by then you are already gambling with lapses.","No sientes venir un microsueño y no lo recuerdas después. Por eso esperar a sentir mucho sueño falla - para entonces ya estás apostando con lapsos.")+'</p>';
+    }, i:function(){ var gen=_gen; var veh=$("msVeh"),lt=$("msLidT"),lb=$("msLidB"),badge=$("msBadge"),ft=$("msFt"),dash=$("msDash"),cap=$("msCap"); if(!veh)return; var t0=performance.now();
+        raf(gen,function(){ var now=performance.now(); var tt=(now-t0)/1000; var cyc=8.5, ph=tt%cyc; var asleep=ph>4.5; var sp=asleep?(ph-4.5):0;
+          dash.setAttribute("stroke-dashoffset", (-(now/9)%38).toFixed(1));
+          var drift = asleep ? -(1-Math.cos(Math.min(1,sp/4)*Math.PI))/2*62 : Math.sin(now/600)*3;
+          veh.setAttribute("transform","translate("+drift.toFixed(1)+",0)");
+          var lid = asleep ? Math.min(82, sp/1.1*82) : 5+3*Math.sin(now/500);
+          lt.setAttribute("height",lid.toFixed(1)); lb.setAttribute("y",(210-lid).toFixed(1)); lb.setAttribute("height",lid.toFixed(1));
+          badge.setAttribute("opacity", asleep?"1":"0"); if(asleep&&ft) ft.textContent=Math.round(sp*95)+" ft "+X("blind","a ciegas");
+          if(cap) cap.textContent = asleep ? X("Asleep at 65 mph - about 95 ft every second, drifting into oncoming.","Dormido a 65 mph - unos 95 ft por segundo, hacia el carril contrario.") : X("Awake and scanning the road.","Despierto y observando el camino.");
+        });
     }
   },
   /* 6 — Warning signs */
@@ -410,39 +503,35 @@ var STEPS = [
         '</div>'+
         '<p class="note bad">'+X("Even hands-free calls are a cognitive distraction — “eyes on, mind off” still misses hazards. The safest phone is one you can’t reach.","Incluso las llamadas manos libres son distracción cognitiva — “ojos puestos, mente fuera” igual pierde peligros. El teléfono más seguro es el que no alcanzas.")+'</p>';
   }},
-  /* 13 — 5-second glance canvas */
+  /* 13 - 5-second glance (SVG) */
   { ico:ICO.eye, t:["Eyes off road","Ojos fuera"], b:function(){
       return tit("5 seconds = a football field","5 segundos = un campo de fútbol")+
-        '<p class="lead">'+X("Reading or sending a text takes your eyes off the road for about 5 seconds. At 55 mph that’s the length of a football field — driven completely blind. Watch how far the truck travels while the eyes are on the phone.","Leer o enviar un texto quita los ojos del camino unos 5 segundos. A 55 mph es el largo de un campo de fútbol — manejado totalmente a ciegas. Observa cuánto avanza el vehículo con los ojos en el teléfono.")+'</p>'+
-        '<div class="illus" style="aspect-ratio:16/8"><canvas id="ffCv"></canvas></div>'+
+        '<p class="lead">'+X("Reading or sending a text takes your eyes off the road for about 5 seconds. At 55 mph that is the length of a football field - driven completely blind. Watch how far the truck travels while the eyes are on the phone.","Leer o enviar un texto quita los ojos del camino unos 5 segundos. A 55 mph es el largo de un campo de fútbol - manejado totalmente a ciegas. Observa cuánto avanza el vehículo con los ojos en el teléfono.")+'</p>'+
+        '<div class="illus" style="aspect-ratio:16/7"><svg id="ffSvg" class="rolling" viewBox="0 0 340 150" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">'+
+          '<rect x="0" y="0" width="340" height="150" fill="#08140d"/>'+
+          '<rect x="0" y="96" width="340" height="54" fill="#12331f"/>'+
+          '<g id="ffYards"></g>'+
+          '<line id="ffTrail" x1="18" y1="128" x2="18" y2="128" stroke="#f87171" stroke-width="3" stroke-dasharray="5 5"/>'+
+          '<g id="ffVeh" transform="translate(-30,0)"><g transform="translate(0,44) scale(0.4)">'+pickupSide("FF","#2f7d32",true)+'</g></g>'+
+          '<g id="ffBadge"><rect x="8" y="8" width="196" height="34" rx="8" fill="#b91c1c"/><text id="ffL1" x="16" y="24" fill="#fff" font-family="system-ui" font-size="12" font-weight="700">EYES ON PHONE</text><text id="ffL2" x="16" y="38" fill="#fecaca" font-family="ui-monospace,monospace" font-size="13" font-weight="700">0 ft</text></g>'+
+        '</svg></div>'+
         '<div class="mcap">'+ICO.road+'<span id="ffCap"></span></div>'+
-        '<p class="note">'+X("Source: NHTSA. A football field is 100 yards (300 ft); at 55 mph you cover ~400 ft in 5 seconds.","Fuente: NHTSA. Un campo de fútbol americano mide 100 yardas (300 ft); a 55 mph recorres ~400 ft en 5 segundos.")+'</p>';
-    }, i:function(){ var gen=_gen; var o=cv("ffCv"); if(!o)return; var dim=o.fit(); var x=o.x; var t0=performance.now();
-      window.addEventListener("resize",function(){ if(gen===_gen) dim=o.fit(); });
-      raf(gen,function(){ var w=dim.w,h=dim.h; var now=performance.now(); var cyc=6.5, ph=((now-t0)/1000)%cyc; var glancing=ph<5; var sp=Math.min(5,ph);
-        x.fillStyle="#08140d"; x.fillRect(0,0,w,h);
-        /* field yard lines */
-        var gy=h*0.42, gh=h*0.5;
-        x.fillStyle="#10231a"; x.fillRect(0,gy,w,gh);
-        var yards=100, pxPerYard=w/ (yards*1.15);
-        for(var yd=0; yd<=100; yd+=10){ var lx=10+ (yd/100)*(w-20); x.strokeStyle= yd%50===0?"#3f7a58":"#20402f"; x.lineWidth=1; x.beginPath(); x.moveTo(lx,gy); x.lineTo(lx,gy+gh); x.stroke(); if(yd%20===0){ x.fillStyle="#5b8c72"; x.font="9px ui-monospace,monospace"; x.textAlign="center"; x.fillText(yd+"",lx,gy-4);} }
-        /* distance in feet -> yards, 55mph=80.6 ft/s */
-        var ft=sp*80.6; var yardsTrav=ft/3; var carX=10 + Math.min(1,(yardsTrav/115))*(w-20); var carY=gy+gh*0.55; var cw=Math.max(30,w*0.09);
-        /* trail */
-        x.strokeStyle="rgba(248,113,113,.5)"; x.lineWidth=3; x.beginPath(); x.moveTo(10,carY); x.lineTo(carX,carY); x.stroke();
-        x.save(); x.translate(carX,carY);
-        x.fillStyle=glancing?"#b91c1c":"#2563eb"; roundRect(x,-cw,-cw*0.32,cw*2,cw*0.64,6); x.fill();
-        x.fillStyle="#9ec5ff"; roundRect(x,cw*0.2,-cw*0.22,cw*0.5,cw*0.44,3); x.fill();
-        x.restore();
-        /* readout */
-        x.fillStyle= glancing?"rgba(120,10,10,.85)":"rgba(21,128,61,.85)"; roundRect(x,10,8,Math.max(150,w*0.5),34,8); x.fill();
-        x.fillStyle="#fff"; x.textAlign="left"; x.font="700 12px system-ui";
-        x.fillText(glancing?(X("EYES ON PHONE","OJOS EN EL TELÉFONO")):(X("EYES BACK UP","OJOS AL FRENTE")),18,22);
-        x.font="700 14px ui-monospace,monospace";
-        x.fillText(Math.round(ft)+" ft · "+Math.round(yardsTrav)+" yd · "+sp.toFixed(1)+"s",18,38);
-        var cap=$("ffCap"); if(cap) cap.textContent = glancing? X("Driving blind at 55 mph…","Manejando a ciegas a 55 mph…") : X("By now the hazard could already be a crash.","Para entonces el peligro ya pudo ser un choque.");
-      });
-      function roundRect(c,x1,y1,w1,h1,r){ c.beginPath(); c.moveTo(x1+r,y1); c.arcTo(x1+w1,y1,x1+w1,y1+h1,r); c.arcTo(x1+w1,y1+h1,x1,y1+h1,r); c.arcTo(x1,y1+h1,x1,y1,r); c.arcTo(x1,y1,x1+w1,y1,r); c.closePath(); }
+        '<p class="note">'+X("Source: NHTSA. A football field is 100 yards (300 ft); at 55 mph you cover about 400 ft in 5 seconds.","Fuente: NHTSA. Un campo de fútbol mide 100 yardas (300 ft); a 55 mph recorres unos 400 ft en 5 segundos.")+'</p>';
+    }, i:function(){ var gen=_gen; var veh=$("ffVeh"),trail=$("ffTrail"),badge=$("ffBadge"),l1=$("ffL1"),l2=$("ffL2"),cap=$("ffCap"),svg=$("ffSvg"); if(!veh)return;
+        var yd=$("ffYards"),g="";
+        for(var y=0;y<=100;y+=10){ var lx=14+(y/100)*(312-14); g+='<line x1="'+lx+'" y1="96" x2="'+lx+'" y2="150" stroke="'+((y%50===0)?"#3f7a58":"#20402f")+'" stroke-width="1"/>'; if(y%20===0) g+='<text x="'+lx+'" y="92" fill="#5b8c72" font-family="ui-monospace,monospace" font-size="9" text-anchor="middle">'+y+'</text>'; }
+        yd.innerHTML=g; var t0=performance.now();
+        raf(gen,function(){ var now=performance.now(); var cyc=6.5, ph=((now-t0)/1000)%cyc; var glancing=ph<5; var sp=Math.min(5,ph);
+          var ft=sp*80.6, yards=ft/3; var prog=Math.min(1,yards/115); var x=-30+prog*300;
+          veh.setAttribute("transform","translate("+x.toFixed(1)+",0)");
+          var front=x+ (300*0.4)*0.72; trail.setAttribute("x2", Math.max(18,front).toFixed(1));
+          badge.setAttribute("opacity", glancing?"1":"0.85");
+          badge.querySelector("rect").setAttribute("fill", glancing?"#b91c1c":"#15803D");
+          if(l1) l1.textContent=glancing?X("EYES ON PHONE","OJOS EN EL TELÉFONO"):X("EYES BACK UP","OJOS AL FRENTE");
+          if(l2) l2.textContent=Math.round(ft)+" ft  "+Math.round(yards)+" yd  "+sp.toFixed(1)+"s";
+          if(cap) cap.textContent=glancing?X("Driving blind at 55 mph...","Manejando a ciegas a 55 mph..."):X("By now the hazard could already be a crash.","Para entonces el peligro ya pudo ser un choque.");
+          if(svg) { if(glancing) svg.classList.add("rolling"); else svg.classList.remove("rolling"); }
+        });
     }
   },
   /* 14 — Case study 2: Gray Summit */
@@ -494,118 +583,88 @@ var STEPS = [
         '</div>'+
         '<p class="note">'+X("These five habits, run every trip, prevent the “I never saw them” crash that killed people in both cases we studied.","Estos cinco hábitos, en cada viaje, evitan el choque de “nunca los vi” que mató gente en los dos casos que estudiamos.")+'</p>';
   }},
-  /* 18 — Following distance canvas */
+  /* 18 - Following distance (SVG) */
   { ico:ICO.car, t:["Following distance","Distancia de seguimiento"], b:function(){
       return tit("The 3-second rule","La regla de los 3 segundos")+
-        '<p class="lead">'+X("Pick a fixed point ahead (a sign, a shadow). When the vehicle in front passes it, count “one-thousand-one, one-thousand-two, one-thousand-three.” If you reach the point before you finish, you’re too close. Watch the gap fill in.","Elige un punto fijo adelante (un letrero, una sombra). Cuando el vehículo de enfrente lo pase, cuenta “mil uno, mil dos, mil tres.” Si llegas al punto antes de terminar, vas muy cerca. Observa cómo se llena la brecha.")+'</p>'+
-        '<div class="illus" style="aspect-ratio:16/8"><canvas id="fdCv"></canvas></div>'+
-        '<p class="note warn">'+X("Add more: use <b>4–6 seconds</b> at night, in rain, when fatigued, or in a heavy/loaded truck — they all need more room to stop.","Agrega más: usa <b>4–6 segundos</b> de noche, con lluvia, cansado o en un camión pesado/cargado — todos necesitan más espacio para frenar.")+'</p>';
-    }, i:function(){ var gen=_gen; var o=cv("fdCv"); if(!o)return; var dim=o.fit(); var x=o.x; var t0=performance.now();
-      window.addEventListener("resize",function(){ if(gen===_gen) dim=o.fit(); });
-      raf(gen,function(){ var w=dim.w,h=dim.h; var now=performance.now();
-        x.fillStyle="#08140d"; x.fillRect(0,0,w,h);
-        var ry=h*0.4, rh=h*0.5; x.fillStyle="#10231a"; x.fillRect(0,ry,w,rh);
-        var off=(now/22)%44; x.strokeStyle="#d7e35a"; x.lineWidth=3; x.setLineDash([18,26]); x.lineDashOffset=-off;
-        x.beginPath(); x.moveTo(0,ry+rh/2); x.lineTo(w,ry+rh/2); x.stroke(); x.setLineDash([]);
-        /* fixed reference point (sign) */
-        var signX=w*0.62; x.strokeStyle="#8fd6ac"; x.lineWidth=2; x.beginPath(); x.moveTo(signX,ry-2); x.lineTo(signX,ry-h*0.22); x.stroke();
-        x.fillStyle="#15803D"; roundRect(x,signX-10,ry-h*0.30,20,h*0.09,3); x.fill();
-        /* lead car passes sign; timer counts */
-        var cyc=5, ph=((now-t0)/1000)%cyc; var leadX=w*0.62; /* lead sits near sign */
-        var cw=Math.max(30,w*0.09); var cy=ry+rh*0.55;
-        /* follower kept at 3s gap: 3s * ~ (w/5 px per sec visual) */
-        var gapPx=Math.min(w*0.5, 3*(w*0.16));
-        var folX=leadX-gapPx;
-        drawCar(x,leadX,cy,cw,"#2563eb");
-        drawCar(x,folX,cy,cw,"#22c55e");
-        /* gap bracket */
-        x.strokeStyle="#8fd6ac"; x.lineWidth=1.5; x.beginPath(); x.moveTo(folX,cy+cw*0.5); x.lineTo(leadX,cy+cw*0.5); x.stroke();
-        var count=Math.min(3, ph* (3/ (gapPx/(w*0.16))) ); /* seconds elapsed as follower approaches */
-        x.fillStyle="rgba(21,128,61,.9)"; roundRect(x,folX-6,8,150,32,8); x.fill();
-        x.fillStyle="#fff"; x.textAlign="left"; x.font="700 12px system-ui"; x.fillText(X("SAFE GAP","BRECHA SEGURA"),folX+4,22);
-        x.font="700 14px ui-monospace,monospace"; x.fillText("≈ 3.0 s",folX+4,37);
-        function drawCar(c,px,py,cwv,col){ c.save(); c.translate(px,py); c.fillStyle=col; roundRect(c,-cwv,-cwv*0.32,cwv*2,cwv*0.64,6); c.fill(); c.fillStyle="#cfe0ff"; roundRect(c,-cwv*0.7,-cwv*0.22,cwv*0.5,cwv*0.44,3); c.fill(); c.fillStyle="#dc2626"; c.fillRect(cwv*0.85,-cwv*0.2,4,cwv*0.4); c.restore(); }
-      });
-      function roundRect(c,x1,y1,w1,h1,r){ c.beginPath(); c.moveTo(x1+r,y1); c.arcTo(x1+w1,y1,x1+w1,y1+h1,r); c.arcTo(x1+w1,y1+h1,x1,y1+h1,r); c.arcTo(x1,y1+h1,x1,y1,r); c.arcTo(x1,y1,x1+w1,y1,r); c.closePath(); }
+        '<p class="lead">'+X("Pick a fixed point ahead (a sign, a shadow). When the vehicle in front passes it, count one-thousand-one, one-thousand-two, one-thousand-three. If you reach the point before you finish, you are too close.","Elige un punto fijo adelante (un letrero, una sombra). Cuando el vehículo de enfrente lo pase, cuenta mil uno, mil dos, mil tres. Si llegas al punto antes de terminar, vas muy cerca.")+'</p>'+
+        '<div class="illus" style="aspect-ratio:16/7"><svg id="fdSvg" class="rolling" viewBox="0 0 340 150" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">'+
+          '<rect x="0" y="0" width="340" height="150" fill="#08140d"/><rect x="0" y="104" width="340" height="46" fill="#22262c"/>'+
+          '<line id="fdDash" x1="0" y1="127" x2="340" y2="127" stroke="#f2c14e" stroke-width="4" stroke-dasharray="20 20"/>'+
+          '<line x1="250" y1="60" x2="250" y2="104" stroke="#8fd6ac" stroke-width="2"/><rect x="240" y="46" width="20" height="16" rx="3" fill="#15803D"/><text x="250" y="58" fill="#fff" font-size="10" font-family="system-ui" text-anchor="middle" font-weight="700">i</text>'+
+          '<g transform="translate(150,54) scale(0.36)">'+carSide("FDL","#c62828",true)+'</g>'+
+          '<g transform="translate(6,50) scale(0.4)">'+pickupSide("FDF","#2f7d32",true)+'</g>'+
+          '<line x1="92" y1="120" x2="210" y2="120" stroke="#8fd6ac" stroke-width="1.5"/>'+
+          '<g><rect x="118" y="108" width="70" height="24" rx="7" fill="#15803D"/><text x="153" y="119" fill="#fff" font-size="10" font-family="system-ui" text-anchor="middle" font-weight="700">'+X("SAFE GAP","BRECHA SEGURA")+'</text><text x="153" y="129" fill="#d7f5e2" font-size="11" font-family="ui-monospace,monospace" text-anchor="middle" font-weight="700">= 3.0 s</text></g>'+
+        '</svg></div>'+
+        '<p class="note warn">'+X("Add more: use 4-6 seconds at night, in rain, when fatigued, or in a heavy or loaded truck - they all need more room to stop.","Agrega más: usa 4-6 segundos de noche, con lluvia, cansado o en un camión pesado o cargado - todos necesitan más espacio para frenar.")+'</p>';
+    }, i:function(){ var gen=_gen; var dash=$("fdDash"); if(!dash)return; var t0=performance.now();
+        raf(gen,function(){ var now=performance.now(); dash.setAttribute("stroke-dashoffset",(-(now/7)%40).toFixed(1)); });
     }
   },
-  /* 19 — Stopping distance interactive */
+  /* 19 - Stopping distance (SVG, interactive) */
   { ico:ICO.gauge, t:["Stopping distance","Distancia de frenado"], b:function(){
       return tit("Interactive: speed vs stopping distance","Interactivo: velocidad vs distancia de frenado")+
-        '<p class="lead">'+X("Total stopping distance = <b>reaction distance</b> (you see → you brake, ~1.5 s) + <b>braking distance</b>. Braking distance grows with the <b>square</b> of speed — double the speed, roughly four times the braking. Drag the slider.","Distancia total = <b>distancia de reacción</b> (ves → frenas, ~1.5 s) + <b>distancia de frenado</b>. La distancia de frenado crece con el <b>cuadrado</b> de la velocidad — al doble de velocidad, ~cuatro veces el frenado. Mueve el control.")+'</p>'+
+        '<p class="lead">'+X("Total stopping distance = reaction distance (you see then you brake, ~1.5 s) + braking distance. Braking distance grows with the square of speed - double the speed, roughly four times the braking. Drag the slider.","Distancia total = distancia de reacción (ves y luego frenas, ~1.5 s) + distancia de frenado. La distancia de frenado crece con el cuadrado de la velocidad - al doble de velocidad, ~cuatro veces el frenado. Mueve el control.")+'</p>'+
         '<div class="ctrl"><label>'+X("Speed","Velocidad")+': <b id="sdV">55 mph</b></label><input type="range" id="sdSpeed" min="25" max="80" step="5" value="55"></div>'+
         '<div class="row"><div class="seg" id="sdSurf"><button data-s="dry" class="on">'+X("Dry","Seco")+'</button><button data-s="wet">'+X("Wet","Mojado")+'</button></div></div>'+
-        '<div class="illus" style="aspect-ratio:16/7;background:#08140d"><canvas id="sdCv"></canvas></div>'+
-        '<div class="stat3"><div class="s"><b id="sdReact">—</b><span>'+X("reaction ft","reacción ft")+'</span></div><div class="s"><b id="sdBrake">—</b><span>'+X("braking ft","frenado ft")+'</span></div><div class="s"><b id="sdTot">—</b><span>'+X("total ft","total ft")+'</span></div></div>'+
+        '<div class="illus" style="aspect-ratio:16/6;background:#08140d"><svg id="sdSvg" viewBox="0 0 340 120" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg></div>'+
+        '<div class="stat3"><div class="s"><b id="sdReact">-</b><span>'+X("reaction ft","reacción ft")+'</span></div><div class="s"><b id="sdBrake">-</b><span>'+X("braking ft","frenado ft")+'</span></div><div class="s"><b id="sdTot">-</b><span>'+X("total ft","total ft")+'</span></div></div>'+
         '<div class="note" id="sdMsg"></div>';
-    }, i:function(){ var gen=_gen; var sp=$("sdSpeed"), o=cv("sdCv"); var dim=o?o.fit():{w:300,h:80}; var surf="dry";
-      window.addEventListener("resize",function(){ if(gen===_gen && o) dim=o.fit(); });
-      document.querySelectorAll("#sdSurf button").forEach(function(b){ b.onclick=function(){ document.querySelectorAll("#sdSurf button").forEach(function(z){z.classList.remove("on");}); b.classList.add("on"); surf=b.dataset.s; calc(); }; });
-      function calc(){ var v=+sp.value; $("sdV").textContent=v+" mph"; var fps=v*1.467; var react=fps*1.5; var mu=surf==="dry"?0.7:0.4; var brake=(fps*fps)/(2*mu*32.2); var tot=react+brake;
-        $("sdReact").textContent=Math.round(react); $("sdBrake").textContent=Math.round(brake); $("sdTot").textContent=Math.round(tot);
-        var m=$("sdMsg"); var fields=(tot/300); m.className="note"; m.innerHTML=X("That’s about ","Eso es cerca de ")+"<b>"+Math.round(tot/13)+"</b>"+X(" car lengths"," largos de auto")+" · ≈ "+fields.toFixed(1)+X(" football fields."," campos de fútbol.")+(surf==="wet"?(" "+X("Wet roads nearly double the braking distance.","El pavimento mojado casi duplica la distancia de frenado.")):"");
-        draw(react,brake);
-      }
-      function draw(react,brake){ if(!o)return; var w=dim.w,h=dim.h,x=o.x; x.fillStyle="#08140d"; x.fillRect(0,0,w,h);
-        var maxFt=520; var pad=12; var bw=w-pad*2; var y=h*0.5, bh=Math.min(30,h*0.34);
-        function px(ft){ return (ft/maxFt)*bw; }
-        x.fillStyle="#16261d"; roundRect(x,pad,y-bh/2,bw,bh,7); x.fill();
-        var rpx=px(react), bpx=px(brake);
-        x.fillStyle="#facc15"; roundRect(x,pad,y-bh/2,Math.max(2,rpx),bh,7); x.fill();
-        x.fillStyle="#f87171"; x.fillRect(pad+rpx,y-bh/2,Math.max(2,bpx),bh);
-        /* football field ref at 300 ft */
-        var fx=pad+px(300); x.strokeStyle="#4ade80"; x.setLineDash([4,4]); x.lineWidth=1.4; x.beginPath(); x.moveTo(fx,y-bh/2-8); x.lineTo(fx,y+bh/2+8); x.stroke(); x.setLineDash([]);
-        x.fillStyle="#8fd6ac"; x.font="10px system-ui"; x.textAlign="center"; x.fillText(X("football field","campo (300 ft)"),fx,y+bh/2+20);
-        /* car */
-        var carX=pad+rpx+bpx; x.fillStyle="#e9f6ee"; roundRect(x,Math.min(w-24,carX),y-7,20,14,3); x.fill();
-        x.textAlign="left"; x.fillStyle="#facc15"; x.font="11px system-ui"; x.fillText(X("reaction","reacción"),pad,y-bh/2-6);
-        x.fillStyle="#f87171"; x.fillText(X("braking","frenado"),pad+rpx+4,y-bh/2-6);
-      }
-      function roundRect(c,x1,y1,w1,h1,r){ c.beginPath(); c.moveTo(x1+r,y1); c.arcTo(x1+w1,y1,x1+w1,y1+h1,r); c.arcTo(x1+w1,y1+h1,x1,y1+h1,r); c.arcTo(x1,y1+h1,x1,y1,r); c.arcTo(x1,y1,x1+w1,y1,r); c.closePath(); }
-      sp.oninput=calc; calc();
+    }, i:function(){ var gen=_gen; var sp=$("sdSpeed"),svg=$("sdSvg"); if(!svg)return; var surf="dry";
+        document.querySelectorAll("#sdSurf button").forEach(function(b){ b.onclick=function(){ document.querySelectorAll("#sdSurf button").forEach(function(z){z.classList.remove("on");}); b.classList.add("on"); surf=b.dataset.s; calc(); }; });
+        function calc(){ var v=+sp.value; $("sdV").textContent=v+" mph"; var fps=v*1.467; var react=fps*1.5; var mu=surf==="dry"?0.7:0.4; var brake=(fps*fps)/(2*mu*32.2); var tot=react+brake;
+          $("sdReact").textContent=Math.round(react); $("sdBrake").textContent=Math.round(brake); $("sdTot").textContent=Math.round(tot);
+          var m=$("sdMsg"); var fields=(tot/300); m.className="note"; m.innerHTML=X("That is about ","Eso es cerca de ")+"<b>"+Math.round(tot/13)+"</b>"+X(" car lengths"," largos de auto")+"  =  "+fields.toFixed(1)+X(" football fields."," campos de fútbol.")+(surf==="wet"?(" "+X("Wet roads nearly double the braking distance.","El pavimento mojado casi duplica la distancia de frenado.")):"");
+          var maxFt=520, pad=12, bw=340-pad*2, y=64, bh=20; function px(ft){ return (ft/maxFt)*bw; }
+          var rpx=px(react), bpx=px(brake), fx=pad+px(300), cx=pad+rpx+bpx;
+          var g='<rect x="0" y="0" width="340" height="120" fill="#08140d"/>';
+          g+='<rect x="'+pad+'" y="'+y+'" width="'+bw+'" height="'+bh+'" rx="6" fill="#16261d"/>';
+          g+='<rect x="'+pad+'" y="'+y+'" width="'+Math.max(2,rpx).toFixed(1)+'" height="'+bh+'" rx="6" fill="#f2c14e"/>';
+          g+='<rect x="'+(pad+rpx).toFixed(1)+'" y="'+y+'" width="'+Math.max(2,bpx).toFixed(1)+'" height="'+bh+'" fill="#ef4444"/>';
+          g+='<line x1="'+fx.toFixed(1)+'" y1="'+(y-8)+'" x2="'+fx.toFixed(1)+'" y2="'+(y+bh+10)+'" stroke="#4ade80" stroke-width="1.4" stroke-dasharray="4 4"/>';
+          g+='<text x="'+fx.toFixed(1)+'" y="'+(y+bh+22)+'" fill="#8fd6ac" font-family="system-ui" font-size="10" text-anchor="middle">'+X("football field","campo (300 ft)")+'</text>';
+          g+='<text x="'+pad+'" y="'+(y-8)+'" fill="#f2c14e" font-family="system-ui" font-size="11">'+X("reaction","reacción")+'</text>';
+          g+='<text x="'+(pad+rpx+4).toFixed(1)+'" y="'+(y-8)+'" fill="#fca5a5" font-family="system-ui" font-size="11">'+X("braking","frenado")+'</text>';
+          g+='<g transform="translate('+(Math.min(300,cx)-24).toFixed(1)+','+(y-34)+') scale(0.17)">'+pickupSide("SD","#2f7d32",false)+'</g>';
+          svg.innerHTML=g;
+        }
+        sp.oninput=calc; calc();
     }
   },
-  /* 20 — Blind spots / No-Zone canvas */
+  /* 20 - Blind spots (SVG top view) */
   { ico:ICO.truck, t:["Blind spots","Puntos ciegos"], b:function(){
-      return tit("Blind spots & the truck “No-Zone”","Puntos ciegos y la “zona ciega” del camión")+
-        '<p class="lead">'+X("Every vehicle has blind spots; big trucks have huge ones — front, rear, and especially the right side. If you can’t see the driver’s mirrors, they can’t see you. Watch the car disappear as it moves through each zone.","Todo vehículo tiene puntos ciegos; los camiones grandes los tienen enormes — al frente, atrás y sobre todo del lado derecho. Si no ves los espejos del conductor, él no te ve. Observa cómo el auto desaparece al pasar por cada zona.")+'</p>'+
-        '<div class="illus" style="aspect-ratio:16/9"><canvas id="bsCv"></canvas></div>'+
+      return tit("Blind spots and the truck No-Zone","Puntos ciegos y la zona ciega del camión")+
+        '<p class="lead">'+X("Every vehicle has blind spots; big trucks have huge ones - front, rear, and especially the right side. If you cannot see the driver mirrors, they cannot see you. Watch the car fade as it moves through each zone.","Todo vehículo tiene puntos ciegos; los camiones grandes los tienen enormes - al frente, atrás y sobre todo del lado derecho. Si no ves los espejos del conductor, él no te ve. Observa cómo el auto se desvanece al pasar por cada zona.")+'</p>'+
+        '<div class="illus top" style="aspect-ratio:4/3"><svg id="bsSvg" viewBox="0 0 340 260" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">'+
+          '<rect x="0" y="0" width="340" height="260" fill="#151a16"/>'+
+          '<g stroke="#2a352d" stroke-width="1"><line x1="113" y1="0" x2="113" y2="260"/><line x1="227" y1="0" x2="227" y2="260"/></g>'+
+          '<g fill="#dc2626" opacity="0.16">'+
+            '<rect x="130" y="2" width="82" height="30" rx="4"/>'+
+            '<rect x="130" y="232" width="82" height="26" rx="4"/>'+
+            '<rect x="92" y="46" width="46" height="186" rx="4"/>'+
+            '<rect x="202" y="46" width="98" height="202" rx="4"/>'+
+          '</g>'+
+          '<g transform="translate(127,22) scale(0.72)">'+truckTop("BS","#1f6feb")+'</g>'+
+          '<g id="bsCar" transform="translate(230,220)"><g transform="translate(-18,-30) scale(0.5)">'+carTop("BSC","#22c55e")+'</g></g>'+
+          '<rect id="bsOutline" x="0" y="0" width="0" height="0" fill="none"/>'+
+          '<g id="bsBadge" opacity="0"><rect x="0" y="0" width="86" height="20" rx="6" fill="#b91c1c"/><text x="43" y="14" fill="#fff" font-family="system-ui" font-size="11" font-weight="700" text-anchor="middle">'+X("BLIND SPOT","PUNTO CIEGO")+'</text></g>'+
+        '</svg></div>'+
         '<div class="mcap">'+ICO.warn+'<span id="bsCap"></span></div>'+
-        '<p class="note warn">'+X("Passing rule: get through a blind spot quickly, never linger beside a truck, and pass on the left where the blind spot is smaller. Give trucks room to turn — they swing wide.","Regla al rebasar: cruza el punto ciego rápido, nunca te quedes al lado del camión, y rebasa por la izquierda donde el punto ciego es menor. Da espacio a los camiones para girar — se abren mucho.")+'</p>';
-    }, i:function(){ var gen=_gen; var o=cv("bsCv"); if(!o)return; var dim=o.fit(); var x=o.x; var t0=performance.now();
-      window.addEventListener("resize",function(){ if(gen===_gen) dim=o.fit(); });
-      raf(gen,function(){ var w=dim.w,h=dim.h; var now=performance.now(); var t=(now-t0)/1000;
-        x.fillStyle="#08140d"; x.fillRect(0,0,w,h);
-        /* road lanes */
-        x.fillStyle="#10231a"; x.fillRect(0,0,w,h);
-        x.strokeStyle="#20402f"; x.lineWidth=1; for(var i=1;i<3;i++){ x.beginPath(); x.moveTo(0,h*i/3); x.lineTo(w,h*i/3); x.stroke(); }
-        /* truck (top-down) center lane */
-        var tx=w*0.42, ty=h*0.5, tw=w*0.16, tl=h*0.5;
-        /* blind zones (shaded) */
-        var zones=[
-          {x:tx-tw*0.2,y:ty-tl*0.5-h*0.16,w:tw*1.4,h:h*0.16,name:["Front","Frente"]},
-          {x:tx-tw*0.2,y:ty+tl*0.5,w:tw*1.4,h:h*0.22,name:["Rear","Atrás"]},
-          {x:tx-w*0.24,y:ty-tl*0.3,w:w*0.24,h:tl*0.8,name:["Left","Izquierda"]},
-          {x:tx+tw*1.2,y:ty-tl*0.3,w:w*0.30,h:tl*0.95,name:["Right (big)","Derecha (grande)"]}
-        ];
-        x.fillStyle="rgba(220,38,38,.16)"; zones.forEach(function(z){ x.fillRect(z.x,z.y,z.w,z.h); });
-        /* truck body */
-        x.fillStyle="#1f3a2b"; roundRect(x,tx,ty-tl*0.5,tw,tl,6); x.fill();
-        x.fillStyle="#2f5a42"; x.fillRect(tx,ty-tl*0.5,tw,tl*0.18); /* cab */
-        x.strokeStyle="#4ade80"; x.lineWidth=1.4; x.strokeRect(tx,ty-tl*0.5,tw,tl);
-        /* car moving along right side then forward (through zones) */
-        var path=(t%12)/12; var carX, carY;
-        if(path<0.4){ carX=tx+tw+w*0.10; carY=ty+tl*0.5 - (path/0.4)*(tl*1.0); }
-        else if(path<0.7){ carX=tx+tw+w*0.10 - ((path-0.4)/0.3)*(w*0.10); carY=ty-tl*0.5-h*0.08; }
-        else { carX=tx-w*0.14; carY=ty-tl*0.5-h*0.08 + ((path-0.7)/0.3)*(tl*1.1); }
-        var inBlind=zones.some(function(z){ return carX>z.x-6 && carX<z.x+z.w+6 && carY>z.y-6 && carY<z.y+z.h+6; });
-        var cw=Math.max(12,w*0.04);
-        x.fillStyle=inBlind?"#dc2626":"#22c55e"; roundRect(x,carX-cw,carY-cw*1.4,cw*2,cw*2.8,4); x.fill();
-        x.fillStyle="#cfe0ff"; roundRect(x,carX-cw*0.7,carY-cw*1.0,cw*1.4,cw*0.9,2); x.fill();
-        if(inBlind){ x.fillStyle="rgba(120,10,10,.85)"; roundRect(x,carX-34,carY-cw*1.4-26,68,20,6); x.fill(); x.fillStyle="#fff"; x.font="700 11px system-ui"; x.textAlign="center"; x.fillText(X("BLIND SPOT","PUNTO CIEGO"),carX,carY-cw*1.4-12); }
-        var cap=$("bsCap"); if(cap) cap.textContent= inBlind? X("The truck driver cannot see this car right now.","El conductor del camión no ve este auto ahora."): X("Visible to the truck driver.","Visible para el conductor del camión.");
-      });
-      function roundRect(c,x1,y1,w1,h1,r){ c.beginPath(); c.moveTo(x1+r,y1); c.arcTo(x1+w1,y1,x1+w1,y1+h1,r); c.arcTo(x1+w1,y1+h1,x1,y1+h1,r); c.arcTo(x1,y1+h1,x1,y1,r); c.arcTo(x1,y1,x1+w1,y1,r); c.closePath(); }
+        '<p class="note warn">'+X("Passing rule: get through a blind spot quickly, never linger beside a truck, and pass on the left where the blind spot is smaller. Give trucks room to turn - they swing wide.","Regla al rebasar: cruza el punto ciego rápido, nunca te quedes al lado del camión, y rebasa por la izquierda donde el punto ciego es menor. Da espacio a los camiones para girar - se abren mucho.")+'</p>';
+    }, i:function(){ var gen=_gen; var car=$("bsCar"),carInner=car&&car.firstChild,badge=$("bsBadge"),cap=$("bsCap"); if(!car)return;
+        var zones=[[130,2,82,30],[130,232,82,26],[92,46,46,186],[202,46,98,202]]; var t0=performance.now();
+        raf(gen,function(){ var now=performance.now(); var u=((now-t0)/9000)%1; var x,y;
+          if(u<0.35){ x=256; y=232-(u/0.35)*182; }           /* up the right side */
+          else if(u<0.55){ var p=(u-0.35)/0.2; x=256-p*106; y=50; } /* across the front */
+          else if(u<0.9){ var p2=(u-0.55)/0.35; x=110; y=50+p2*182; } /* down the left */
+          else { var p3=(u-0.9)/0.1; x=110+p3*146; y=232; }   /* across the rear back to start */
+          car.setAttribute("transform","translate("+x.toFixed(1)+","+y.toFixed(1)+")");
+          var blind=zones.some(function(z){ return x>z[0]-4 && x<z[0]+z[2]+4 && y>z[1]-4 && y<z[1]+z[3]+4; });
+          if(carInner) carInner.setAttribute("opacity", blind?"0.32":"1");
+          badge.setAttribute("opacity", blind?"1":"0");
+          badge.setAttribute("transform","translate("+(x-43).toFixed(1)+","+(y-46).toFixed(1)+")");
+          if(cap) cap.textContent = blind ? X("The truck driver cannot see this car right now.","El conductor del camión no ve este auto ahora.") : X("Visible to the truck driver.","Visible para el conductor del camión.");
+        });
     }
   },
   /* 21 — Special conditions */
