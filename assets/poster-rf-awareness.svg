@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" font-family="system-ui,Segoe UI,Roboto,sans-serif">
+  <defs><linearGradient id="bgr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#12592f"/><stop offset="1" stop-color="#0a140e"/></linearGradient></defs>
+  <rect width="320" height="180" fill="url(#bgr)"/>
+  <g stroke="#2f5a42" stroke-width="0.6" opacity="0.4"><line x1="0" y1="70" x2="320" y2="70"/><line x1="0" y1="110" x2="320" y2="110"/><line x1="0" y1="150" x2="320" y2="150"/></g>
+  <!-- monopole tower with sector antennas -->
+  <g transform="translate(266,120)">
+    <path d="M-4 78 L-2 -34 L2 -34 L4 78 Z" fill="#8b96a2"/>
+    <g stroke="#6b7682" stroke-width="2.4" stroke-linecap="round"><line x1="0" y1="-34" x2="-22" y2="-40"/><line x1="0" y1="-34" x2="22" y2="-40"/></g>
+    <rect x="-30" y="-52" width="7" height="22" rx="2.5" fill="#e3e8ee" stroke="#9aa7b4" stroke-width="0.8"/>
+    <rect x="23" y="-52" width="7" height="22" rx="2.5" fill="#e3e8ee" stroke="#9aa7b4" stroke-width="0.8"/>
+    <rect x="-3.5" y="-58" width="7" height="22" rx="2.5" fill="#e3e8ee" stroke="#9aa7b4" stroke-width="0.8"/>
+    <circle cx="0" cy="-40" r="2.4" fill="#ff5a4d"/>
+  </g>
+  <!-- RF waves emanating -->
+  <g fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" opacity="0.9">
+    <path d="M316 120 a26 26 0 0 0 -20 -24"/>
+    <path d="M316 120 a40 40 0 0 0 -30 -37"/>
+    <path d="M316 120 a54 54 0 0 0 -40 -50"/>
+  </g>
+  <rect x="0" y="0" width="320" height="4" fill="#15803D"/>
+  <!-- header RF symbol -->
+  <g transform="translate(22,26)" stroke="#4ade80" stroke-width="1.6" fill="none" stroke-linecap="round"><line x1="7" y1="14" x2="7" y2="4"/><circle cx="7" cy="4" r="1.6" fill="#4ade80" stroke="none"/><path d="M2 4 a7 7 0 0 1 10 0"/><path d="M4 8 a4 4 0 0 1 6 0"/></g>
+  <text x="44" y="40" fill="#ffffff" font-size="23" font-weight="700">RF Awareness</text>
+  <text x="22" y="60" fill="#a9d9be" font-size="8.5" letter-spacing="1.1">EXCLUSION ZONES · MPE · FCC / OSHA</text>
+  <text x="22" y="150" fill="#7fae93" font-size="8.5">Exposición a RF en sitios celulares · Seguridad</text>
+</svg>

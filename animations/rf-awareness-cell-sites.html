@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RF Awareness at Cell Sites / Exposición a RF en sitios celulares</title>
+<!--
+  SEGURIDAD (verde) — RF Awareness / Exposición a RF en sitios celulares.
+  SAFETY (green) — RF energy awareness on towers & rooftops: MPE, exclusion zones, signage, sector power-down.
+  Motor basado en animations/defensive-driving-fatigue.html (deriva de loto-lockout-tagout.html). Bilingüe EN/ES (EN por defecto).
+  NO se inventaron datos. Fuentes / Sources:
+   · FCC OET Bulletin 65 & 47 CFR 1.1310 — MPE: occupational 5 mW/cm² (6-min avg) vs general population 1 mW/cm² (30-min avg) above 1500 MHz; 300–1500 MHz = f/300 vs f/1500. Occupational limit 5× higher.
+   · Industry RF signage (ANSI Z535 signal words + FCC/OSHA): NOTICE / CAUTION / WARNING / DANGER tied to % of MPE; RF "radiating antenna" pictogram.
+   · OSHA / NATE — tower worker RF safety, exclusion zones, personal RF monitors, power-down / maintenance mode coordination.
+-->
+<style>
+  :root{
+    --pg:#f2f7f3; --card:#ffffff; --ink:#0c2417; --sub:#4f6a5b; --line:#dfeae3;
+    --bar:#0b3a22; --accent:#15803D; --tint:rgba(21,128,61,.10);
+    --ok:#15803D; --okt:rgba(21,128,61,.10); --bad:#dc2626; --badt:rgba(220,38,38,.10);
+    --amber:#b45309; --ambt:rgba(180,83,9,.12); --radius:14px;
+    --shadow:0 1px 2px rgba(12,36,23,.05),0 10px 26px rgba(12,36,23,.08);
+    --z-red:#dc2626; --z-orange:#ea6a0a; --z-yellow:#eab308; --z-blue:#1d4ed8;
+  }
+  html[data-theme="dark"]{
+    --pg:#0a1310; --card:#12201a; --ink:#e9f6ee; --sub:#a3c2b1; --line:#22352b;
+    --bar:#07130c; --accent:#4ade80; --tint:rgba(74,222,128,.14);
+    --ok:#4ade80; --okt:rgba(74,222,128,.14); --bad:#f87171; --badt:rgba(248,113,113,.14);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  .shell{max-width:940px;margin:0 auto;padding:14px 16px 34px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0 8px;box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:600;display:block;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+  .prog{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:6px 0 4px}
+  .prog>i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);gap:8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;min-height:360px}
+  .step-ico{width:44px;height:44px;border-radius:12px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+  h1{font-size:clamp(20px,3.3vw,26px);margin:0 0 8px;font-weight:700;line-height:1.2}
+  h2{font-size:15.5px;margin:16px 0 8px;font-weight:600}
+  p{margin:0 0 12px}
+  .lead{color:var(--sub);font-size:15px}
+  ul,ol{margin:6px 0 12px;padding-left:20px}
+  li{margin:6px 0}
+  .pill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:var(--tint);padding:5px 11px;border-radius:999px;margin-bottom:10px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:8px 0}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin:8px 0}
+  .box{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:13px}
+  .box h3{margin:0 0 6px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px}
+  .box p{margin:0;font-size:12.5px;color:var(--sub)}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:var(--accent);color:#fff;font-weight:800;font-size:14px;flex:none}
+  .stat3{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
+  .stat3 .s{flex:1;min-width:120px;background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center}
+  .stat3 .s b{display:block;font-size:24px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+  .stat3 .s span{font-size:12px;color:var(--sub)}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;min-height:42px;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;flex:1}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line);border:0;cursor:pointer;padding:0}
+  .dot.on{background:var(--accent);transform:scale(1.3)}
+  .note{font-size:13px;color:var(--sub);border-left:3px solid var(--accent);background:var(--tint);padding:9px 12px;margin:12px 0;border-radius:0 8px 8px 0}
+  .warn{border-left-color:var(--amber);color:var(--amber);background:var(--ambt)}
+  .bad{border-left-color:var(--bad);color:var(--bad);background:var(--badt)}
+  .good{border-left-color:var(--ok);color:var(--ink);background:var(--okt)}
+  .good b{color:var(--ok)}
+  .illus{position:relative;aspect-ratio:16/10;background:#08140d;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .illus svg,.illus canvas{width:100%;height:100%}
+  .illus.tall{aspect-ratio:4/3}
+  .mcap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);margin:8px 2px 2px;justify-content:center}
+  .steps{counter-reset:s;margin:8px 0}
+  .steps .st{display:flex;gap:12px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:7px 0}
+  .steps .st .txt b{font-size:13.5px}.steps .st .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .chk{display:flex;gap:11px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:8px 0;cursor:pointer}
+  .chk .bx{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;margin-top:1px}
+  .chk.done .bx{background:var(--ok);border-color:var(--ok)}
+  .chk.done .txt b{text-decoration:line-through;opacity:.7}
+  .chk .txt b{font-size:13.5px}.chk .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .row{display:flex;align-items:center;gap:12px;margin:10px 0;flex-wrap:wrap}
+  .ctrl{display:flex;flex-direction:column;gap:4px;margin:10px 0}
+  .ctrl label{font-size:12.5px;color:var(--sub);display:flex;justify-content:space-between;gap:10px}
+  .ctrl label b{color:var(--ink);font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--accent);height:26px}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .seg button{border:0;background:var(--card);color:var(--sub);padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;min-height:38px}
+  .seg button.on{background:var(--accent);color:#fff}
+  .zbadge{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;font-weight:800;font-size:15px;color:#fff;letter-spacing:.03em}
+  .q{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:12px}
+  .q h3{margin:0 0 10px;font-size:14px}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:11px 14px;border-radius:10px;margin:7px 0;cursor:pointer;font-size:14px;font-family:inherit}
+  .opt.correct{border-color:var(--ok);background:var(--okt);color:var(--ok);font-weight:600}
+  .opt.wrong{border-color:var(--bad);background:var(--badt);color:var(--bad)}
+  .opt:disabled{cursor:default}
+  .score{font-size:16px;font-weight:700;text-align:center;padding:10px}
+  .verdict{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;font-weight:700;font-size:15px}
+  .verdict.ok{background:var(--okt);color:var(--ok)}
+  .ref{font-size:12.5px;color:var(--sub);border-bottom:1px solid var(--line);padding:8px 0}
+  .ref b{color:var(--ink)}
+  .signgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin:10px 0}
+  .signcard{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+  .signcard svg{width:96px;height:120px;margin:0 auto 6px}
+  .signcard b{display:block;font-size:13px}
+  .signcard span{font-size:11.5px;color:var(--sub);display:block;margin-top:3px}
+  @media(max-width:520px){ .card{padding:15px} .shell{padding:12px 12px 28px} .brand small{display:none} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+  <div class="top">
+    <div class="brand">
+      <span class="logo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M7 21h10"/><path d="M5 9a9 9 0 0 1 14 0"/><path d="M8 12a5 5 0 0 1 8 0"/></svg></span>
+      <div><b id="brand"></b><small id="brandsub"></small></div>
+    </div>
+    <div class="tools">
+      <a class="tbtn" id="home" href="../index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span id="homeTxt"></span></a>
+      <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+      <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+    </div>
+  </div>
+  <div class="prog"><i id="progbar"></i></div>
+  <div class="meta"><span id="mStep"></span><span id="mDur"></span></div>
+  </div>
+  <div class="card" id="card"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev"></button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="next"></button>
+  </div>
+</div>
+
+<script>
+/* ===================== CONFIG ===================== */
+var CONFIG = {
+  brand:   ["RF Awareness at Cell Sites","Exposición a RF en sitios celulares"],
+  subtitle:["Radiofrequency safety · Safety","Seguridad de radiofrecuencia · Seguridad"],
+  duration:"≈ 24 min",
+  defaultLang:"en"
+};
+
+/* ===================== helpers ===================== */
+var params=new URLSearchParams(location.search);
+var LANG=params.get("lang")?(params.get("lang").toLowerCase().startsWith("es")?"es":"en"):CONFIG.defaultLang;
+function X(en,es){ return LANG==="es"?es:en; }
+function $(id){ return document.getElementById(id); }
+function tit(en,es){ return '<div class="step-ico">'+STEPS[cur].ico+'</div><h1>'+X(en,es)+'</h1>'; }
+var ICO={
+  tower:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M7 21h10"/><path d="M5 9a9 9 0 0 1 14 0"/><path d="M8 12a5 5 0 0 1 8 0"/></svg>',
+  wave:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12a10 10 0 0 1 20 0"/><path d="M5.5 12a6.5 6.5 0 0 1 13 0"/><path d="M9 12a3 3 0 0 1 6 0"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg>',
+  warn:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.6 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+  body:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><path d="M12 8v7M8 21l4-6 4 6M8 12h8"/></svg>',
+  gauge:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14 16 9"/><path d="M4 18a8 8 0 1 1 16 0"/><circle cx="12" cy="14" r="1.4"/></svg>',
+  sign:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.6 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/><path d="M12 8v5M12 17h.01"/></svg>',
+  shield:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 5 3.5 8 7 9 3.5-1 7-4 7-9V6z"/><path d="m9 12 2 2 4-4"/></svg>',
+  monitor:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M10 6h4M12 18h.01"/></svg>',
+  power:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.8 0"/></svg>',
+  check:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  people:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 6a3 3 0 0 1 0 6M21 20a6 6 0 0 0-4-5.6"/></svg>',
+  list:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
+  clock:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  bldg:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="18" rx="1"/><path d="M16 8h4v13H4M8 7h.01M12 7h.01M8 11h.01M12 11h.01M8 15h.01M12 15h.01"/></svg>',
+  quiz:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.1 9a3 3 0 1 1 4.2 2.7c-.8.4-1.3 1-1.3 2M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>',
+  book:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h9a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-1a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h2z"/></svg>',
+  eye:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  bolt:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+  sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+};
+function stepRow(n,en,es,den,des){ return '<div class="st"><span class="num">'+n+'</span><span class="txt"><b>'+X(en,es)+'</b><span>'+X(den,des)+'</span></span></div>'; }
+function bx(icon,tEn,tEs,dEn,dEs){ return '<div class="box"><h3>'+icon+X(tEn,tEs)+'</h3><p>'+X(dEn,dEs)+'</p></div>'; }
+function raf(gen,step){ (function fr(){ if(gen!==_gen) return; step(); requestAnimationFrame(fr); })(); }
+
+/* ===================== RF ART (SVG) ===================== */
+function rfSymbol(cx,cy,s,col){ col=col||"#111"; s=s||1;
+  function arc(r){ return '<path d="M '+(cx-r*0.62)+' '+(cy-14*s - r*0.55)+' A '+r+' '+r+' 0 0 1 '+(cx+r*0.62)+' '+(cy-14*s - r*0.55)+'" fill="none" stroke="'+col+'" stroke-width="'+(2.1*s)+'" stroke-linecap="round"/>'; }
+  var mastTop=cy-14*s;
+  return '<g>'+
+    '<line x1="'+cx+'" y1="'+cy+'" x2="'+cx+'" y2="'+mastTop+'" stroke="'+col+'" stroke-width="'+(2.6*s)+'" stroke-linecap="round"/>'+
+    '<path d="M '+(cx-5*s)+' '+cy+' L '+cx+' '+(cy-4*s)+' L '+(cx+5*s)+' '+cy+'" fill="none" stroke="'+col+'" stroke-width="'+(2.1*s)+'" stroke-linejoin="round"/>'+
+    '<circle cx="'+cx+'" cy="'+mastTop+'" r="'+(2.2*s)+'" fill="'+col+'"/>'+
+    arc(9*s)+arc(15*s)+arc(21*s)+'</g>';
+}
+function panelAntenna(k,x,y,w,h,tilt){ tilt=tilt||0;
+  return '<defs><linearGradient id="pa'+k+'" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f7f9fb"/><stop offset="0.5" stop-color="#e3e8ee"/><stop offset="1" stop-color="#c2cbd5"/></linearGradient></defs>'+
+    '<g transform="rotate('+tilt+' '+(x+w/2)+' '+(y+h/2)+')">'+
+      '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="'+(w*0.28)+'" fill="url(#pa'+k+')" stroke="#9aa7b4" stroke-width="1.2"/>'+
+      '<rect x="'+(x+w*0.18)+'" y="'+(y+h*0.05)+'" width="'+(w*0.64)+'" height="'+(h*0.9)+'" rx="'+(w*0.16)+'" fill="none" stroke="#cfd6de" stroke-width="1"/>'+
+      '<line x1="'+(x+w*0.5)+'" y1="'+(y+h*0.05)+'" x2="'+(x+w*0.5)+'" y2="'+(y+h*0.95)+'" stroke="#d7dde3" stroke-width="0.8"/>'+
+    '</g>';
+}
+function cellTower(k){
+  return '<defs>'+
+    '<linearGradient id="pole'+k+'" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5b6672"/><stop offset="0.5" stop-color="#aab4c0"/><stop offset="1" stop-color="#4a545f"/></linearGradient>'+
+    '<linearGradient id="pad'+k+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a4048"/><stop offset="1" stop-color="#20252b"/></linearGradient>'+
+    '<linearGradient id="rru'+k+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8b96a2"/><stop offset="1" stop-color="#5b6672"/></linearGradient>'+
+    '</defs>'+
+    '<ellipse cx="110" cy="288" rx="86" ry="9" fill="#000" opacity="0.32"/>'+
+    '<rect x="70" y="280" width="80" height="10" rx="3" fill="url(#pad'+k+')"/>'+
+    '<path d="M100 282 L104 60 L116 60 L120 282 Z" fill="url(#pole'+k+')" stroke="#39424c" stroke-width="1"/>'+
+    '<g stroke="#39424c" stroke-width="2.4" stroke-linecap="round">'+[90,110,130,150,170,190,210,230,250].map(function(yy){return '<line x1="120" y1="'+yy+'" x2="130" y2="'+(yy-3)+'"/>';}).join('')+'</g>'+
+    '<circle cx="110" cy="60" r="7" fill="#c2cbd5" stroke="#39424c" stroke-width="1"/>'+
+    '<g stroke="#6b7682" stroke-width="3" stroke-linecap="round"><line x1="110" y1="60" x2="54" y2="46"/><line x1="110" y1="60" x2="166" y2="46"/><line x1="110" y1="60" x2="110" y2="30"/><line x1="54" y1="46" x2="166" y2="46"/><line x1="54" y1="46" x2="110" y2="30"/><line x1="166" y1="46" x2="110" y2="30"/></g>'+
+    panelAntenna(k+'L',34,26,16,44,-8)+panelAntenna(k+'R',170,26,16,44,8)+panelAntenna(k+'C',102,8,16,44,0)+
+    '<rect x="54" y="54" width="12" height="20" rx="2" fill="url(#rru'+k+')" stroke="#39424c" stroke-width="0.8"/>'+
+    '<rect x="154" y="54" width="12" height="20" rx="2" fill="url(#rru'+k+')" stroke="#39424c" stroke-width="0.8"/>'+
+    '<circle cx="110" cy="26" r="3.4" fill="#ff5a4d"/><circle id="'+k+'beacon" cx="110" cy="26" r="7" fill="#ff5a4d" opacity="0.25"/>';
+}
+function technician(k,hat){ hat=hat||"#f4c430";
+  return '<defs>'+
+    '<linearGradient id="vest'+k+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8a1e"/><stop offset="1" stop-color="#e5620c"/></linearGradient>'+
+    '<linearGradient id="hat'+k+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+hat+'"/><stop offset="1" stop-color="#c99a12"/></linearGradient>'+
+    '</defs>'+
+    '<ellipse cx="45" cy="164" rx="26" ry="5" fill="#000" opacity="0.3"/>'+
+    '<rect x="34" y="112" width="9" height="48" rx="3" fill="#26324a"/><rect x="47" y="112" width="9" height="48" rx="3" fill="#20293d"/>'+
+    '<path d="M32 158 h13 v6 h-17 a2 2 0 0 1 -2 -2 z" fill="#3a2c1c"/><path d="M47 158 h11 v6 h-15 a2 2 0 0 1 -2 -2 z" fill="#2c2115"/>'+
+    '<rect x="20" y="74" width="8" height="40" rx="4" fill="url(#vest'+k+')"/><rect x="62" y="74" width="8" height="40" rx="4" fill="url(#vest'+k+')"/>'+
+    '<circle cx="24" cy="116" r="4.5" fill="#e8b98f"/><circle cx="66" cy="116" r="4.5" fill="#e8b98f"/>'+
+    '<path d="M28 72 q17 -8 34 0 v42 q-17 6 -34 0 z" fill="url(#vest'+k+')" stroke="#c4530a" stroke-width="1"/>'+
+    '<g fill="#dfe7ee" opacity="0.92"><rect x="28" y="88" width="34" height="4"/><rect x="28" y="100" width="34" height="4"/></g>'+
+    '<line x1="45" y1="72" x2="45" y2="114" stroke="#c4530a" stroke-width="1.4"/>'+
+    '<g stroke="#1f2937" stroke-width="3" fill="none" opacity="0.85"><path d="M36 72 L45 96 L54 72"/><rect x="41" y="94" width="8" height="7" rx="1.5" fill="#4b5563" stroke="none"/></g>'+
+    '<rect x="41" y="60" width="8" height="10" fill="#e8b98f"/>'+
+    '<circle cx="45" cy="52" r="11" fill="#f0c59a"/>'+
+    '<path d="M31 50 a14 12 0 0 1 28 0 z" fill="url(#hat'+k+')" stroke="#a67c0f" stroke-width="1"/>'+
+    '<rect x="29" y="49" width="32" height="4" rx="2" fill="url(#hat'+k+')" stroke="#a67c0f" stroke-width="0.6"/>'+
+    '<path d="M45 38 v-5" stroke="#a67c0f" stroke-width="2"/>';
+}
+function rfSign(level,txtEn,txtEs){
+  var map={ notice:["#1d4ed8","NOTICE","#fff"], caution:["#f5b400","CAUTION","#111"], warning:["#ea6a0a","WARNING","#fff"], danger:["#c1121f","DANGER","#fff"] };
+  var m=map[level];
+  return '<svg viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg">'+
+    '<rect x="2" y="2" width="116" height="146" rx="6" fill="#ffffff" stroke="#c9d2da" stroke-width="1.5"/>'+
+    '<rect x="2" y="2" width="116" height="34" rx="6" fill="'+m[0]+'"/><rect x="2" y="30" width="116" height="6" fill="'+m[0]+'"/>'+
+    '<text x="60" y="26" fill="'+m[2]+'" font-family="Arial,system-ui" font-weight="800" font-size="18" text-anchor="middle" letter-spacing="1">'+m[1]+'</text>'+
+    '<path d="M60 46 L92 104 L28 104 Z" fill="#f5b400" stroke="#111" stroke-width="2.4" stroke-linejoin="round"/>'+
+    rfSymbol(60,96,0.92,"#111")+
+    '<text x="60" y="122" fill="#111" font-family="Arial,system-ui" font-weight="700" font-size="9" text-anchor="middle">RF RADIATION</text>'+
+    '<text x="60" y="136" fill="#444" font-family="Arial,system-ui" font-size="7.2" text-anchor="middle">'+(txtEn?X(txtEn,txtEs):"Beyond this point")+'</text>'+
+    '</svg>';
+}
+function rfMonitorSVG(k){
+  return '<svg viewBox="0 0 90 150" xmlns="http://www.w3.org/2000/svg">'+
+    '<defs><linearGradient id="dev'+k+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b3340"/><stop offset="1" stop-color="#161b22"/></linearGradient></defs>'+
+    '<rect x="18" y="6" width="54" height="12" rx="3" fill="#39424c"/>'+
+    '<rect x="14" y="16" width="62" height="120" rx="12" fill="url(#dev'+k+')" stroke="#0c0f14" stroke-width="1.5"/>'+
+    '<rect x="22" y="26" width="46" height="40" rx="5" fill="#0a1f14" stroke="#0c0f14" stroke-width="1"/>'+
+    '<text id="'+k+'pct" x="45" y="48" fill="#4ade80" font-family="ui-monospace,monospace" font-weight="700" font-size="15" text-anchor="middle">0%</text>'+
+    '<text x="45" y="60" fill="#5b8c72" font-family="system-ui" font-size="7" text-anchor="middle">% MPE</text>'+
+    '<circle id="'+k+'led" cx="45" cy="80" r="7" fill="#4ade80"/><circle id="'+k+'led2" cx="45" cy="80" r="11" fill="#4ade80" opacity="0.25"/>'+
+    '<g fill="#0c0f14"><circle cx="34" cy="100" r="1.6"/><circle cx="45" cy="100" r="1.6"/><circle cx="56" cy="100" r="1.6"/><circle cx="34" cy="108" r="1.6"/><circle cx="45" cy="108" r="1.6"/><circle cx="56" cy="108" r="1.6"/></g>'+
+    '<rect x="30" y="118" width="30" height="9" rx="4" fill="#39424c"/></svg>';
+}
+/* zone helper: %MPE -> {level, color, label(en,es), action(en,es)} */
+function zoneOf(pct){
+  if(pct>=300) return {lv:"danger",c:"#dc2626",t:["DANGER","PELIGRO"],a:["Do not enter. A power-down/maintenance mode is required first.","No entres. Se requiere power-down/modo mantenimiento primero."]};
+  if(pct>=100) return {lv:"warning",c:"#ea6a0a",t:["WARNING","ADVERTENCIA"],a:["Above the occupational limit. Time-limited even for trained workers; avoid or power down.","Sobre el límite ocupacional. Tiempo limitado aun para personal capacitado; evita o haz power-down."]};
+  if(pct>=20) return {lv:"caution",c:"#eab308",t:["CAUTION","PRECAUCIÓN"],a:["Wear your RF monitor, keep exposure brief, no untrained/transient workers.","Usa tu monitor RF, exposición breve, sin personal no capacitado."]};
+  if(pct>=5) return {lv:"notice",c:"#1d4ed8",t:["NOTICE","AVISO"],a:["Authorized, trained personnel only; follow all posted signs.","Solo personal autorizado y capacitado; sigue toda la señalización."]};
+  return {lv:"ok",c:"#15803D",t:["BELOW LIMIT","BAJO LÍMITE"],a:["Below the general-public limit. Still follow site rules.","Bajo el límite del público general. Aun así sigue las reglas del sitio."]};
+}
+function pctAt(d){ return Math.max(1, Math.round(700/(1+Math.pow(d/1.8,1.75)))); } /* illustrative %MPE (occupational) vs distance ft */
+
+/* ===================== STEPS ===================== */
+var STEPS = [
+  /* 1 — Overview */
+  { ico:ICO.tower, t:["Overview","Introducción"], b:function(){
+      return tit("RF awareness at cell sites","Exposición a RF en sitios celulares")+
+        '<span class="pill">FCC OET 65 · OSHA · NATE</span>'+
+        '<div class="illus tall"><svg viewBox="0 0 340 260" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"><rect width="340" height="260" fill="#0d1a10"/><rect x="0" y="238" width="340" height="22" fill="#12331f"/><g transform="translate(60,-14) scale(0.86)">'+cellTower("OV")+'</g><g transform="translate(232,150) scale(0.62)">'+technician("OVT")+'</g>'+
+          '<g opacity="0.5"><path d="M120 60 q60 -6 120 20" stroke="#4ade80" stroke-width="1.5" fill="none" stroke-dasharray="4 5"/></g>'+
+        '</svg></div>'+
+        '<p class="lead" style="margin-top:12px">'+X("Antennas on a tower or rooftop are radio transmitters that are almost always ON. The RF energy they put out is invisible, silent, and you usually feel nothing until damage is done. This module builds real awareness: what RF is, the exposure limits, exclusion zones and signs, and how to work safely — with interactive tools.","Las antenas de una torre o azotea son transmisores de radio que casi siempre están ENCENDIDOS. La energía RF que emiten es invisible, silenciosa y normalmente no sientes nada hasta que el daño ya ocurrió. Este módulo crea conciencia real: qué es la RF, los límites de exposición, las zonas de exclusión y las señales, y cómo trabajar seguro — con herramientas interactivas.")+'</p>'+
+        '<p class="note">'+X("RF awareness training is required before working on towers or near rooftop antennas. This is an overview — always follow your employer’s RF program and the site-specific RF study.","La capacitación de conciencia RF es obligatoria antes de trabajar en torres o cerca de antenas de azotea. Esto es un resumen — sigue siempre el programa RF de tu empleador y el estudio RF específico del sitio.")+'</p>';
+  }},
+  /* 2 — What is RF */
+  { ico:ICO.wave, t:["What is RF","Qué es la RF"], b:function(){
+      return tit("RF energy: non-ionizing radiation","Energía RF: radiación no ionizante")+
+        '<p class="lead">'+X("Radiofrequency (RF) is the same kind of energy that carries radio, TV and cell signals. It is non-ionizing — it does NOT break chemical bonds or cause radiation sickness like X-rays or gamma rays. Its main effect on the body is heating.","La radiofrecuencia (RF) es el mismo tipo de energía que lleva las señales de radio, TV y celular. Es no ionizante — NO rompe enlaces químicos ni causa enfermedad por radiación como los rayos X o gamma. Su efecto principal en el cuerpo es el calentamiento.")+'</p>'+
+        '<div class="grid2">'+
+          bx(ICO.wave,"Non-ionizing (RF)","No ionizante (RF)","Radio, cellular, Wi-Fi, microwave. Heats tissue at high enough levels.","Radio, celular, Wi-Fi, microondas. Calienta el tejido a niveles altos.")+
+          bx(ICO.bolt,"Ionizing (different)","Ionizante (distinto)","X-rays, gamma. Not what antennas emit — do not confuse the two.","Rayos X, gamma. No es lo que emiten las antenas — no los confundas.")+
+        '</div>'+
+        '<p class="note warn">'+X("“Non-ionizing” does not mean harmless. Enough RF energy will cook tissue — the exact way a microwave oven heats food. The risk on towers is real and it is thermal.","“No ionizante” no significa inofensivo. Suficiente energía RF cocina el tejido — igual que un microondas calienta la comida. El riesgo en torres es real y es térmico.")+'</p>';
+  }},
+  /* 3 — How it affects the body */
+  { ico:ICO.body, t:["Effect on body","Efecto en el cuerpo"], b:function(){
+      return tit("How RF affects the body","Cómo afecta la RF al cuerpo")+
+        '<p class="lead">'+X("At exposure above the limits, RF deposits energy and heats you from the inside. You often feel nothing at first because the heating is deep and there are few heat sensors inside the body.","Por encima de los límites, la RF deposita energía y te calienta desde adentro. Muchas veces no sientes nada al principio porque el calentamiento es profundo y hay pocos sensores de calor dentro del cuerpo.")+'</p>'+
+        '<div class="grid3">'+
+          bx(ICO.body,"Deep heating","Calor profundo","Warms muscle and organs; damage before you feel pain.","Calienta músculo y órganos; daño antes de sentir dolor.")+
+          bx(ICO.eye,"Sensitive parts","Partes sensibles","Eyes and testes cool poorly and are more vulnerable.","Ojos y testículos disipan mal el calor y son más vulnerables.")+
+          bx(ICO.warn,"RF burns","Quemaduras RF","Touching metal in a strong field can cause deep burns.","Tocar metal en un campo fuerte puede causar quemaduras profundas.")+
+        '</div>'+
+        '<p class="note bad">'+X("Warning signs: a feeling of warmth or tingling in the skin, especially on the face or hands. If you feel it, you are already overexposed — back out of the beam immediately.","Señales de alerta: sensación de calor u hormigueo en la piel, sobre todo en cara o manos. Si lo sientes, ya estás sobreexpuesto — sal del haz de inmediato.")+'</p>';
+  }},
+  /* 4 — MPE limits (interactive gauge) */
+  { ico:ICO.gauge, t:["The MPE limit","El límite MPE"], b:function(){
+      return tit("MPE: the exposure limit","MPE: el límite de exposición")+
+        '<p class="lead">'+X("The FCC sets a Maximum Permissible Exposure (MPE). There are two tiers — and trained tower workers get the higher one because they are aware of the hazard and can control their exposure.","La FCC fija una Máxima Exposición Permisible (MPE). Hay dos niveles — y los técnicos de torre capacitados tienen el más alto porque conocen el peligro y pueden controlar su exposición.")+'</p>'+
+        '<div class="row"><div class="seg" id="mpeSeg"><button data-b="occ" class="on">'+X("Occupational","Ocupacional")+'</button><button data-b="gen">'+X("General public","Público general")+'</button></div></div>'+
+        '<div class="illus" style="aspect-ratio:16/6;background:#08140d"><svg id="mpeSvg" viewBox="0 0 340 120" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg></div>'+
+        '<div class="stat3"><div class="s"><b id="mpeLim">5.0</b><span>mW/cm² (&gt;1500 MHz)</span></div><div class="s"><b id="mpeAvg">6</b><span>'+X("min averaging","min promediado")+'</span></div><div class="s"><b>5×</b><span>'+X("occ. vs public","ocup. vs público")+'</span></div></div>'+
+        '<p class="note" id="mpeMsg"></p>';
+    }, i:function(){ var seg=$("mpeSeg"),svg=$("mpeSvg"); if(!svg)return; var mode="occ";
+      seg.querySelectorAll("button").forEach(function(b){ b.onclick=function(){ seg.querySelectorAll("button").forEach(function(z){z.classList.remove("on");}); b.classList.add("on"); mode=b.dataset.b; draw(); }; });
+      function draw(){ var occ=(mode==="occ"); $("mpeLim").textContent=occ?"5.0":"1.0"; $("mpeAvg").textContent=occ?"6":"30";
+        var m=$("mpeMsg"); m.className="note"; m.innerHTML=occ
+          ? X("<b>Occupational / controlled:</b> for trained, aware workers who can control exposure. Limit 5.0 mW/cm² above 1500 MHz, averaged over 6 minutes.","<b>Ocupacional / controlada:</b> para personal capacitado y consciente que puede controlar su exposición. Límite 5.0 mW/cm² sobre 1500 MHz, promediado en 6 minutos.")
+          : X("<b>General public / uncontrolled:</b> for people unaware of the exposure. Five times stricter — 1.0 mW/cm², averaged over 30 minutes. Untrained visitors fall here.","<b>Público general / no controlada:</b> para quien no sabe de la exposición. Cinco veces más estricta — 1.0 mW/cm², promediada en 30 minutos. Los visitantes no capacitados van aquí.");
+        var w=340,h=120,x=svg; var occH=88, genH=occH/5;
+        var g='<rect width="340" height="120" fill="#08140d"/>';
+        g+='<line x1="40" y1="14" x2="40" y2="104" stroke="#2f5a42" stroke-width="1"/><line x1="40" y1="104" x2="330" y2="104" stroke="#2f5a42" stroke-width="1"/>';
+        function bar(bx,val,hh,col,lab,on){ var y=104-hh; g+='<rect x="'+bx+'" y="'+y+'" width="70" height="'+hh+'" rx="4" fill="'+col+'" opacity="'+(on?1:0.35)+'"/>'; g+='<text x="'+(bx+35)+'" y="'+(y-6)+'" fill="#e9f6ee" font-family="ui-monospace,monospace" font-size="12" text-anchor="middle" font-weight="700">'+val+'</text>'; g+='<text x="'+(bx+35)+'" y="118" fill="#8fd6ac" font-family="system-ui" font-size="9.5" text-anchor="middle">'+lab+'</text>'; }
+        bar(90,"5.0",occH,"#4ade80",X("Occupational","Ocupacional"),occ);
+        bar(200,"1.0",genH,"#60a5fa",X("Public","Público"),!occ);
+        g+='<text x="20" y="60" fill="#8fd6ac" font-family="system-ui" font-size="9" text-anchor="middle" transform="rotate(-90 20 60)">mW/cm²</text>';
+        svg.innerHTML=g;
+      }
+      draw();
+    }
+  },
+  /* 5 — Main beam (animation) */
+  { ico:ICO.wave, t:["The main beam","El haz principal"], b:function(){
+      return tit("The main beam is the hazard","El haz principal es el peligro")+
+        '<p class="lead">'+X("A panel antenna focuses its energy into a beam that shoots straight out the front. Directly in front is where exposure is highest; to the sides and behind it drops off fast. Watch where the energy goes.","Una antena panel concentra su energía en un haz que sale de frente. Justo enfrente es donde la exposición es mayor; a los lados y atrás cae rápido. Observa hacia dónde va la energía.")+'</p>'+
+        '<div class="illus tall"><svg id="beamSvg" viewBox="0 0 340 260" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg></div>'+
+        '<div class="mcap">'+ICO.wave+'<span>'+X("Main lobe (front) = strong · sides & back = weak","Lóbulo principal (frente) = fuerte · lados y atrás = débil")+'</span></div>'+
+        '<p class="note warn">'+X("Rule of thumb: never put your body in front of the face of an energized antenna. Behind or beside it, exposure is a small fraction of the front.","Regla práctica: nunca pongas el cuerpo frente a la cara de una antena energizada. Detrás o al lado, la exposición es una fracción de la del frente.")+'</p>';
+    }, i:function(){ var gen=_gen; var svg=$("beamSvg"); if(!svg)return; var t0=performance.now();
+      /* static scene */
+      var base='<rect width="340" height="260" fill="#0d1a10"/>'+
+        /* antenna at left center, facing right */
+        '<g transform="translate(150,110) rotate(90)">'+panelAntenna("BM",-14,-40,28,80,0)+'</g>'+
+        /* main lobe cone */
+        '<defs><radialGradient id="lobe" cx="0" cy="0.5" r="1"><stop offset="0" stop-color="#f87171" stop-opacity="0.85"/><stop offset="0.4" stop-color="#fb923c" stop-opacity="0.5"/><stop offset="1" stop-color="#facc15" stop-opacity="0.05"/></radialGradient></defs>'+
+        '<path d="M150 110 L330 40 L330 180 Z" fill="url(#lobe)"/>'+
+        /* small side/back lobes */
+        '<path d="M150 110 q-26 -20 -44 -6 q22 4 44 6" fill="#60a5fa" opacity="0.18"/>'+
+        '<path d="M150 110 q-26 20 -44 6 q22 -4 44 -6" fill="#60a5fa" opacity="0.18"/>'+
+        '<text x="250" y="70" fill="#fee2e2" font-family="system-ui" font-size="10" font-weight="700">'+X("MAIN BEAM","HAZ PRINCIPAL")+'</text>'+
+        '<text x="70" y="150" fill="#bfdbfe" font-family="system-ui" font-size="9">'+X("weak (back)","débil (atrás)")+'</text>';
+      svg.innerHTML=base+'<g id="beamPulse"></g>';
+      var pulse=$("beamPulse");
+      raf(gen,function(){ var now=performance.now(); var tt=(now-t0)/900; var s='';
+        for(var i=0;i<3;i++){ var p=((tt+i/3)%1); var r=30+p*250; var op=0.5*(1-p);
+          s+='<path d="M '+(150+r*0.72)+' '+(110-r*0.34)+' A '+r+' '+r+' 0 0 1 '+(150+r*0.72)+' '+(110+r*0.34)+'" fill="none" stroke="#fca5a5" stroke-width="2.4" stroke-linecap="round" opacity="'+op.toFixed(2)+'"/>';
+        }
+        pulse.innerHTML=s;
+      });
+    }
+  },
+  /* 6 — Exclusion zones */
+  { ico:ICO.warn, t:["Exclusion zones","Zonas de exclusión"], b:function(){
+      return tit("Exclusion zones around antennas","Zonas de exclusión alrededor de antenas")+
+        '<p class="lead">'+X("An exclusion zone is the space in front of an antenna where exposure can exceed the limits. Its size depends on the antenna power, frequency and how it is mounted — the site’s RF study defines it. Closer to the face = far more energy.","Una zona de exclusión es el espacio frente a una antena donde la exposición puede superar los límites. Su tamaño depende de la potencia, la frecuencia y el montaje de la antena — el estudio RF del sitio la define. Más cerca de la cara = mucha más energía.")+'</p>'+
+        '<div class="grid2">'+
+          bx(ICO.wave,"Distance is your friend","La distancia es tu aliada","Energy drops roughly with the square of distance. A few extra feet cuts it a lot.","La energía cae aproximadamente con el cuadrado de la distancia. Unos pies más la bajan mucho.")+
+          bx(ICO.tower,"Higher mounts help","Montaje alto ayuda","Antennas mounted high keep the strong beam above walkways and the ground.","Antenas montadas alto mantienen el haz fuerte por encima de pasillos y el suelo.")+
+        '</div>'+
+        '<p class="note">'+X("The next slide lets you walk toward an antenna and watch the zones, your RF monitor, and the required sign change with distance.","El siguiente slide te deja caminar hacia una antena y ver cómo cambian las zonas, tu monitor RF y la señal requerida con la distancia.")+'</p>';
+  }},
+  /* 7 — INTERACTIVE zone map (hero) */
+  { ico:ICO.wave, t:["Zone map","Mapa de zonas"], b:function(){
+      return tit("Interactive: how close is too close?","Interactivo: ¿qué tan cerca es demasiado?")+
+        '<p class="lead">'+X("Drag to move the worker toward the antenna. Watch the exposure zone, the estimated % of the occupational limit (MPE), your personal RF monitor, and the sign that would be posted. (Illustrative — real distances come from the site RF study.)","Arrastra para acercar al trabajador a la antena. Observa la zona de exposición, el % estimado del límite ocupacional (MPE), tu monitor RF personal y la señal que estaría puesta. (Ilustrativo — las distancias reales vienen del estudio RF del sitio.)")+'</p>'+
+        '<div class="illus" style="aspect-ratio:16/9"><svg id="zmSvg" viewBox="0 0 340 200" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg></div>'+
+        '<div class="ctrl"><label>'+X("Distance in front of antenna","Distancia frente a la antena")+': <b id="zmD">30 ft</b></label><input type="range" id="zmR" min="1" max="60" step="1" value="30"></div>'+
+        '<div class="row"><span class="zbadge" id="zmBadge">—</span><div class="stat3" style="flex:1;margin:0"><div class="s"><b id="zmPct">—</b><span>% MPE (occ.)</span></div><div class="s"><b id="zmMon">—</b><span>'+X("RF monitor","monitor RF")+'</span></div></div></div>'+
+        '<div class="note" id="zmMsg"></div>';
+    }, i:function(){ var gen=_gen; var svg=$("zmSvg"),r=$("zmR"); if(!svg)return;
+      function scene(d){ var pct=pctAt(d); var z=zoneOf(pct);
+        /* map distance 1..60 ft to x 60..320 (near antenna at x40) */
+        var tx=52+ (d/60)*(300-52);
+        var g='<defs><radialGradient id="zrG" cx="0" cy="0.5" r="1"><stop offset="0" stop-color="#dc2626" stop-opacity="0.9"/><stop offset="0.14" stop-color="#dc2626" stop-opacity="0.5"/><stop offset="0.15" stop-color="#ea6a0a" stop-opacity="0.5"/><stop offset="0.34" stop-color="#ea6a0a" stop-opacity="0.4"/><stop offset="0.35" stop-color="#eab308" stop-opacity="0.42"/><stop offset="0.62" stop-color="#eab308" stop-opacity="0.26"/><stop offset="0.63" stop-color="#1d4ed8" stop-opacity="0.3"/><stop offset="1" stop-color="#1d4ed8" stop-opacity="0.04"/></radialGradient></defs>';
+        g+='<rect width="340" height="200" fill="#0d1a10"/>';
+        g+='<path d="M40 100 L332 24 L332 176 Z" fill="url(#zrG)"/>';
+        /* antenna plan */
+        g+='<rect x="30" y="86" width="14" height="28" rx="3" fill="#e3e8ee" stroke="#9aa7b4" stroke-width="1"/>'+rfSymbol(37,100,0.66,"#39424c");
+        /* worker marker */
+        g+='<g transform="translate('+tx.toFixed(1)+',100)"><g transform="translate(-13,-30) scale(0.34)">'+technician("ZM")+'</g><circle cx="0" cy="4" r="4" fill="'+z.c+'"/></g>';
+        /* distance leader */
+        g+='<line x1="44" y1="150" x2="'+tx.toFixed(1)+'" y2="150" stroke="#8fd6ac" stroke-width="1" stroke-dasharray="3 3"/><text x="'+((44+tx)/2).toFixed(1)+'" y="146" fill="#8fd6ac" font-family="ui-monospace,monospace" font-size="9" text-anchor="middle">'+d+' ft</text>';
+        svg.innerHTML=g;
+        $("zmD").textContent=d+" ft"; $("zmPct").textContent=pct+"%"; $("zmMon").textContent=pct+"% "+(pct>=20?"⚠":"");
+        var b=$("zmBadge"); b.textContent=X(z.t[0],z.t[1]); b.style.background=z.c;
+        var mm=$("zmMsg"); mm.className="note"; mm.style.borderLeftColor=z.c; mm.innerHTML="<b>"+X(z.t[0],z.t[1])+" — "+pct+"% MPE.</b> "+X(z.a[0],z.a[1]);
+        $("zmPct").style.color=z.c; $("zmMon").style.color=z.c;
+      }
+      r.oninput=function(){ scene(+r.value); }; scene(+r.value);
+    }
+  },
+  /* 8 — The four signs */
+  { ico:ICO.sign, t:["The 4 signs","Las 4 señales"], b:function(){
+      return tit("Read the RF signs","Lee las señales RF")+
+        '<p class="lead">'+X("Sites use four color-coded signs (ANSI signal words + the RF antenna symbol) tied to how much of the limit you could reach. Learn them cold — the color tells you what to do before you step past it.","Los sitios usan cuatro señales por color (palabras ANSI + el símbolo de antena RF) según cuánto del límite podrías alcanzar. Apréndelas de memoria — el color te dice qué hacer antes de pasar.")+'</p>'+
+        '<div class="signgrid">'+
+          '<div class="signcard">'+rfSign("notice")+'<b style="color:#1d4ed8">NOTICE</b><span>'+X("Info: authorized & trained only. Below ~20% of the occupational limit.","Info: solo autorizados y capacitados. Bajo ~20% del límite ocupacional.")+'</span></div>'+
+          '<div class="signcard">'+rfSign("caution")+'<b style="color:#a16207">CAUTION</b><span>'+X("May exceed the general-public limit. Wear your RF monitor; keep it brief.","Puede superar el límite del público. Usa tu monitor RF; sé breve.")+'</span></div>'+
+          '<div class="signcard">'+rfSign("warning")+'<b style="color:#ea6a0a">WARNING</b><span>'+X("May exceed the occupational limit. Time-limited; controls required.","Puede superar el límite ocupacional. Tiempo limitado; controles requeridos.")+'</span></div>'+
+          '<div class="signcard">'+rfSign("danger")+'<b style="color:#c1121f">DANGER</b><span>'+X("Well above the limit. Do not enter without a power-down.","Muy por encima del límite. No entres sin un power-down.")+'</span></div>'+
+        '</div>'+
+        '<p class="note">'+X("Signal-word colors follow ANSI Z535. The exact % thresholds and required actions are set by the operator’s RF program and the site study.","Los colores de las palabras siguen ANSI Z535. Los % exactos y las acciones las define el programa RF del operador y el estudio del sitio.")+'</p>';
+  }},
+  /* 9 — Where signs are posted */
+  { ico:ICO.sign, t:["On site","En el sitio"], b:function(){
+      return tit("Where the signs live — obey them","Dónde van las señales — obedécelas")+
+        '<ul>'+
+          '<li>'+X("At the <b>gate/access</b>: an information/notice sign with the operator and a contact number.","En la <b>entrada/acceso</b>: una señal de información/aviso con el operador y un número de contacto.")+'</li>'+
+          '<li>'+X("At the <b>base of the tower or roof access</b>: what to expect above.","En la <b>base de la torre o acceso a la azotea</b>: qué esperar arriba.")+'</li>'+
+          '<li>'+X("<b>On or beside the antennas</b>: caution/warning/danger at the exclusion zone itself.","<b>En o junto a las antenas</b>: precaución/advertencia/peligro en la zona de exclusión.")+'</li>'+
+        '</ul>'+
+        '<p class="note bad">'+X("A missing, faded or wrong sign does NOT mean the antenna is safe or off. When signage is unclear, treat every antenna as live and get confirmation before you approach.","Una señal faltante, borrosa o equivocada NO significa que la antena esté segura o apagada. Si la señalización no es clara, trata cada antena como viva y confirma antes de acercarte.")+'</p>';
+  }},
+  /* 10 — Personal RF monitor */
+  { ico:ICO.monitor, t:["RF monitor","Monitor RF"], b:function(){
+      return tit("Your personal RF monitor","Tu monitor RF personal")+
+        '<div class="row" style="align-items:center;gap:18px">'+
+          '<div style="width:96px;flex:none">'+rfMonitorSVG("MON")+'</div>'+
+          '<div style="flex:1;min-width:180px"><p class="lead" style="margin:0">'+X("A personal RF monitor is a body-worn device that measures the field around you and alarms (sound + vibration + light) as you approach a set fraction of the MPE. In caution/warning zones it is required, not optional.","Un monitor RF personal es un dispositivo que llevas puesto y que mide el campo a tu alrededor y alarma (sonido + vibración + luz) al acercarte a cierta fracción de la MPE. En zonas de precaución/advertencia es obligatorio, no opcional.")+'</p></div>'+
+        '</div>'+
+        '<div class="grid3">'+
+          bx(ICO.check,"Wear it right","Úsalo bien","On your torso, turned on and tested, before you enter the zone.","En el torso, encendido y probado, antes de entrar a la zona.")+
+          bx(ICO.warn,"It alarms early","Alarma temprano","The alarm is a warning threshold — not the limit. Act on the first alert.","La alarma es un umbral de aviso — no el límite. Actúa a la primera alerta.")+
+          bx(ICO.shield,"Not a force field","No es un escudo","A monitor measures; it does not protect. Distance and power-down protect.","El monitor mide; no protege. La distancia y el power-down protegen.")+
+        '</div>'+
+        '<p class="note warn">'+X("If your monitor alarms, stop and back away the way you came until it clears. Then reassess — do not push forward to “just finish”.","Si tu monitor alarma, detente y retrocede por donde viniste hasta que se limpie. Luego reevalúa — no sigas para “solo terminar”.")+'</p>';
+  }},
+  /* 11 — Plan before you climb */
+  { ico:ICO.people, t:["Plan first","Planea primero"], b:function(){
+      return tit("Plan before you climb","Planea antes de subir")+
+        '<p class="lead">'+X("Most RF exposure is avoidable with planning. Before anyone goes up:","Casi toda la exposición RF se evita planeando. Antes de que alguien suba:")+'</p>'+
+        '<div class="steps">'+
+          stepRow(1,"Identify the operators","Identifica los operadores","Know every carrier and every sector on the structure — towers are shared.","Conoce cada operador y cada sector en la estructura — las torres son compartidas.")+
+          stepRow(2,"Get the RF info","Consigue la info RF","Site RF study, exclusion zones, and who to call to power down.","Estudio RF del sitio, zonas de exclusión y a quién llamar para el power-down.")+
+          stepRow(3,"Decide the method","Decide el método","Can the work be done from behind/beside? If not, arrange a power-down.","¿Se puede trabajar detrás/al lado? Si no, gestiona un power-down.")+
+          stepRow(4,"Brief the crew","Instruye a la cuadrilla","Everyone knows the zones, signals, and the escape plan.","Todos conocen las zonas, las señales y el plan de salida.")+
+        '</div>';
+  }},
+  /* 12 — Sector power-down concept */
+  { ico:ICO.power, t:["Power-down","Power-down"], b:function(){
+      return tit("Sector shutdown / maintenance mode","Apagado de sector / modo mantenimiento")+
+        '<p class="lead">'+X("When work must happen inside an exclusion zone or in front of an antenna, the fix is to reduce or remove the RF — the operator powers the sector(s) down or puts them in maintenance mode. This is coordinated through the carrier’s network operations, like an electrical lockout for RF.","Cuando hay que trabajar dentro de una zona de exclusión o frente a una antena, la solución es reducir o quitar la RF — el operador apaga los sectores o los pone en modo mantenimiento. Se coordina con las operaciones de red del carrier, como un bloqueo eléctrico pero para RF.")+'</p>'+
+        '<div class="grid2">'+
+          bx(ICO.people,"Coordinate, don’t assume","Coordina, no supongas","Only the operator can confirm a sector is down. Get it in writing / a ticket.","Solo el operador confirma que un sector está apagado. Que quede por escrito / ticket.")+
+          bx(ICO.monitor,"Then verify","Luego verifica","Trust but verify with your RF monitor at the work position.","Confía pero verifica con tu monitor RF en la posición de trabajo.")+
+        '</div>'+
+        '<p class="note">'+X("The next slide walks the power-down sequence.","El siguiente slide recorre la secuencia de power-down.")+'</p>';
+  }},
+  /* 13 — INTERACTIVE power-down */
+  { ico:ICO.power, t:["Power-down sim","Sim de power-down"], b:function(){
+      return tit("Interactive: power down before you enter","Interactivo: apaga antes de entrar")+
+        '<p class="lead">'+X("Step through it. The worker should only enter the beam after the sector is confirmed down AND the monitor reads safe.","Recórrelo. El trabajador solo debe entrar al haz cuando el sector esté confirmado apagado Y el monitor lea seguro.")+'</p>'+
+        '<div class="illus" style="aspect-ratio:16/9"><svg id="pdSvg" viewBox="0 0 340 200" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg></div>'+
+        '<div class="row"><button class="btn" id="pdBtn"></button><span class="lead" id="pdStat" style="margin:0"></span></div>'+
+        '<p class="note bad">'+X("Never enter on a phone promise alone. “Confirmed down” + your own monitor reading = go. Anything less = stop.","Nunca entres solo con una promesa por teléfono. “Confirmado apagado” + tu propio monitor = adelante. Menos que eso = alto.")+'</p>';
+    }, i:function(){ var gen=_gen; var svg=$("pdSvg"),btn=$("pdBtn"),stat=$("pdStat"); if(!svg)return; var step=0;
+      var labs=[["Sector is LIVE — full RF, monitor high","Sector VIVO — RF total, monitor alto"],["Request power-down from the carrier NOC","Solicita power-down al NOC del carrier"],["Sector in MAINTENANCE — RF dropping","Sector en MANTENIMIENTO — RF bajando"],["Confirmed DOWN — verify with your monitor","Confirmado APAGADO — verifica con tu monitor"],["Monitor safe — enter and work","Monitor seguro — entra y trabaja"]];
+      function draw(){ var beamOp=[0.85,0.85,0.4,0.06,0.06][step]; var mon=[520,520,140,3,3][step]; var monCol=mon>=100?"#f87171":(mon>=20?"#facc15":"#4ade80");
+        var stateCol=["#dc2626","#eab308","#eab308","#4ade80","#4ade80"][step]; var stateTxt=[X("LIVE","VIVO"),X("REQUEST","SOLICITADO"),X("MAINT.","MANTEN."),X("DOWN ✓","APAGADO ✓"),X("DOWN ✓","APAGADO ✓")][step];
+        var enter=step>=4; var tx=enter?150:250;
+        var g='<rect width="340" height="200" fill="#0d1a10"/><rect x="0" y="182" width="340" height="18" fill="#12331f"/>';
+        /* antenna at left */
+        g+='<g transform="translate(70,96) rotate(90)">'+panelAntenna("PD",-12,-34,24,68,0)+'</g>';
+        /* beam */
+        g+='<defs><linearGradient id="pdbeam" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f87171" stop-opacity="0.8"/><stop offset="1" stop-color="#facc15" stop-opacity="0"/></linearGradient></defs>';
+        g+='<path d="M70 96 L300 44 L300 148 Z" fill="url(#pdbeam)" opacity="'+beamOp+'"/>';
+        /* status panel */
+        g+='<rect x="222" y="12" width="106" height="54" rx="8" fill="#101c14" stroke="'+stateCol+'" stroke-width="1.5"/>';
+        g+='<text x="275" y="30" fill="#8fd6ac" font-family="system-ui" font-size="9" text-anchor="middle">'+X("SECTOR","SECTOR")+'</text>';
+        g+='<circle cx="238" cy="46" r="6" fill="'+stateCol+'"/><text x="252" y="50" fill="'+stateCol+'" font-family="system-ui" font-size="12" font-weight="700">'+stateTxt+'</text>';
+        /* worker + mini monitor reading */
+        g+='<g transform="translate('+tx+',150) scale(0.42)">'+technician("PDT")+'</g>';
+        g+='<rect x="'+(tx-24)+'" y="96" width="48" height="20" rx="5" fill="#101c14" stroke="'+monCol+'" stroke-width="1.2"/><text x="'+tx+'" y="110" fill="'+monCol+'" font-family="ui-monospace,monospace" font-size="11" font-weight="700" text-anchor="middle">'+mon+'%</text>';
+        svg.innerHTML=g;
+        stat.textContent=(step+1)+"/5 · "+X(labs[step][0],labs[step][1]);
+        btn.textContent=(step>=4)?X("Restart","Reiniciar"):X("Next step","Siguiente paso");
+      }
+      btn.onclick=function(){ step=(step>=4)?0:step+1; draw(); }; draw();
+    }
+  },
+  /* 14 — Working rules */
+  { ico:ICO.shield, t:["Working rules","Reglas de trabajo"], b:function(){
+      return tit("The rules that keep you under the limit","Las reglas que te mantienen bajo el límite")+
+        '<div class="grid2">'+
+          bx(ICO.wave,"Never face the antenna","Nunca de frente","Never put your body/head in front of an energized antenna face.","Nunca pongas cuerpo/cabeza frente a la cara de una antena viva.")+
+          bx(ICO.tower,"Work behind or beside","Trabaja detrás o al lado","Approach from the back or side where the field is weakest.","Acércate por detrás o el lado donde el campo es más débil.")+
+          bx(ICO.clock,"Minimize time","Minimiza el tiempo","Less time in the field = less dose. Plan the task, be efficient, keep moving.","Menos tiempo en el campo = menos dosis. Planea, sé eficiente, no te quedes quieto.")+
+          bx(ICO.monitor,"Monitor on, always","Monitor puesto siempre","Wear it; act on its first alarm; back out the way you came in.","Úsalo; actúa a la primera alarma; sal por donde entraste.")+
+        '</div>'+
+        '<p class="note good"><b>'+X("Distance + power-down + monitor","Distancia + power-down + monitor")+'.</b> '+X("Those three, together, are what actually keep you safe. PPE and RF suits are a last resort, not the plan.","Esos tres, juntos, son lo que realmente te protege. El EPP y los trajes RF son último recurso, no el plan.")+'</p>';
+  }},
+  /* 15 — Time averaging */
+  { ico:ICO.clock, t:["Time averaging","Promediado"], b:function(){
+      return tit("Why time matters (averaging)","Por qué el tiempo importa (promediado)")+
+        '<p class="lead">'+X("The MPE is a time-average: 6 minutes for occupational, 30 for the public. That means a brief exposure at a higher level can average out — but only if you truly limit the time. It is a control, not a loophole.","La MPE es un promedio de tiempo: 6 minutos ocupacional, 30 para el público. Eso significa que una exposición breve a nivel alto puede promediarse — pero solo si de verdad limitas el tiempo. Es un control, no un truco.")+'</p>'+
+        '<div class="stat3"><div class="s"><b>100%</b><span>'+X("≈ 6 min max","≈ 6 min máx")+'</span></div><div class="s"><b>300%</b><span>'+X("≈ 2 min max","≈ 2 min máx")+'</span></div><div class="s"><b>600%</b><span>'+X("≈ 1 min max","≈ 1 min máx")+'</span></div></div>'+
+        '<p class="note bad">'+X("Do not rely on the clock in a hot zone. Distance and power-down come first; time-averaging is the backstop when brief, planned work is unavoidable.","No confíes en el reloj en una zona caliente. La distancia y el power-down van primero; el promediado es el respaldo cuando el trabajo breve y planeado es inevitable.")+'</p>';
+  }},
+  /* 16 — Collocation */
+  { ico:ICO.tower, t:["Many carriers","Varios operadores"], b:function(){
+      return tit("Shared towers add up","Las torres compartidas suman")+
+        '<p class="lead">'+X("Most structures carry several operators, each with multiple sectors and bands. Your exposure is the sum of all of them, not just the one you came to work on. One carrier powering down does not make the others safe.","La mayoría de las estructuras llevan varios operadores, cada uno con varios sectores y bandas. Tu exposición es la suma de todos, no solo del que vienes a trabajar. Que un operador apague no hace seguros a los demás.")+'</p>'+
+        '<p class="note warn">'+X("Account for every antenna near your work position — including the ones behind you and on nearby structures. When in doubt, request power-downs from every operator whose exclusion zone you enter.","Cuenta cada antena cerca de tu posición — incluidas las de atrás y las de estructuras vecinas. Si dudas, pide power-down a cada operador cuya zona de exclusión pises.")+'</p>';
+  }},
+  /* 17 — Symptoms */
+  { ico:ICO.body, t:["Overexposure","Sobreexposición"], b:function(){
+      return tit("Signs of overexposure & what to do","Señales de sobreexposición y qué hacer")+
+        '<div class="grid2">'+
+          bx(ICO.warn,"Warmth / tingling","Calor / hormigueo","Skin warming or a prickling feeling, often face or hands.","Piel que se calienta o cosquilleo, a menudo cara o manos.")+
+          bx(ICO.warn,"Later effects","Efectos tardíos","Headache, deep heating; symptoms may lag the exposure.","Dolor de cabeza, calor profundo; los síntomas pueden retrasarse.")+
+        '</div>'+
+        '<div class="steps">'+
+          stepRow(1,"Get out of the field","Sal del campo","Back away the way you came, out of the beam.","Retrocede por donde viniste, fuera del haz.")+
+          stepRow(2,"Report it","Repórtalo","Tell your supervisor and the site/operator immediately.","Avisa a tu supervisor y al sitio/operador de inmediato.")+
+          stepRow(3,"Get evaluated","Evaluación médica","Seek medical attention for possible RF burns or heat injury.","Busca atención médica por posibles quemaduras RF o lesión por calor.")+
+        '</div>'+
+        '<p class="note">'+X("Sensitive topic: if you think you were overexposed, do not tough it out — report and get checked.","Tema sensible: si crees que te sobreexpusiste, no lo aguantes — repórtalo y hazte revisar.")+'</p>';
+  }},
+  /* 18 — Rooftops */
+  { ico:ICO.bldg, t:["Rooftops","Azoteas"], b:function(){
+      return tit("Rooftops & hidden antennas","Azoteas y antenas ocultas")+
+        '<p class="lead">'+X("Rooftop sites are often the most dangerous because antennas are at head height and sometimes hidden — behind screening walls, painted to blend in, or on adjacent buildings. You can walk straight into a main beam without seeing it.","Las azoteas suelen ser lo más peligroso porque las antenas están a la altura de la cabeza y a veces ocultas — tras muros de ocultamiento, pintadas para camuflarse, o en edificios contiguos. Puedes caminar directo a un haz principal sin verlo.")+'</p>'+
+        '<p class="note bad">'+X("Treat every rooftop antenna as live. Stay behind screening walls, follow marked walk paths, keep your monitor on, and never lean over or reach in front of a panel to work.","Trata cada antena de azotea como viva. Quédate tras los muros, sigue los caminos marcados, mantén el monitor encendido, y nunca te asomes ni pases el brazo frente a un panel para trabajar.")+'</p>';
+  }},
+  /* 19 — Myths vs facts */
+  { ico:ICO.eye, t:["Myths","Mitos"], b:function(){
+      return tit("Myths vs facts","Mitos vs hechos")+
+        '<div class="grid2">'+
+          bx(ICO.warn,"Myth: it’s like X-rays","Mito: es como rayos X","Fact: RF is non-ionizing. The proven hazard is heating, not radiation sickness.","Hecho: la RF es no ionizante. El peligro probado es el calor, no la enfermedad por radiación.")+
+          bx(ICO.warn,"Myth: if I feel nothing I’m fine","Mito: si no siento nada, estoy bien","Fact: deep heating and RF burns can happen before you feel warmth.","Hecho: el calor profundo y las quemaduras RF pueden ocurrir antes de sentir calor.")+
+          bx(ICO.warn,"Myth: the sign means it’s off","Mito: la señal significa apagado","Fact: signs mark the hazard, not the state. Antennas are on unless confirmed down.","Hecho: las señales marcan el peligro, no el estado. Las antenas están encendidas salvo confirmación.")+
+          bx(ICO.warn,"Myth: my phone bars = safe","Mito: mi señal de celular = seguro","Fact: your handset says nothing about the exclusion zone in front of the panel.","Hecho: tu celular no dice nada sobre la zona de exclusión frente al panel.")+
+        '</div>';
+  }},
+  /* 20 — Checklist */
+  { ico:ICO.check, t:["Field checklist","Lista de campo"], b:function(){
+      var items=[
+        ["I identified every operator/sector on the structure","Identifiqué cada operador/sector en la estructura"],
+        ["I reviewed the RF study & exclusion zones","Revisé el estudio RF y las zonas de exclusión"],
+        ["My RF monitor is on, tested and worn","Mi monitor RF está encendido, probado y puesto"],
+        ["Power-down/maintenance mode arranged & confirmed where needed","Power-down/mantenimiento gestionado y confirmado donde hace falta"],
+        ["I will work behind/beside antennas, never in front","Trabajaré detrás/al lado, nunca de frente"],
+        ["Crew briefed on zones, signs and escape plan","Cuadrilla instruida en zonas, señales y plan de salida"]
+      ];
+      return tit("Before you enter the zone","Antes de entrar a la zona")+'<p class="lead">'+X("Tap each item you can honestly confirm.","Toca cada punto que puedas confirmar con honestidad.")+'</p>'+
+        items.map(function(it){return '<div class="chk"><span class="bx">'+ICO.check+'</span><span class="txt"><b>'+X(it[0],it[1])+'</b></span></div>';}).join("")+
+        '<p class="note good" id="ckMsg"></p>';
+    }, i:function(){ var t=document.querySelectorAll(".chk").length; function u(){var d=document.querySelectorAll(".chk.done").length;$("ckMsg").textContent=X("Confirmed: ","Confirmado: ")+d+"/"+t+(d===t?X(" — cleared to work ✓"," — autorizado a trabajar ✓"):"");} document.querySelectorAll(".chk").forEach(function(c){c.onclick=function(){c.classList.toggle("done");u();};}); u(); }
+  },
+  /* 21 — Quiz */
+  { ico:ICO.quiz, t:["Quiz","Evaluación"], b:function(){
+      var QUIZ=[
+        {en:"RF energy from antennas is…",es:"La energía RF de las antenas es…",
+         o_en:["Ionizing, like X-rays","Non-ionizing; the main hazard is heating","Harmless at any level"],o_es:["Ionizante, como rayos X","No ionizante; el peligro principal es el calor","Inofensiva a cualquier nivel"],a:1},
+        {en:"Where is exposure highest around a panel antenna?",es:"¿Dónde es mayor la exposición alrededor de una antena panel?",
+         o_en:["Directly in front (the main beam)","Directly behind it","It is equal all around"],o_es:["Justo enfrente (el haz principal)","Justo detrás","Es igual alrededor"],a:0},
+        {en:"The occupational MPE vs the general-public MPE is…",es:"La MPE ocupacional vs la del público general es…",
+         o_en:["Lower (stricter)","The same","Higher (5×), for trained, aware workers"],o_es:["Menor (más estricta)","Igual","Mayor (5×), para personal capacitado y consciente"],a:2},
+        {en:"Your RF monitor alarms. You should…",es:"Tu monitor RF alarma. Deberías…",
+         o_en:["Keep going to finish quickly","Stop and back out the way you came","Turn the monitor off"],o_es:["Seguir para terminar rápido","Detenerte y salir por donde entraste","Apagar el monitor"],a:1},
+        {en:"Before working in front of an antenna you should…",es:"Antes de trabajar frente a una antena debes…",
+         o_en:["Trust the posted sign","Get a confirmed power-down AND verify with your monitor","Just be quick"],o_es:["Confiar en la señal puesta","Conseguir un power-down confirmado Y verificar con tu monitor","Solo ser rápido"],a:1},
+        {en:"A missing or faded RF sign means…",es:"Una señal RF faltante o borrosa significa…",
+         o_en:["The antenna is off/safe","Nothing changed — treat the antenna as live","You can skip the monitor"],o_es:["La antena está apagada/segura","Nada cambió — trata la antena como viva","Puedes omitir el monitor"],a:1}
+      ];
+      window._QZ=QUIZ;
+      var qs=QUIZ.map(function(q,i){var o=(LANG==="es"?q.o_es:q.o_en).map(function(x,j){return '<button class="opt" data-q="'+i+'" data-o="'+j+'">'+x+'</button>';}).join("");return '<div class="q"><h3>'+(i+1)+'. '+X(q.en,q.es)+'</h3>'+o+'</div>';}).join("");
+      return tit("Quick check","Evaluación rápida")+qs+'<div class="score" id="score"></div>';
+    }, i:function(){ var QUIZ=window._QZ,ans={},ok=0; document.querySelectorAll(".opt").forEach(function(b){b.onclick=function(){var qi=+b.dataset.q;if(ans[qi])return;ans[qi]=1;var a=QUIZ[qi].a;document.querySelectorAll('.opt[data-q="'+qi+'"]').forEach(function(z){z.disabled=true;if(+z.dataset.o===a)z.classList.add("correct");});if(+b.dataset.o===a)ok++;else b.classList.add("wrong");if(Object.keys(ans).length===QUIZ.length){var sc=$("score");sc.textContent=X("Score: ","Puntaje: ")+ok+"/"+QUIZ.length+(ok>=5?X(" — well done ✓"," — bien hecho ✓"):X(" — review and retry"," — repasa y repite"));}};}); }
+  },
+  /* 22 — Sources */
+  { ico:ICO.book, t:["Sources","Fuentes"], b:function(){
+      return tit("Key takeaways & references","Ideas clave y referencias")+
+        '<ul>'+
+          '<li>'+X("RF is non-ionizing; the real hazard is heating and RF burns — you may feel nothing until damage is done.","La RF es no ionizante; el peligro real es el calor y las quemaduras RF — puedes no sentir nada hasta que el daño ocurrió.")+'</li>'+
+          '<li>'+X("Never face an energized antenna. Distance + power-down + a worn RF monitor keep you under the limit.","Nunca de frente a una antena viva. Distancia + power-down + monitor RF puesto te mantienen bajo el límite.")+'</li>'+
+          '<li>'+X("Obey the signs, treat every antenna as live, and account for all carriers on a shared structure.","Obedece las señales, trata cada antena como viva y cuenta a todos los operadores de una estructura compartida.")+'</li>'+
+        '</ul>'+
+        '<h2>'+X("References","Referencias")+'</h2>'+
+        '<div class="ref"><b>FCC OET Bulletin 65</b> — Evaluating Compliance with FCC Guidelines for Human Exposure to RF Electromagnetic Fields.</div>'+
+        '<div class="ref"><b>47 CFR § 1.1310</b> — RF radiation exposure limits (occupational 5.0 mW/cm² / 6-min vs general population 1.0 mW/cm² / 30-min, &gt;1500 MHz).</div>'+
+        '<div class="ref"><b>OSHA</b> — Radiofrequency & microwave radiation; electric power / telecommunications guidance.</div>'+
+        '<div class="ref"><b>ANSI Z535 / industry RF signage</b> — Notice / Caution / Warning / Danger signal words and the RF antenna symbol.</div>'+
+        '<div class="ref"><b>NATE</b> — Tower worker RF awareness best practices (exclusion zones, personal monitors, power-down coordination).</div>'+
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px"><span class="verdict ok">'+ICO.check+' '+X("Module complete","Módulo completo")+'</span><a class="btn ghost" href="../index.html" target="_top">'+X("Back to portal","Volver al portal")+'</a></div>'+
+        '<p class="note">'+X("Training overview only. Always follow your employer’s RF safety program, the site-specific RF study, and the operators’ power-down procedures.","Solo es un resumen de entrenamiento. Sigue siempre el programa de seguridad RF de tu empleador, el estudio RF específico del sitio y los procedimientos de power-down de los operadores.")+'</p>';
+  }}
+];
+var cur=0;
+var _gen=0;
+
+/* ===================== engine ===================== */
+function pintarChrome(){
+  document.documentElement.lang=LANG;
+  $("brand").textContent=X(CONFIG.brand[0],CONFIG.brand[1]);
+  $("brandsub").textContent=X(CONFIG.subtitle[0],CONFIG.subtitle[1]);
+  $("homeTxt").textContent=X("Home","Inicio");
+  document.querySelectorAll("#lang button").forEach(function(b){ b.classList.toggle("on", b.dataset.l===LANG); });
+  var dark=document.documentElement.getAttribute("data-theme")==="dark";
+  $("temaIco").innerHTML=dark?ICO.sun:ICO.moon; $("temaTxt").textContent=dark?X("Light","Claro"):X("Dark","Oscuro");
+  $("prev").innerHTML="‹ "+X("Back","Anterior");
+  $("next").innerHTML=(cur>=STEPS.length-1?X("Restart","Reiniciar"):X("Next","Siguiente")+" ›");
+}
+function render(){
+  _gen++;
+  pintarChrome();
+  var s=STEPS[cur];
+  $("card").innerHTML=s.b();
+  if(s.i) s.i();
+  $("progbar").style.width=((cur+1)/STEPS.length*100)+"%";
+  $("mStep").textContent=X("Step ","Paso ")+(cur+1)+" / "+STEPS.length+" · "+X(s.t[0],s.t[1]);
+  $("mDur").textContent=CONFIG.duration;
+  $("prev").disabled=(cur===0);
+  $("dots").innerHTML=STEPS.map(function(_,i){return '<button class="dot'+(i===cur?' on':'')+'" data-i="'+i+'" aria-label="'+(i+1)+'"></button>';}).join("");
+  document.querySelectorAll(".dot").forEach(function(d){ d.onclick=function(){ cur=+d.dataset.i; render(); }; });
+  window.scrollTo(0,0);
+}
+$("prev").onclick=function(){ if(cur>0){cur--;render();} };
+$("next").onclick=function(){ cur=(cur>=STEPS.length-1)?0:cur+1; render(); };
+document.querySelectorAll("#lang button").forEach(function(b){ b.onclick=function(){ LANG=b.dataset.l; render(); }; });
+$("tema").onclick=function(){ var d=document.documentElement.getAttribute("data-theme")==="dark"; document.documentElement.setAttribute("data-theme", d?"light":"dark"); pintarChrome(); };
+document.addEventListener("keydown",function(e){ if(e.key==="ArrowRight")$("next").click(); if(e.key==="ArrowLeft")$("prev").click(); });
+render();
+</script>
+</body>
+</html>

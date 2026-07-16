@@ -266,6 +266,25 @@
     "tipo": "animacion"
   },
   {
+    "area": "seguridad",
+    "titulo": {
+      "es": "Exposición a RF en sitios celulares (RF Awareness)",
+      "en": "RF Awareness at cell sites"
+    },
+    "descripcion": {
+      "es": "Conciencia de radiofrecuencia para torres y azoteas: qué es la RF (no ionizante, efecto térmico), el límite MPE ocupacional vs público (5 vs 1 mW/cm², 6 vs 30 min), el haz principal y las zonas de exclusión, las 4 señales RF (Notice/Caution/Warning/Danger), el monitor personal, y el apagado de sector (power-down/modo mantenimiento). Con mapa de zonas interactivo, comparador de MPE, simulador de power-down, checklist y quiz. Fuentes FCC OET 65 / OSHA / NATE.",
+      "en": "Radiofrequency awareness for towers and rooftops: what RF is (non-ionizing, thermal effect), the occupational vs general-public MPE (5 vs 1 mW/cm², 6 vs 30 min), the main beam and exclusion zones, the 4 RF signs (Notice/Caution/Warning/Danger), the personal RF monitor, and sector power-down (maintenance mode). With an interactive zone map, MPE comparator, power-down simulator, checklist and quiz. Sources: FCC OET 65 / OSHA / NATE."
+    },
+    "categoria": {
+      "es": "Seguridad",
+      "en": "Safety"
+    },
+    "duracion": "24:00",
+    "video": "animations/rf-awareness-cell-sites.html",
+    "poster": "assets/poster-rf-awareness.svg",
+    "tipo": "animacion"
+  },
+  {
     "area": "electricidad",
     "titulo": {
       "es": "Multímetro y electricidad (DC, AC, ohms, watts, breakers, -48V)",
