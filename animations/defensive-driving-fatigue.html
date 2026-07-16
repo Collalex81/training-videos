@@ -135,7 +135,6 @@
     </div>
     <div class="tools">
       <a class="tbtn" id="home" href="../index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span id="homeTxt"></span></a>
-      <button class="tbtn" id="audio"><span id="audioIco"></span><span id="audioTxt"></span></button>
       <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
       <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
     </div>
@@ -746,13 +745,11 @@ function pintarChrome(){
   document.querySelectorAll("#lang button").forEach(function(b){ b.classList.toggle("on", b.dataset.l===LANG); });
   var dark=document.documentElement.getAttribute("data-theme")==="dark";
   $("temaIco").innerHTML=dark?ICO.sun:ICO.moonm; $("temaTxt").textContent=dark?X("Light","Claro"):X("Dark","Oscuro");
-  updateAudioBtn();
   $("prev").innerHTML="‹ "+X("Back","Anterior");
   $("next").innerHTML=(cur>=STEPS.length-1?X("Restart","Reiniciar"):X("Next","Siguiente")+" ›");
 }
 function render(){
   _gen++;
-  stopAudio();
   pintarChrome();
   var s=STEPS[cur];
   $("card").innerHTML=s.b();
@@ -770,27 +767,8 @@ $("next").onclick=function(){ cur=(cur>=STEPS.length-1)?0:cur+1; render(); };
 document.querySelectorAll("#lang button").forEach(function(b){ b.onclick=function(){ LANG=b.dataset.l; render(); }; });
 $("tema").onclick=function(){ var d=document.documentElement.getAttribute("data-theme")==="dark"; document.documentElement.setAttribute("data-theme", d?"light":"dark"); pintarChrome(); };
 document.addEventListener("keydown",function(e){ if(e.key==="ArrowRight")$("next").click(); if(e.key==="ArrowLeft")$("prev").click(); });
-/* ---- narration audio (per-step mp3, EN/ES) ---- */
-var _audio=new Audio(); var _audioOn=false;
-var AUDIO_BASE="../assets/audio/defensive-driving-fatigue/";
-function pad2(n){ return (n<10?"0":"")+n; }
-function audioSrc(){ return AUDIO_BASE+LANG+"-"+pad2(cur)+".mp3"; }
-function updateAudioBtn(){ var i=$("audioIco"),t=$("audioTxt"); if(!i)return;
-  i.innerHTML=_audioOn
-    ?'<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>'
-    :'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
-  t.textContent=_audioOn?X("Pause","Pausa"):X("Listen","Escuchar");
-}
-function stopAudio(){ try{ _audio.pause(); _audio.currentTime=0; }catch(e){} _audioOn=false; updateAudioBtn(); }
-$("audio").onclick=function(){
-  if(_audioOn){ _audio.pause(); _audioOn=false; updateAudioBtn(); return; }
-  _audio.src=audioSrc();
-  var pr=_audio.play();
-  if(pr&&pr.then){ pr.then(function(){ _audioOn=true; updateAudioBtn(); }).catch(function(){ _audioOn=false; updateAudioBtn(); }); }
-  else { _audioOn=true; updateAudioBtn(); }
-};
-_audio.onended=function(){ _audioOn=false; updateAudioBtn(); };
 render();
 </script>
+<script src="../assets/narration.js"></script>
 </body>
 </html>
