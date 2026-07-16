@@ -228,6 +228,25 @@
     "tipo": "animacion"
   },
   {
+    "area": "seguridad",
+    "titulo": {
+      "es": "Manejo defensivo y fatiga (con casos reales)",
+      "en": "Defensive driving & fatigue (with real cases)"
+    },
+    "descripcion": {
+      "es": "Manejo defensivo a fondo: la fatiga como intoxicación (17 h despierto ≈ 0.05% BAC), microsueños, Horas de Servicio FMCSA y vehículos de empresa, distracción y teléfono, SIPDE y Sistema Smith, la regla de 3 segundos y la distancia de frenado, más el análisis de dos accidentes fatales reales del NTSB. Con 5 animaciones canvas, calculadora de fatiga, checklist y quiz.",
+      "en": "In-depth defensive driving: fatigue as impairment (17 h awake ≈ 0.05% BAC), microsleeps, FMCSA Hours of Service and company vehicles, distraction and phones, SIPDE and the Smith System, the 3-second rule and stopping distance, plus analysis of two real NTSB fatal crashes. With 5 canvas animations, a fatigue calculator, checklist and quiz."
+    },
+    "categoria": {
+      "es": "Seguridad",
+      "en": "Safety"
+    },
+    "duracion": "22:00",
+    "video": "animations/defensive-driving-fatigue.html",
+    "poster": "assets/poster-defensive-driving.svg",
+    "tipo": "animacion"
+  },
+  {
     "area": "electricidad",
     "titulo": {
       "es": "Multímetro y electricidad (DC, AC, ohms, watts, breakers, -48V)",

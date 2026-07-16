@@ -3,7 +3,7 @@
 > **Para el asistente (Claude): lee este archivo Y `REGLAS-DE-TRABAJO.md` al inicio de cada sesión de este proyecto.**
 > **For the assistant: read this file AND `REGLAS-DE-TRABAJO.md` at the start of every session in this project.**
 
-Última actualización / Last updated: 2026-07-14
+Última actualización / Last updated: 2026-07-16
 
 ---
 
@@ -22,6 +22,7 @@ Project/
 │   ├── tower-safety.html          (Seguridad — trabajo en torres OSHA/Crown Castle)
 │   ├── tool-tethering-aerial-lifts.html (Seguridad — amarre de herramientas en plataformas)
 │   ├── loto-lockout-tagout.html   (Seguridad — bloqueo/etiquetado LOTO)
+│   ├── defensive-driving-fatigue.html (Seguridad — manejo defensivo y fatiga, casos reales NTSB)
 │   ├── grounding-bonding-cell-sites.html (Telecom — puesta a tierra y bonding)
 │   ├── mewp-aerial-lift-operation.html (Construcción — operación de plataforma MEWP)
 │   ├── multimeter-electrical.html (Electricidad — multímetro / -48V)
@@ -69,7 +70,7 @@ Project/
 
 ### Módulos actuales
 - **Telecom:** PIM (Kaelus), Coax Sweep (Anritsu), Puesta a tierra y bonding (R56/NEC 250).
-- **Seguridad:** Trabajo en torres (OSHA / Crown Castle); Amarre de herramientas en plataformas (toolbox talk); Bloqueo/etiquetado LOTO (OSHA 1910.147 / NFPA 70E).
+- **Seguridad:** Trabajo en torres (OSHA / Crown Castle); Amarre de herramientas en plataformas (toolbox talk); Bloqueo/etiquetado LOTO (OSHA 1910.147 / NFPA 70E). **Manejo defensivo y fatiga** (FMCSA HOS / NHTSA / NTSB, con 2 casos fatales reales).
 - **Electricidad:** Multímetro y electricidad (DC/AC, ohms, watts, breakers, planta -48V).
 - **Construcción:** Operación de plataforma elevadora MEWP (ANSI A92 / OSHA 1926.453).
 - **Inducción:** 2 ejemplos + **Fieldclix (instalación y configuración de la app)**.
@@ -87,6 +88,9 @@ Project/
 ### Pendientes / To do
 - (Opcional) Fotos reales para los otros módulos (Coax/Anritsu, Torres). / Real photos for the other modules.
 - (Opcional) Publicar en GitHub Pages; actualizar README al esquema nuevo de videos.json. / Publish to GitHub Pages; update README.
+
+### Hecho recientemente / Recently done (2026-07-16)
+- Seguridad: nuevo módulo **Manejo defensivo y fatiga** (`animations/defensive-driving-fatigue.html`, área verde, 24 slides, bilingüe EN por defecto). Cubre a fondo la **fatiga como intoxicación** (NIOSH/CDC: 17 h despierto ≈ 0.05% BAC, 24 h ≈ 0.10%), **microsueños**, ciencia del sueño y ritmo circadiano; **Horas de Servicio FMCSA** (11h/14h/30min/60-70h/34h) para CDL/DOT **y** política para camionetas/vans de empresa sin CDL; **distracción** (visual/manual/cognitiva), disciplina del teléfono y la estadística de los 5 s ≈ un campo de fútbol; **manejo defensivo** (SIPDE, 5 claves del Sistema Smith, regla de 3 s, distancia de frenado, puntos ciegos/No-Zone), condiciones (clima/noche/zonas de obra) y checklist previo. **Análisis de 2 accidentes fatales reales del NTSB:** Cranbury, NJ (Tracy Morgan / Walmart, 7-jun-2014, conductor despierto >28 h — NTSB HAR-15/01) y Gray Summit, MO (choque en cadena por texto, 5-ago-2010, 2 muertos/38 heridos — NTSB HAR-11/03). **Interactivos:** 5 animaciones canvas (microsueño, 5 s a ciegas, distancia de seguimiento de 3 s, velocidad vs distancia de frenado seco/mojado, puntos ciegos del camión) + **calculadora de fatiga** (horas despierto/dormidas → equivalente BAC y riesgo) + quiz de 6 preguntas. Portada SVG: `assets/poster-defensive-driving.svg`. Entrada añadida a `videos.json` (área seguridad, tras LOTO). **Verificación:** `node --check` del script OK y render headless (Playwright) de los 24 pasos en EN/ES + tema claro/oscuro, interactivos probados (quiz, calculadora, distancia de frenado seco/mojado), **0 errores de consola**. Respaldos: `Versiones/videos-v12-2026-07-16.json`, `Versiones/estado-del-proyecto-v6-2026-07-16.md`. *(La galería `index.html` lee `videos.json`, así que el módulo aparece solo; no se editó `index.html`.)* / New green Safety module **Defensive Driving & Fatigue** (24 slides, bilingual, EN default): fatigue-as-impairment (17 h awake ≈ 0.05% BAC), microsleeps, FMCSA HOS + non-CDL company-vehicle policy, distraction & phone discipline, SIPDE/Smith System/3-second rule/stopping distance/blind spots, and analysis of two real NTSB fatal crashes (Tracy Morgan 2014; Gray Summit 2010). 5 canvas sims + fatigue calculator + quiz. Verified headless (24 steps EN/ES, light/dark, interactives), 0 console errors. Backups saved.
 
 ### Hecho recientemente / Recently done (2026-07-15)
 - **Botón "Portal" (Home) en la galería → portal principal de JCE.** Se agregó en el `topbar` de `index.html` un botón con ícono de casa y etiqueta **"Portal"** (bilingüe EN/ES) que enlaza a **https://collalex81.github.io/JCE-Field/**, para volver desde el portal de entrenamiento al portal principal de JCE. Estilo consistente con los botones existentes (`.btn-ico`), con `title`/`aria-label` que cambian según el idioma, y sin afectar los toggles de idioma/tema ni la navegación interna. **Solo se modificó `index.html`** (la galería); los módulos no se tocaron. **Verificación:** render headless (Playwright) en escritorio y móvil, EN/ES — botón visible y alineado, enlace correcto, sin errores de consola; el archivo en disco quedó idéntico a la versión verificada. Respaldo: `Versiones/index-v7-2026-07-15.html`. / **"Portal" (Home) button in the gallery → main JCE portal.** Added a house-icon button labeled **"Portal"** (bilingual EN/ES) in the `index.html` topbar linking to https://collalex81.github.io/JCE-Field/, so staff can go from the training portal back to the main JCE portal. Styled like the existing `.btn-ico` controls, with a language-aware `title`/`aria-label`, and no impact on the language/theme toggles or internal navigation. **Only `index.html`** (the gallery) was changed; modules were untouched. Verified with a headless render (desktop/mobile, EN/ES): button visible and aligned, correct link, no console errors; on-disk file identical to the verified version. Backup: `Versiones/index-v7-2026-07-15.html`.

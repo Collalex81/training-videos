@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Defensive Driving &amp; Fatigue / Manejo defensivo y fatiga</title>
+<!--
+  SEGURIDAD (verde) — Manejo defensivo y fatiga / Defensive Driving & Fatigue.
+  SAFETY (green) — Defensive driving, fatigue management, real fatal-case analysis.
+  Fuentes / Sources:
+    · FMCSA Hours of Service (49 CFR 395) — 11h/14h/30-min/60-70h/34h restart.
+    · NIOSH/CDC — 17h awake ≈ 0.05% BAC, 24h ≈ 0.10% BAC (Dawson & Reid; Williamson & Feyer).
+    · NHTSA — drowsy & distracted driving statistics; 5-second glance ≈ a football field at 55 mph.
+    · NTSB HAR-15/01 — Cranbury, NJ (Tracy Morgan / Walmart) crash, Jun 7 2014, driver awake >28h.
+    · NTSB HAR-11/03 — Gray Summit, MO texting pileup, Aug 5 2010, 2 killed / 38 injured.
+    · Smith System (5 keys) · SIPDE.
+  Motor basado en animations/loto-lockout-tagout.html. Bilingüe EN/ES (EN por defecto). Canvas analizador.
+-->
+<style>
+  :root{
+    --pg:#f2f7f3; --card:#ffffff; --ink:#0c2417; --sub:#4f6a5b; --line:#dfeae3;
+    --bar:#0b3a22; --accent:#15803D; --tint:rgba(21,128,61,.10);
+    --ok:#15803D; --okt:rgba(21,128,61,.10); --bad:#dc2626; --badt:rgba(220,38,38,.10);
+    --amber:#b45309; --ambt:rgba(180,83,9,.12); --radius:14px;
+    --shadow:0 1px 2px rgba(12,36,23,.05),0 10px 26px rgba(12,36,23,.08);
+  }
+  html[data-theme="dark"]{
+    --pg:#0a1310; --card:#12201a; --ink:#e9f6ee; --sub:#a3c2b1; --line:#22352b;
+    --bar:#07130c; --accent:#4ade80; --tint:rgba(74,222,128,.14);
+    --ok:#4ade80; --okt:rgba(74,222,128,.14); --bad:#f87171; --badt:rgba(248,113,113,.14);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  .shell{max-width:940px;margin:0 auto;padding:14px 16px 34px}
+  .head{position:sticky;top:0;z-index:30;background:var(--pg);padding:10px 0 8px;box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+  .brand b{font-size:15px;font-weight:600;display:block;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand small{font-size:11px;color:var(--sub);letter-spacing:.04em}
+  .tools{display:flex;gap:8px;align-items:center}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;height:36px;padding:0 12px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .lang{display:flex;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .lang button{border:0;background:transparent;color:var(--sub);cursor:pointer;min-width:36px;height:28px;border-radius:999px;font-size:12.5px;font-weight:600;font-family:inherit}
+  .lang button.on{background:var(--accent);color:#fff}
+  .prog{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:6px 0 4px}
+  .prog>i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);gap:8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;min-height:360px}
+  .step-ico{width:44px;height:44px;border-radius:12px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+  h1{font-size:clamp(20px,3.3vw,26px);margin:0 0 8px;font-weight:700;line-height:1.2}
+  h2{font-size:15.5px;margin:16px 0 8px;font-weight:600}
+  p{margin:0 0 12px}
+  .lead{color:var(--sub);font-size:15px}
+  ul,ol{margin:6px 0 12px;padding-left:20px}
+  li{margin:6px 0}
+  .pill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:var(--tint);padding:5px 11px;border-radius:999px;margin-bottom:10px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:8px 0}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin:8px 0}
+  .box{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:13px}
+  .box h3{margin:0 0 6px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px}
+  .box p{margin:0;font-size:12.5px;color:var(--sub)}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:var(--accent);color:#fff;font-weight:800;font-size:14px;flex:none}
+  .stat3{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
+  .stat3 .s{flex:1;min-width:120px;background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center}
+  .stat3 .s b{display:block;font-size:24px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+  .stat3 .s span{font-size:12px;color:var(--sub)}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;min-height:42px;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;flex:1}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line);border:0;cursor:pointer;padding:0}
+  .dot.on{background:var(--accent);transform:scale(1.3)}
+  .note{font-size:13px;color:var(--sub);border-left:3px solid var(--accent);background:var(--tint);padding:9px 12px;margin:12px 0;border-radius:0 8px 8px 0}
+  .warn{border-left-color:var(--amber);color:var(--amber);background:var(--ambt)}
+  .bad{border-left-color:var(--bad);color:var(--bad);background:var(--badt)}
+  .good{border-left-color:var(--ok);color:var(--ink);background:var(--okt)}
+  .good b{color:var(--ok)}
+  .illus{position:relative;aspect-ratio:16/10;background:#08140d;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .illus svg,.illus canvas{width:100%;height:100%}
+  .mcap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);margin:8px 2px 2px;justify-content:center}
+  .steps{counter-reset:s;margin:8px 0}
+  .steps .st{display:flex;gap:12px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:7px 0}
+  .steps .st .txt b{font-size:13.5px}.steps .st .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .chk{display:flex;gap:11px;align-items:flex-start;background:var(--pg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:8px 0;cursor:pointer}
+  .chk .bx{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;margin-top:1px}
+  .chk.done .bx{background:var(--ok);border-color:var(--ok)}
+  .chk.done .txt b{text-decoration:line-through;opacity:.7}
+  .chk .txt b{font-size:13.5px}.chk .txt span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .row{display:flex;align-items:center;gap:12px;margin:10px 0;flex-wrap:wrap}
+  .stat{background:var(--pg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:120px}
+  .stat b{display:block;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+  .stat span{font-size:11px;color:var(--sub)}
+  .ctrl{display:flex;flex-direction:column;gap:4px;margin:10px 0}
+  .ctrl label{font-size:12.5px;color:var(--sub);display:flex;justify-content:space-between;gap:10px}
+  .ctrl label b{color:var(--ink);font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--accent);height:26px}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .seg button{border:0;background:var(--card);color:var(--sub);padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;min-height:38px}
+  .seg button.on{background:var(--accent);color:#fff}
+  .q{background:var(--pg);border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:12px}
+  .q h3{margin:0 0 10px;font-size:14px}
+  .opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:11px 14px;border-radius:10px;margin:7px 0;cursor:pointer;font-size:14px;font-family:inherit}
+  .opt.correct{border-color:var(--ok);background:var(--okt);color:var(--ok);font-weight:600}
+  .opt.wrong{border-color:var(--bad);background:var(--badt);color:var(--bad)}
+  .opt:disabled{cursor:default}
+  .score{font-size:16px;font-weight:700;text-align:center;padding:10px}
+  .verdict{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;font-weight:700;font-size:15px}
+  .verdict.ok{background:var(--okt);color:var(--ok)}
+  .ref{font-size:12.5px;color:var(--sub);border-bottom:1px solid var(--line);padding:8px 0}
+  .ref b{color:var(--ink)}
+  .case{background:var(--pg);border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:0 12px 12px 0;padding:14px 16px;margin:10px 0}
+  .case h3{margin:0 0 4px;font-size:15px}
+  .case .fatal{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--bad);background:var(--badt);padding:3px 9px;border-radius:999px;margin-bottom:8px}
+  @media(max-width:520px){ .card{padding:15px} .shell{padding:12px 12px 28px} .brand small{display:none} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+  <div class="top">
+    <div class="brand">
+      <span class="logo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/></svg></span>
+      <div><b id="brand"></b><small id="brandsub"></small></div>
+    </div>
+    <div class="tools">
+      <a class="tbtn" id="home" href="../index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span id="homeTxt"></span></a>
+      <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
+      <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+    </div>
+  </div>
+  <div class="prog"><i id="progbar"></i></div>
+  <div class="meta"><span id="mStep"></span><span id="mDur"></span></div>
+  </div>
+  <div class="card" id="card"></div>
+  <div class="nav">
+    <button class="btn ghost" id="prev"></button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="next"></button>
+  </div>
+</div>
+
+<script>
+/* ===================== CONFIG ===================== */
+var CONFIG = {
+  brand:   ["Defensive Driving & Fatigue","Manejo defensivo y fatiga"],
+  subtitle:["Vehicle safety on the road · Safety","Seguridad al volante · Seguridad"],
+  duration:"≈ 22 min",
+  defaultLang:"en"
+};
+
+/* ===================== helpers ===================== */
+var params=new URLSearchParams(location.search);
+var LANG=params.get("lang")?(params.get("lang").toLowerCase().startsWith("es")?"es":"en"):CONFIG.defaultLang;
+function X(en,es){ return LANG==="es"?es:en; }
+function $(id){ return document.getElementById(id); }
+function tit(en,es){ return '<div class="step-ico">'+STEPS[cur].ico+'</div><h1>'+X(en,es)+'</h1>'; }
+var ICO={
+  wheel:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v6M12 15v6M4.5 7l4.2 4.2M15.3 12.8 19.5 17"/></svg>',
+  car:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l1.5-4.5A2 2 0 0 1 8.4 7h7.2a2 2 0 0 1 1.9 1.5L19 13"/><path d="M3 13h18v4H3z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/></svg>',
+  warn:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.6 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+  moon:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+  eye:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  clock:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  coffee:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M17 9h2.5a2.5 2.5 0 0 1 0 5H17"/><path d="M7 3v2M11 3v2"/></svg>',
+  phone:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>',
+  road:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3 4 21M18 3l2 18M12 4v2M12 10v2M12 16v2"/></svg>',
+  gauge:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14 16 9"/><path d="M4 18a8 8 0 1 1 16 0"/><circle cx="12" cy="14" r="1.4"/></svg>',
+  truck:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h11v9H2z"/><path d="M13 9h4l3 3v3h-7z"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>',
+  shield:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 5 3.5 8 7 9 3.5-1 7-4 7-9V6z"/><path d="m9 12 2 2 4-4"/></svg>',
+  people:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 6a3 3 0 0 1 0 6M21 20a6 6 0 0 0-4-5.6"/></svg>',
+  list:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
+  eyes:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6s2-2 5-2 5 2 5 2M12 6s2-2 5-2 5 2 5 2"/><path d="M4 12a3 3 0 0 0 6 0M14 12a3 3 0 0 0 6 0"/></svg>',
+  check:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  quiz:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.1 9a3 3 0 1 1 4.2 2.7c-.8.4-1.3 1-1.3 2M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>',
+  book:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h9a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-1a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h2z"/></svg>',
+  bolt:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+  brain:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3a3 3 0 0 0-3 3 3 3 0 0 0-1 5 3 3 0 0 0 2 4 3 3 0 0 0 5 1V4a3 3 0 0 0-2-1z"/><path d="M15 3a3 3 0 0 1 3 3 3 3 0 0 1 1 5 3 3 0 0 1-2 4 3 3 0 0 1-5 1"/></svg>',
+  refresh:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>',
+  sun:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moonm:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+};
+function stepRow(n,en,es,den,des){ return '<div class="st"><span class="num">'+n+'</span><span class="txt"><b>'+X(en,es)+'</b><span>'+X(den,des)+'</span></span></div>'; }
+function bx(icon,tEn,tEs,dEn,dEs){ return '<div class="box"><h3>'+icon+X(tEn,tEs)+'</h3><p>'+X(dEn,dEs)+'</p></div>'; }
+/* canvas helper (DPR-aware). Returns {c,x,fit}. */
+function cv(id){ var c=$(id); if(!c) return null; var x=c.getContext("2d");
+  function fit(){ var r=c.getBoundingClientRect(); var d=Math.min(2,window.devicePixelRatio||1); c.width=Math.max(1,Math.round(r.width*d)); c.height=Math.max(1,Math.round(r.height*d)); x.setTransform(d,0,0,d,0,0); return {w:r.width,h:r.height}; }
+  return {c:c,x:x,fit:fit};
+}
+function raf(gen,step){ (function fr(){ if(gen!==_gen) return; step(); requestAnimationFrame(fr); })(); }
+
+/* ===================== STEPS ===================== */
+var STEPS = [
+  /* 1 — Overview */
+  { ico:ICO.wheel, t:["Overview","Introducción"], b:function(){
+      return tit("Defensive driving & fatigue","Manejo defensivo y fatiga")+
+        '<span class="pill">FMCSA · NHTSA · NTSB</span>'+
+        '<p class="lead">'+X("For our crews, the most dangerous tool of the day is often the vehicle — not the tower. This module goes deep on the two biggest killers behind the wheel: <b>fatigue</b> and <b>distraction</b> — and on the defensive-driving habits that keep you alive. We analyze real fatal crashes and practice with interactive tools.","Para nuestras cuadrillas, la herramienta más peligrosa del día suele ser el vehículo — no la torre. Este módulo profundiza en los dos mayores causantes de muertes al volante: la <b>fatiga</b> y la <b>distracción</b> — y en los hábitos de manejo defensivo que te mantienen vivo. Analizamos accidentes fatales reales y practicamos con herramientas interactivas.")+'</p>'+
+        '<div class="stat3"><div class="s"><b>2</b><span>'+X("real fatal cases","casos fatales reales")+'</span></div><div class="s"><b>5</b><span>'+X("interactive sims","simuladores")+'</span></div><div class="s"><b>≈22</b><span>min</span></div></div>'+
+        '<p class="note">'+X("This covers both company pickups/vans (non-CDL) and CDL/DOT commercial vehicles. The physics of fatigue and stopping distance are the same in both.","Cubre tanto camionetas/vans de empresa (sin CDL) como vehículos comerciales CDL/DOT. La física de la fatiga y la distancia de frenado es la misma en ambos.")+'</p>';
+  }},
+  /* 2 — Why it matters (stats) */
+  { ico:ICO.warn, t:["Why it matters","Por qué importa"], b:function(){
+      return tit("The numbers are not abstract","Los números no son abstractos")+
+        '<p class="lead">'+X("Drowsy and distracted driving kill thousands every year in the U.S. — most of those crashes were 100% preventable.","La conducción con sueño y distraída matan a miles cada año en EE. UU. — casi todos esos choques eran 100% evitables.")+'</p>'+
+        '<div class="grid2">'+
+          bx(ICO.moon,"Drowsy driving","Conducción con sueño","NHTSA: ~633 deaths and tens of thousands of injuries a year — and drowsy crashes are heavily under-reported.","NHTSA: ~633 muertes y decenas de miles de heridos al año — y se subreportan mucho.")+
+          bx(ICO.phone,"Distracted driving","Conducción distraída","NHTSA: ~3,300 deaths a year. Texting at 55 mph = eyes off the road for ~5 seconds.","NHTSA: ~3,300 muertes al año. Textear a 55 mph = ojos fuera del camino ~5 segundos.")+
+        '</div>'+
+        '<p class="note bad"><b>'+X("It only takes once.","Basta una vez.")+'</b> '+X("Both of the fatal crashes we study later started with one ordinary decision: driving tired, or reaching for a phone.","Los dos choques fatales que estudiamos después empezaron con una decisión común: manejar cansado, o tomar el teléfono.")+'</p>';
+  }},
+  /* 3 — Fatigue science */
+  { ico:ICO.brain, t:["Fatigue science","Ciencia de la fatiga"], b:function(){
+      return tit("What fatigue does to a driver","Qué le hace la fatiga a un conductor")+
+        '<p class="lead">'+X("Fatigue is not just “feeling tired.” It slows reaction time, narrows attention, hurts judgment, and causes microsleeps. Two things drive it:","La fatiga no es solo “sentirse cansado.” Enlentece la reacción, estrecha la atención, daña el juicio y provoca microsueños. La causan dos cosas:")+'</p>'+
+        '<div class="grid2">'+
+          bx(ICO.clock,"Sleep debt","Deuda de sueño","Most adults need 7–9 h. Less than ~6 h roughly doubles crash risk; each lost hour adds up.","La mayoría necesita 7–9 h. Menos de ~6 h casi duplica el riesgo; cada hora perdida se acumula.")+
+          bx(ICO.refresh,"Circadian rhythm","Ritmo circadiano","Your body has built-in low points: ~2–6 a.m. and ~2–4 p.m. Alertness crashes even if you slept.","El cuerpo tiene bajones: ~2–6 a.m. y ~2–4 p.m. La alerta cae aunque hayas dormido.")+
+        '</div>'+
+        '<p class="note warn">'+X("The most dangerous myth: “I can push through it.” You cannot out-willpower biology. The only real cure for sleepiness is sleep.","El mito más peligroso: “Puedo aguantar.” No se le gana a la biología con fuerza de voluntad. La única cura real del sueño es dormir.")+'</p>';
+  }},
+  /* 4 — Fatigue = impairment (BAC equivalence) */
+  { ico:ICO.gauge, t:["Fatigue = impairment","Fatiga = intoxicación"], b:function(){
+      return tit("Being awake too long ≈ being drunk","Estar despierto demasiado ≈ estar ebrio")+
+        '<p class="lead">'+X("Landmark studies (Dawson & Reid; Williamson & Feyer) measured performance after extended wakefulness and compared it to alcohol. NIOSH/CDC summarize it clearly:","Estudios de referencia (Dawson & Reid; Williamson & Feyer) midieron el desempeño tras estar despierto mucho tiempo y lo compararon con el alcohol. NIOSH/CDC lo resumen:")+'</p>'+
+        '<div class="stat3">'+
+          '<div class="s"><b>17 h</b><span>'+X("awake ≈ 0.05% BAC","despierto ≈ 0.05% BAC")+'</span></div>'+
+          '<div class="s"><b>≈19 h</b><span>'+X("awake ≈ 0.08% (legal limit)","despierto ≈ 0.08% (límite legal)")+'</span></div>'+
+          '<div class="s"><b>24 h</b><span>'+X("awake ≈ 0.10% BAC","despierto ≈ 0.10% BAC")+'</span></div>'+
+        '</div>'+
+        '<p class="note bad">'+X("So a technician who woke at 5 a.m. and drives home at 10 p.m. is impaired like a person over the legal alcohol limit — stone-cold sober. You would never let them drive “drunk”; don’t let them drive that tired.","Así que un técnico que despertó a las 5 a.m. y maneja a casa a las 10 p.m. está tan afectado como alguien sobre el límite legal de alcohol — completamente sobrio. Nunca lo dejarías manejar “ebrio”; no lo dejes manejar así de cansado.")+'</p>'+
+        '<p class="note">'+X("Source: NIOSH/CDC training module; Dawson & Reid (1997), Nature; Williamson & Feyer (2000).","Fuente: módulo de capacitación NIOSH/CDC; Dawson & Reid (1997), Nature; Williamson & Feyer (2000).")+'</p>';
+  }},
+  /* 5 — Microsleep canvas (auto animation) */
+  { ico:ICO.eyes, t:["Microsleep","Microsueño"], b:function(){
+      return tit("The microsleep: driving blind","El microsueño: manejar a ciegas")+
+        '<p class="lead">'+X("A microsleep is an involuntary 2–30 second lapse where the brain sleeps with your eyes open or half-closed. At highway speed you travel the length of several vehicles — or a whole field — with no one driving. Watch the eyelids drop and the truck drift.","Un microsueño es un lapso involuntario de 2–30 segundos en que el cerebro duerme con los ojos abiertos o entrecerrados. A velocidad de autopista recorres el largo de varios vehículos — o un campo entero — sin nadie manejando. Observa cómo caen los párpados y el vehículo se desvía.")+'</p>'+
+        '<div class="illus"><canvas id="msCv"></canvas></div>'+
+        '<div class="mcap">'+ICO.eye+'<span id="msCap"></span></div>'+
+        '<p class="note bad">'+X("You cannot feel a microsleep coming and you don’t remember it after. That is why “waiting until I’m really sleepy” fails — by then you’re already gambling with lapses.","No sientes venir un microsueño y no lo recuerdas después. Por eso “esperar a tener mucho sueño” falla — para entonces ya estás apostando con lapsos.")+'</p>';
+    }, i:function(){ var gen=_gen; var o=cv("msCv"); if(!o)return; var dim=o.fit(); var x=o.x;
+      var t0=performance.now(); var speed=95; /* ft/s ~ 65 mph */
+      window.addEventListener("resize", function(){ if(gen===_gen) dim=o.fit(); });
+      raf(gen, function(){
+        var w=dim.w,h=dim.h; var now=performance.now(); var tt=(now-t0)/1000;
+        /* cycle: 4.5s awake, 4s microsleep */
+        var cyc=8.5, ph=tt%cyc; var asleep=ph>4.5; var sp=asleep?(ph-4.5):0; /* seconds asleep */
+        x.fillStyle="#08140d"; x.fillRect(0,0,w,h);
+        /* road */
+        var road=w, cx=w/2;
+        x.fillStyle="#10231a"; x.fillRect(0,h*0.30,w,h*0.70);
+        /* side lines */
+        x.strokeStyle="#2f5a42"; x.lineWidth=2; x.beginPath(); x.moveTo(w*0.14,h); x.lineTo(w*0.40,h*0.30); x.moveTo(w*0.86,h); x.lineTo(w*0.60,h*0.30); x.stroke();
+        /* dashes scrolling */
+        var off=(now/40)%40;
+        x.strokeStyle="#d7e35a"; x.lineWidth=3; x.setLineDash([16,20]); x.lineDashOffset=-off*3;
+        x.beginPath(); x.moveTo(cx,h); x.lineTo(cx,h*0.30); x.stroke(); x.setLineDash([]);
+        /* car drifts right when asleep */
+        var drift=asleep?Math.min(1,sp/4):0; var carX=cx + drift*(w*0.30) - drift*0; var carY=h*0.72; var cw=Math.max(34,w*0.13);
+        x.save(); x.translate(carX,carY);
+        x.fillStyle=asleep?"#b91c1c":"#2563eb"; roundRect(x,-cw/2,-cw*0.62,cw,cw*1.15,7); x.fill();
+        x.fillStyle="#9ec5ff"; roundRect(x,-cw/2+5,-cw*0.5,cw-10,cw*0.34,4); x.fill();
+        x.fillStyle="#dc2626"; x.fillRect(-cw/2+3,cw*0.40,6,7); x.fillRect(cw/2-9,cw*0.40,6,7);
+        x.restore();
+        /* eyelids overlay */
+        var lid = asleep? Math.min(1, sp/1.2) : Math.max(0, 0.12*Math.sin(now/500)); /* almost closed when asleep */
+        x.fillStyle="rgba(4,10,7,"+(asleep?0.55:0)+")"; x.fillRect(0,0,w,h*0.30*lid); x.fillRect(0,h-h*0.14*lid,w,h*0.14*lid);
+        /* eye icon top-left */
+        var eh=Math.max(6,h*0.05*(1-lid));
+        x.strokeStyle=asleep?"#f87171":"#8fd6ac"; x.lineWidth=2.4; x.beginPath();
+        x.ellipse(w*0.10,h*0.12,w*0.045,eh,0,0,Math.PI*2); x.stroke();
+        if(!asleep){ x.fillStyle="#8fd6ac"; x.beginPath(); x.arc(w*0.10,h*0.12,Math.max(2,eh*0.4),0,Math.PI*2); x.fill(); }
+        /* blind distance counter */
+        if(asleep){
+          var ft=Math.round(sp*speed);
+          x.fillStyle="rgba(120,10,10,.82)"; roundRect(x,w*0.5-70,10,140,40,8); x.fill();
+          x.fillStyle="#fff"; x.textAlign="center"; x.font="700 13px system-ui";
+          x.fillText(X("MICROSLEEP","MICROSUEÑO"),w*0.5,27);
+          x.font="700 15px ui-monospace,monospace"; x.fillStyle="#fecaca";
+          x.fillText(ft+" ft "+X("blind","a ciegas"),w*0.5,44);
+        }
+        var capEl=$("msCap"); if(capEl) capEl.textContent = asleep
+          ? X("Asleep at 65 mph — traveling ~95 ft every second with no control.","Dormido a 65 mph — ~95 ft por segundo sin control.")
+          : X("Awake and scanning the road.","Despierto y observando el camino.");
+      });
+      function roundRect(c,x1,y1,w1,h1,r){ c.beginPath(); c.moveTo(x1+r,y1); c.arcTo(x1+w1,y1,x1+w1,y1+h1,r); c.arcTo(x1+w1,y1+h1,x1,y1+h1,r); c.arcTo(x1,y1+h1,x1,y1,r); c.arcTo(x1,y1,x1+w1,y1,r); c.closePath(); }
+    }
+  },
+  /* 6 — Warning signs */
+  { ico:ICO.moon, t:["Warning signs","Señales de alerta"], b:function(){
+      return tit("Warning signs — pull over now","Señales — detente ya")+
+        '<p class="lead">'+X("If you notice any of these, you are already impaired. Get off the road and rest.","Si notas alguna de estas, ya estás afectado. Sal del camino y descansa.")+'</p>'+
+        '<div class="grid3">'+
+          bx(ICO.eyes,"Heavy eyelids","Párpados pesados","Blinking a lot, eyes stinging, focus drifting.","Parpadeas mucho, ojos irritados, se pierde el foco.")+
+          bx(ICO.road,"Drifting / rumble strip","Te desvías / banda sonora","Wandering in the lane, hitting the rumble strip.","Te sales del carril, pisas la banda sonora.")+
+          bx(ICO.refresh,"Missing signs/exits","Olvidas señales/salidas","Can’t remember the last few miles.","No recuerdas las últimas millas.")+
+          bx(ICO.warn,"Yawning / head nods","Bostezos / cabeceo","Repeated yawns; head dropping.","Bostezos repetidos; la cabeza cae.")+
+          bx(ICO.gauge,"Tailgating / speed drift","Te pegas / varía la velocidad","Following too close, speed creeping up/down.","Sigues muy cerca, la velocidad sube/baja sola.")+
+          bx(ICO.coffee,"Restless / irritable","Inquieto / irritable","Fidgeting, rubbing eyes, short temper.","Te mueves, te frotas los ojos, mal humor.")+
+        '</div>'+
+        '<p class="note bad">'+X("Coffee and cold air are short, unreliable patches — they mask sleepiness for minutes, then it hits back harder. The fix is a 15–20 minute nap or a real stop.","Café y aire frío son parches cortos y poco confiables — tapan el sueño por minutos y luego pega más fuerte. La solución es una siesta de 15–20 min o parar de verdad.")+'</p>';
+  }},
+  /* 7 — Fatigue / rest calculator */
+  { ico:ICO.clock, t:["Fatigue calculator","Calculadora de fatiga"], b:function(){
+      return tit("Interactive: fatigue estimator","Interactivo: estimador de fatiga")+
+        '<p class="lead">'+X("Set how long you’ve been awake and how much you slept last night. See your estimated alcohol-equivalent impairment and what to do. (Educational estimate, not a medical test.)","Ajusta cuánto llevas despierto y cuánto dormiste anoche. Verás tu deterioro estimado equivalente a alcohol y qué hacer. (Estimación educativa, no una prueba médica.)")+'</p>'+
+        '<div class="ctrl"><label>'+X("Hours awake","Horas despierto")+': <b id="faAwV">15</b></label><input type="range" id="faAw" min="8" max="30" step="1" value="15"></div>'+
+        '<div class="ctrl"><label>'+X("Hours slept last night","Horas dormidas anoche")+': <b id="faSlV">7</b></label><input type="range" id="faSl" min="0" max="10" step="0.5" value="7"></div>'+
+        '<div class="illus" style="aspect-ratio:16/6;background:#08140d"><canvas id="faCv"></canvas></div>'+
+        '<div class="stat3"><div class="s"><b id="faBac">0.00</b><span>'+X("≈ BAC equivalent","≈ equivalente BAC")+'</span></div><div class="s"><b id="faRisk">—</b><span>'+X("crash risk","riesgo de choque")+'</span></div></div>'+
+        '<div class="note" id="faMsg"></div>';
+    }, i:function(){ var gen=_gen; var aw=$("faAw"),sl=$("faSl"),o=cv("faCv"); var dim=o?o.fit():{w:300,h:80};
+      window.addEventListener("resize",function(){ if(gen===_gen && o) dim=o.fit(); });
+      function bacFromAwake(a){ if(a<=16) return Math.max(0,(a-12)*0.008); return Math.min(0.16, 0.05 + (a-17)*0.05/7 + 0.05*0); }
+      function calc(){
+        var a=+aw.value, s=+sl.value; $("faAwV").textContent=a; $("faSlV").textContent=s.toFixed(1);
+        var bac=bacFromAwake(a);
+        if(s<6) bac += (6-s)*0.006; /* sleep debt penalty */
+        bac=Math.min(0.18,bac);
+        $("faBac").textContent=bac.toFixed(2)+"%";
+        var risk,col,msg;
+        if(bac<0.02){ risk=X("Low","Bajo"); col="#4ade80"; msg=X("Rested enough to drive. Still take breaks every ~2 hours.","Bastante descansado para manejar. Aun así descansa cada ~2 horas."); }
+        else if(bac<0.05){ risk=X("Elevated","Elevado"); col="#facc15"; msg=X("Impairment is starting. Shorten the trip, take a break, avoid night driving.","Empieza el deterioro. Acorta el viaje, descansa, evita manejar de noche."); }
+        else if(bac<0.08){ risk=X("High ≈ buzzed","Alto ≈ achispado"); col="#fb923c"; msg=X("You are as impaired as a person near the alcohol limit. Nap 20 min or hand off the wheel.","Estás tan afectado como alguien cerca del límite de alcohol. Siesta de 20 min o cede el volante."); }
+        else { risk=X("Severe ≈ drunk","Grave ≈ ebrio"); col="#f87171"; msg=X("Do NOT drive. This is drunk-driving-level impairment. Sleep first or get a ride.","NO manejes. Es deterioro nivel conducción ebria. Duerme primero o consigue quién te lleve."); }
+        var rEl=$("faRisk"); rEl.textContent=risk; rEl.style.color=col;
+        var m=$("faMsg"); m.textContent=msg; m.className = bac<0.02?"note good":(bac<0.05?"note warn":"note bad");
+        draw(bac,col);
+      }
+      function draw(bac,col){ if(!o) return; var w=dim.w,h=dim.h,x=o.x; x.fillStyle="#08140d"; x.fillRect(0,0,w,h);
+        var pad=14, bw=w-pad*2, by=h*0.55, bh=14;
+        /* scale bar 0..0.18 */
+        x.fillStyle="#16261d"; roundRect(x,pad,by,bw,bh,7); x.fill();
+        function px(v){ return pad + Math.min(1,v/0.18)*bw; }
+        /* zones markers */
+        [[0.05,"0.05"],[0.08,"0.08"]].forEach(function(mk){ var mx=px(mk[0]); x.strokeStyle="#3f7a58"; x.lineWidth=1; x.beginPath(); x.moveTo(mx,by-6); x.lineTo(mx,by+bh+6); x.stroke(); x.fillStyle="#8fd6ac"; x.font="10px ui-monospace,monospace"; x.textAlign="center"; x.fillText(mk[1],mx,by-9); });
+        /* fill */
+        x.fillStyle=col; roundRect(x,pad,by,Math.max(8,px(bac)-pad),bh,7); x.fill();
+        x.fillStyle="#e9f6ee"; x.font="700 13px system-ui"; x.textAlign="left";
+        x.fillText(X("Impairment","Deterioro")+" ≈ "+bac.toFixed(2)+"% BAC",pad,by-18);
+      }
+      function roundRect(c,x1,y1,w1,h1,r){ c.beginPath(); c.moveTo(x1+r,y1); c.arcTo(x1+w1,y1,x1+w1,y1+h1,r); c.arcTo(x1+w1,y1+h1,x1,y1+h1,r); c.arcTo(x1,y1+h1,x1,y1,r); c.arcTo(x1,y1,x1+w1,y1,r); c.closePath(); }
+      aw.oninput=calc; sl.oninput=calc; calc();
+    }
+  },
+  /* 8 — HOS rules (CDL) */
+  { ico:ICO.truck, t:["Hours of Service","Horas de servicio"], b:function(){
+      return tit("CDL / DOT: Hours of Service","CDL / DOT: Horas de servicio")+
+        '<p class="lead">'+X("If you drive a CDL commercial vehicle in interstate commerce, federal Hours-of-Service (HOS) limits are the law — they exist to force rest. For property carriers:","Si manejas un vehículo comercial CDL en comercio interestatal, los límites federales de Horas de Servicio (HOS) son ley — existen para obligar el descanso. Para transporte de carga:")+'</p>'+
+        '<div class="steps">'+
+          stepRow("11h","11-hour driving limit","Límite de 11 h de manejo","Max 11 h driving after 10 consecutive hours off.","Máx. 11 h manejando tras 10 h seguidas libre.")+
+          stepRow("14h","14-hour window","Ventana de 14 h","Cannot drive beyond the 14th hour after coming on duty.","No manejar pasada la hora 14 desde que entras de servicio.")+
+          stepRow("30m","30-minute break","Descanso de 30 min","Required after 8 cumulative hours of driving.","Requerido tras 8 h acumuladas manejando.")+
+          stepRow("60/70","Weekly limit","Límite semanal","No driving after 60/70 h on duty in 7/8 days.","No manejar tras 60/70 h de servicio en 7/8 días.")+
+          stepRow("34h","Restart","Reinicio","34+ consecutive hours off resets the weekly clock.","34+ h seguidas libre reinician el reloj semanal.")+
+        '</div>'+
+        '<p class="note">'+X("Passenger-carrying: 10-hour driving limit, 15-hour window, after 8 hours off. Source: FMCSA 49 CFR Part 395.","Transporte de pasajeros: 10 h de manejo, ventana de 15 h, tras 8 h libre. Fuente: FMCSA 49 CFR Parte 395.")+'</p>';
+  }},
+  /* 9 — Company vehicles */
+  { ico:ICO.car, t:["Company vehicles","Vehículos de empresa"], b:function(){
+      return tit("Company pickups & vans (non-CDL)","Camionetas y vans de empresa (sin CDL)")+
+        '<p class="lead">'+X("Most of our site travel is in pickups and vans that don’t require a CDL, so federal HOS may not apply. That does NOT make you safe — the crash physics are identical. Here is the standard we hold ourselves to:","La mayoría de nuestros traslados son en camionetas y vans que no requieren CDL, así que las HOS federales pueden no aplicar. Eso NO te hace seguro — la física del choque es idéntica. Este es el estándar que mantenemos:")+'</p>'+
+        '<ul>'+
+          '<li>'+X("Plan the drive as part of the job — not “extra” time after a long shift.","Planea el manejo como parte del trabajo — no tiempo “extra” tras un turno largo.")+'</li>'+
+          '<li>'+X("Seat belts always, everyone, every trip. Adjust the head restraint.","Cinturón siempre, todos, cada viaje. Ajusta el apoyacabezas.")+'</li>'+
+          '<li>'+X("If you’re too tired to drive safely, say so. Rest, swap drivers, or stop overnight — no job is worth a funeral.","Si estás muy cansado para manejar seguro, dilo. Descansa, cambia de conductor o pernocta — ningún trabajo vale un funeral.")+'</li>'+
+          '<li>'+X("Phone stays down. Speeding and “making up time” is where techs die — not on the tower.","El teléfono abajo. Correr y “recuperar tiempo” es donde mueren los técnicos — no en la torre.")+'</li>'+
+        '</ul>'+
+        '<p class="note good"><b>'+X("You have stop-work authority for driving too.","También tienes autoridad de parar el trabajo al manejar.")+'</b> '+X("Being too tired to drive is a valid reason to stop, the same as a missing anchor point.","Estar muy cansado para manejar es razón válida para parar, igual que un anclaje faltante.")+'</p>';
+  }},
+  /* 10 — Managing fatigue */
+  { ico:ICO.shield, t:["Managing fatigue","Manejar la fatiga"], b:function(){
+      return tit("How to actually beat fatigue","Cómo vencer la fatiga de verdad")+
+        '<div class="grid2">'+
+          bx(ICO.clock,"Sleep first","Duerme primero","Protect 7–9 h before a long-drive day. Sleep is the only real fix.","Protege 7–9 h antes de un día de manejo largo. Dormir es la única cura real.")+
+          bx(ICO.coffee,"Strategic nap","Siesta estratégica","A 15–20 min nap (then ~15 min to wake up) restores alertness for a couple hours.","Una siesta de 15–20 min (y ~15 min para despabilar) recupera la alerta por un par de horas.")+
+          bx(ICO.refresh,"Break every 2 h","Descansa cada 2 h","Stop, walk, hydrate. Break the monotony before it breaks you.","Para, camina, hidrátate. Rompe la monotonía antes de que te rompa a ti.")+
+          bx(ICO.moon,"Respect the low points","Respeta los bajones","Avoid the 2–6 a.m. window if you can; it’s the worst time to drive.","Evita la ventana 2–6 a.m. si puedes; es la peor hora para manejar.")+
+        '</div>'+
+        '<p class="note warn">'+X("Caffeine takes ~20–30 min to work and can’t erase real sleep debt. Rolling the window down and turning up music do essentially nothing — don’t trust them.","La cafeína tarda ~20–30 min y no borra la deuda de sueño real. Bajar la ventana y subir la música no hacen casi nada — no confíes en eso.")+'</p>';
+  }},
+  /* 11 — Case study 1: Tracy Morgan */
+  { ico:ICO.warn, t:["Case 1 · Fatigue","Caso 1 · Fatiga"], b:function(){
+      return tit("Real case: fatigue kills","Caso real: la fatiga mata")+
+        '<div class="case"><span class="fatal">'+X("1 killed · multiple critically injured","1 muerto · varios heridos graves")+'</span>'+
+        '<h3>'+X("New Jersey Turnpike, June 7, 2014","Autopista de Nueva Jersey, 7 de junio de 2014")+'</h3>'+
+        '<p style="margin:0;font-size:13.5px">'+X("A Walmart tractor-trailer slammed into a slowed limo-van near Cranbury, NJ. Comedian James “Jimmy Mack” McNair was killed; Tracy Morgan and others were critically hurt.","Un tractocamión de Walmart embistió una van-limusina que iba frenando cerca de Cranbury, NJ. El comediante James “Jimmy Mack” McNair murió; Tracy Morgan y otros quedaron heridos de gravedad.")+'</p></div>'+
+        '<h2>'+X("What the NTSB found","Lo que halló el NTSB")+'</h2>'+
+        '<ul>'+
+          '<li>'+X("The driver had been <b>awake more than 28 hours</b> at the time of the crash.","El conductor llevaba <b>despierto más de 28 horas</b> al momento del choque.")+'</li>'+
+          '<li>'+X("He had commuted <b>~800 miles</b> from Georgia to Delaware just to start his shift.","Había manejado <b>~800 millas</b> de Georgia a Delaware solo para empezar su turno.")+'</li>'+
+          '<li>'+X("He was <b>speeding (~65 in a 45 mph work zone)</b> and never saw traffic had slowed for construction.","Iba <b>a exceso (~65 en una zona de obra de 45 mph)</b> y nunca vio que el tráfico se había detenido por la construcción.")+'</li>'+
+          '<li>'+X("Unbelted limo occupants and poorly adjusted head restraints worsened the injuries.","Ocupantes sin cinturón y apoyacabezas mal ajustados agravaron las lesiones.")+'</li>'+
+        '</ul>'+
+        '<p class="note bad"><b>'+X("Lesson:","Lección:")+'</b> '+X("Fatigue built up before the shift even started. The long personal commute, no sleep, and speeding stacked up. Any one of them broken — sleep, slow down, buckle up — changes the outcome. Source: NTSB HAR-15/01.","La fatiga se acumuló antes de empezar el turno. El largo traslado personal, la falta de sueño y el exceso de velocidad se sumaron. Romper cualquiera — dormir, bajar la velocidad, usar cinturón — cambia el desenlace. Fuente: NTSB HAR-15/01.")+'</p>';
+  }},
+  /* 12 — Distraction: the 3 types */
+  { ico:ICO.phone, t:["Distraction","Distracción"], b:function(){
+      return tit("The three kinds of distraction","Los tres tipos de distracción")+
+        '<p class="lead">'+X("Anything that pulls you from the driving task is a distraction. Texting is uniquely deadly because it hits all three at once.","Todo lo que te aleja de la tarea de manejar es una distracción. Textear es especialmente mortal porque golpea las tres a la vez.")+'</p>'+
+        '<div class="grid3">'+
+          bx(ICO.eye,"Visual","Visual","Eyes off the road — looking at a phone, GPS, or paperwork.","Ojos fuera del camino — mirar el teléfono, el GPS o papeleo.")+
+          bx(ICO.wheel,"Manual","Manual","Hands off the wheel — texting, eating, reaching.","Manos fuera del volante — textear, comer, estirarte.")+
+          bx(ICO.brain,"Cognitive","Cognitiva","Mind off driving — phone calls, stress, daydreaming.","Mente fuera del manejo — llamadas, estrés, distracción mental.")+
+        '</div>'+
+        '<p class="note bad">'+X("Even hands-free calls are a cognitive distraction — “eyes on, mind off” still misses hazards. The safest phone is one you can’t reach.","Incluso las llamadas manos libres son distracción cognitiva — “ojos puestos, mente fuera” igual pierde peligros. El teléfono más seguro es el que no alcanzas.")+'</p>';
+  }},
+  /* 13 — 5-second glance canvas */
+  { ico:ICO.eye, t:["Eyes off road","Ojos fuera"], b:function(){
+      return tit("5 seconds = a football field","5 segundos = un campo de fútbol")+
+        '<p class="lead">'+X("Reading or sending a text takes your eyes off the road for about 5 seconds. At 55 mph that’s the length of a football field — driven completely blind. Watch how far the truck travels while the eyes are on the phone.","Leer o enviar un texto quita los ojos del camino unos 5 segundos. A 55 mph es el largo de un campo de fútbol — manejado totalmente a ciegas. Observa cuánto avanza el vehículo con los ojos en el teléfono.")+'</p>'+
+        '<div class="illus" style="aspect-ratio:16/8"><canvas id="ffCv"></canvas></div>'+
+        '<div class="mcap">'+ICO.road+'<span id="ffCap"></span></div>'+
+        '<p class="note">'+X("Source: NHTSA. A football field is 100 yards (300 ft); at 55 mph you cover ~400 ft in 5 seconds.","Fuente: NHTSA. Un campo de fútbol americano mide 100 yardas (300 ft); a 55 mph recorres ~400 ft en 5 segundos.")+'</p>';
+    }, i:function(){ var gen=_gen; var o=cv("ffCv"); if(!o)return; var dim=o.fit(); var x=o.x; var t0=performance.now();
+      window.addEventListener("resize",function(){ if(gen===_gen) dim=o.fit(); });
+      raf(gen,function(){ var w=dim.w,h=dim.h; var now=performance.now(); var cyc=6.5, ph=((now-t0)/1000)%cyc; var glancing=ph<5; var sp=Math.min(5,ph);
+        x.fillStyle="#08140d"; x.fillRect(0,0,w,h);
+        /* field yard lines */
+        var gy=h*0.42, gh=h*0.5;
+        x.fillStyle="#10231a"; x.fillRect(0,gy,w,gh);
+        var yards=100, pxPerYard=w/ (yards*1.15);
+        for(var yd=0; yd<=100; yd+=10){ var lx=10+ (yd/100)*(w-20); x.strokeStyle= yd%50===0?"#3f7a58":"#20402f"; x.lineWidth=1; x.beginPath(); x.moveTo(lx,gy); x.lineTo(lx,gy+gh); x.stroke(); if(yd%20===0){ x.fillStyle="#5b8c72"; x.font="9px ui-monospace,monospace"; x.textAlign="center"; x.fillText(yd+"",lx,gy-4);} }
+        /* distance in feet -> yards, 55mph=80.6 ft/s */
+        var ft=sp*80.6; var yardsTrav=ft/3; var carX=10 + Math.min(1,(yardsTrav/115))*(w-20); var carY=gy+gh*0.55; var cw=Math.max(30,w*0.09);
+        /* trail */
+        x.strokeStyle="rgba(248,113,113,.5)"; x.lineWidth=3; x.beginPath(); x.moveTo(10,carY); x.lineTo(carX,carY); x.stroke();
+        x.save(); x.translate(carX,carY);
+        x.fillStyle=glancing?"#b91c1c":"#2563eb"; roundRect(x,-cw,-cw*0.32,cw*2,cw*0.64,6); x.fill();
+        x.fillStyle="#9ec5ff"; roundRect(x,cw*0.2,-cw*0.22,cw*0.5,cw*0.44,3); x.fill();
+        x.restore();
+        /* readout */
+        x.fillStyle= glancing?"rgba(120,10,10,.85)":"rgba(21,128,61,.85)"; roundRect(x,10,8,Math.max(150,w*0.5),34,8); x.fill();
+        x.fillStyle="#fff"; x.textAlign="left"; x.font="700 12px system-ui";
+        x.fillText(glancing?(X("EYES ON PHONE","OJOS EN EL TELÉFONO")):(X("EYES BACK UP","OJOS AL FRENTE")),18,22);
+        x.font="700 14px ui-monospace,monospace";
+        x.fillText(Math.round(ft)+" ft · "+Math.round(yardsTrav)+" yd · "+sp.toFixed(1)+"s",18,38);
+        var cap=$("ffCap"); if(cap) cap.textContent = glancing? X("Driving blind at 55 mph…","Manejando a ciegas a 55 mph…") : X("By now the hazard could already be a crash.","Para entonces el peligro ya pudo ser un choque.");
+      });
+      function roundRect(c,x1,y1,w1,h1,r){ c.beginPath(); c.moveTo(x1+r,y1); c.arcTo(x1+w1,y1,x1+w1,y1+h1,r); c.arcTo(x1+w1,y1+h1,x1,y1+h1,r); c.arcTo(x1,y1+h1,x1,y1,r); c.arcTo(x1,y1,x1+w1,y1,r); c.closePath(); }
+    }
+  },
+  /* 14 — Case study 2: Gray Summit */
+  { ico:ICO.warn, t:["Case 2 · Texting","Caso 2 · Texto"], b:function(){
+      return tit("Real case: texting pileup","Caso real: choque en cadena por texto")+
+        '<div class="case"><span class="fatal">'+X("2 killed · 38 injured","2 muertos · 38 heridos")+'</span>'+
+        '<h3>'+X("Gray Summit, Missouri, August 5, 2010","Gray Summit, Misuri, 5 de agosto de 2010")+'</h3>'+
+        '<p style="margin:0;font-size:13.5px">'+X("A 19-year-old pickup driver rear-ended a slowed tractor-trailer on I-44. Two school buses then piled into the wreck. The pickup driver and a 15-year-old student were killed; 38 more were hurt.","Un conductor de camioneta de 19 años chocó por detrás a un tractocamión que frenaba en la I-44. Dos autobuses escolares se estrellaron luego contra los restos. El conductor de la camioneta y un estudiante de 15 años murieron; 38 más resultaron heridos.")+'</p></div>'+
+        '<h2>'+X("What the NTSB found","Lo que halló el NTSB")+'</h2>'+
+        '<ul>'+
+          '<li>'+X("The young driver sent or received <b>11 texts in the 11 minutes</b> before the crash — the last one right around impact.","El joven envió o recibió <b>11 textos en los 11 minutos</b> previos — el último justo alrededor del impacto.")+'</li>'+
+          '<li>'+X("He never braked for the traffic stopped ahead — classic “looked but didn’t see” from distraction.","Nunca frenó ante el tráfico detenido — el clásico “miró pero no vio” por distracción.")+'</li>'+
+          '<li>'+X("This crash led the NTSB to call, for the first time, for a nationwide ban on all driver use of portable electronic devices.","Este choque llevó al NTSB a pedir, por primera vez, una prohibición nacional de todo uso de dispositivos electrónicos por conductores.")+'</li>'+
+        '</ul>'+
+        '<p class="note bad"><b>'+X("Lesson:","Lección:")+'</b> '+X("A handful of routine texts ended two lives and injured 38. The message that felt urgent never was. “No call, no text, no update is worth a human life.” Source: NTSB HAR-11/03.","Un puñado de textos rutinarios terminó con dos vidas e hirió a 38. El mensaje que parecía urgente nunca lo fue. “Ninguna llamada, texto ni notificación vale una vida humana.” Fuente: NTSB HAR-11/03.")+'</p>';
+  }},
+  /* 15 — Phone discipline */
+  { ico:ICO.phone, t:["Phone discipline","Disciplina del teléfono"], b:function(){
+      return tit("Simple rules that save lives","Reglas simples que salvan vidas")+
+        '<ul>'+
+          '<li>'+X("Turn on <b>Do Not Disturb While Driving</b> before you move. Let it auto-reply.","Activa <b>No molestar mientras manejas</b> antes de arrancar. Deja que responda solo.")+'</li>'+
+          '<li>'+X("Set navigation and playlists <b>before</b> you put it in drive — never while rolling.","Configura navegación y música <b>antes</b> de poner en marcha — nunca en movimiento.")+'</li>'+
+          '<li>'+X("Need to call or text? <b>Pull over</b> somewhere safe. Dispatch can wait 5 minutes.","¿Debes llamar o textear? <b>Oríllate</b> en un lugar seguro. Despacho puede esperar 5 minutos.")+'</li>'+
+          '<li>'+X("Passenger? Make them the phone operator.","¿Llevas acompañante? Que él use el teléfono.")+'</li>'+
+        '</ul>'+
+        '<p class="note good"><b>'+X("Team rule:","Regla del equipo:")+'</b> '+X("We do not call or text each other when we know someone is driving. If they pick up, the first thing we say is “are you driving? Call me back.”","No nos llamamos ni escribimos cuando sabemos que alguien maneja. Si contesta, lo primero es “¿vas manejando? Llámame luego.”")+'</p>';
+  }},
+  /* 16 — SIPDE */
+  { ico:ICO.eye, t:["SIPDE","SIPDE"], b:function(){
+      return tit("Defensive driving: SIPDE","Manejo defensivo: SIPDE")+
+        '<p class="lead">'+X("Defensive driving means seeing trouble early and having a plan before you need it. SIPDE is the mental loop good drivers run constantly:","Manejar a la defensiva es ver el problema temprano y tener un plan antes de necesitarlo. SIPDE es el ciclo mental que los buenos conductores repiten siempre:")+'</p>'+
+        '<div class="steps">'+
+          stepRow("S","Search","Explora","Scan far ahead, mirrors, and sides — 12–15 seconds up the road.","Explora lejos adelante, espejos y lados — 12–15 segundos de camino.")+
+          stepRow("I","Identify","Identifica","Spot hazards: brake lights, merging cars, pedestrians, debris.","Detecta peligros: luces de freno, autos que se incorporan, peatones, escombros.")+
+          stepRow("P","Predict","Predice","Ask “what if?” — assume others may do the wrong thing.","Pregunta “¿y si?” — asume que otros pueden equivocarse.")+
+          stepRow("D","Decide","Decide","Choose a response early: slow, cover the brake, change lane.","Elige la respuesta temprano: frena, cubre el freno, cambia de carril.")+
+          stepRow("E","Execute","Ejecuta","Act smoothly and early — space and time are your friends.","Actúa suave y temprano — el espacio y el tiempo son tus aliados.")+
+        '</div>';
+  }},
+  /* 17 — Smith System */
+  { ico:ICO.list, t:["Smith System","Sistema Smith"], b:function(){
+      return tit("The 5 keys of the Smith System","Las 5 claves del Sistema Smith")+
+        '<div class="grid2">'+
+          bx(ICO.road,"1 · Aim high in steering","1 · Mira alto y lejos","Look far down the road, not at the bumper ahead.","Mira lejos por el camino, no al parachoques de adelante.")+
+          bx(ICO.eye,"2 · Get the big picture","2 · Ve el panorama","Keep back, take in the whole scene and all threats.","Guarda distancia, capta toda la escena y las amenazas.")+
+          bx(ICO.eyes,"3 · Keep your eyes moving","3 · Mueve los ojos","Scan; check mirrors every 5–8 s. Don’t fixate.","Explora; revisa espejos cada 5–8 s. No te fijes en un punto.")+
+          bx(ICO.shield,"4 · Leave yourself an out","4 · Déjate una salida","Always keep space and an escape path, especially in front.","Siempre deja espacio y una vía de escape, sobre todo al frente.")+
+          bx(ICO.warn,"5 · Make sure they see you","5 · Que te vean","Signals, lights, eye contact, horn if needed.","Direccionales, luces, contacto visual, claxon si hace falta.")+
+        '</div>'+
+        '<p class="note">'+X("These five habits, run every trip, prevent the “I never saw them” crash that killed people in both cases we studied.","Estos cinco hábitos, en cada viaje, evitan el choque de “nunca los vi” que mató gente en los dos casos que estudiamos.")+'</p>';
+  }},
+  /* 18 — Following distance canvas */
+  { ico:ICO.car, t:["Following distance","Distancia de seguimiento"], b:function(){
+      return tit("The 3-second rule","La regla de los 3 segundos")+
+        '<p class="lead">'+X("Pick a fixed point ahead (a sign, a shadow). When the vehicle in front passes it, count “one-thousand-one, one-thousand-two, one-thousand-three.” If you reach the point before you finish, you’re too close. Watch the gap fill in.","Elige un punto fijo adelante (un letrero, una sombra). Cuando el vehículo de enfrente lo pase, cuenta “mil uno, mil dos, mil tres.” Si llegas al punto antes de terminar, vas muy cerca. Observa cómo se llena la brecha.")+'</p>'+
+        '<div class="illus" style="aspect-ratio:16/8"><canvas id="fdCv"></canvas></div>'+
+        '<p class="note warn">'+X("Add more: use <b>4–6 seconds</b> at night, in rain, when fatigued, or in a heavy/loaded truck — they all need more room to stop.","Agrega más: usa <b>4–6 segundos</b> de noche, con lluvia, cansado o en un camión pesado/cargado — todos necesitan más espacio para frenar.")+'</p>';
+    }, i:function(){ var gen=_gen; var o=cv("fdCv"); if(!o)return; var dim=o.fit(); var x=o.x; var t0=performance.now();
+      window.addEventListener("resize",function(){ if(gen===_gen) dim=o.fit(); });
+      raf(gen,function(){ var w=dim.w,h=dim.h; var now=performance.now();
+        x.fillStyle="#08140d"; x.fillRect(0,0,w,h);
+        var ry=h*0.4, rh=h*0.5; x.fillStyle="#10231a"; x.fillRect(0,ry,w,rh);
+        var off=(now/22)%44; x.strokeStyle="#d7e35a"; x.lineWidth=3; x.setLineDash([18,26]); x.lineDashOffset=-off;
+        x.beginPath(); x.moveTo(0,ry+rh/2); x.lineTo(w,ry+rh/2); x.stroke(); x.setLineDash([]);
+        /* fixed reference point (sign) */
+        var signX=w*0.62; x.strokeStyle="#8fd6ac"; x.lineWidth=2; x.beginPath(); x.moveTo(signX,ry-2); x.lineTo(signX,ry-h*0.22); x.stroke();
+        x.fillStyle="#15803D"; roundRect(x,signX-10,ry-h*0.30,20,h*0.09,3); x.fill();
+        /* lead car passes sign; timer counts */
+        var cyc=5, ph=((now-t0)/1000)%cyc; var leadX=w*0.62; /* lead sits near sign */
+        var cw=Math.max(30,w*0.09); var cy=ry+rh*0.55;
+        /* follower kept at 3s gap: 3s * ~ (w/5 px per sec visual) */
+        var gapPx=Math.min(w*0.5, 3*(w*0.16));
+        var folX=leadX-gapPx;
+        drawCar(x,leadX,cy,cw,"#2563eb");
+        drawCar(x,folX,cy,cw,"#22c55e");
+        /* gap bracket */
+        x.strokeStyle="#8fd6ac"; x.lineWidth=1.5; x.beginPath(); x.moveTo(folX,cy+cw*0.5); x.lineTo(leadX,cy+cw*0.5); x.stroke();
+        var count=Math.min(3, ph* (3/ (gapPx/(w*0.16))) ); /* seconds elapsed as follower approaches */
+        x.fillStyle="rgba(21,128,61,.9)"; roundRect(x,folX-6,8,150,32,8); x.fill();
+        x.fillStyle="#fff"; x.textAlign="left"; x.font="700 12px system-ui"; x.fillText(X("SAFE GAP","BRECHA SEGURA"),folX+4,22);
+        x.font="700 14px ui-monospace,monospace"; x.fillText("≈ 3.0 s",folX+4,37);
+        function drawCar(c,px,py,cwv,col){ c.save(); c.translate(px,py); c.fillStyle=col; roundRect(c,-cwv,-cwv*0.32,cwv*2,cwv*0.64,6); c.fill(); c.fillStyle="#cfe0ff"; roundRect(c,-cwv*0.7,-cwv*0.22,cwv*0.5,cwv*0.44,3); c.fill(); c.fillStyle="#dc2626"; c.fillRect(cwv*0.85,-cwv*0.2,4,cwv*0.4); c.restore(); }
+      });
+      function roundRect(c,x1,y1,w1,h1,r){ c.beginPath(); c.moveTo(x1+r,y1); c.arcTo(x1+w1,y1,x1+w1,y1+h1,r); c.arcTo(x1+w1,y1+h1,x1,y1+h1,r); c.arcTo(x1,y1+h1,x1,y1,r); c.arcTo(x1,y1,x1+w1,y1,r); c.closePath(); }
+    }
+  },
+  /* 19 — Stopping distance interactive */
+  { ico:ICO.gauge, t:["Stopping distance","Distancia de frenado"], b:function(){
+      return tit("Interactive: speed vs stopping distance","Interactivo: velocidad vs distancia de frenado")+
+        '<p class="lead">'+X("Total stopping distance = <b>reaction distance</b> (you see → you brake, ~1.5 s) + <b>braking distance</b>. Braking distance grows with the <b>square</b> of speed — double the speed, roughly four times the braking. Drag the slider.","Distancia total = <b>distancia de reacción</b> (ves → frenas, ~1.5 s) + <b>distancia de frenado</b>. La distancia de frenado crece con el <b>cuadrado</b> de la velocidad — al doble de velocidad, ~cuatro veces el frenado. Mueve el control.")+'</p>'+
+        '<div class="ctrl"><label>'+X("Speed","Velocidad")+': <b id="sdV">55 mph</b></label><input type="range" id="sdSpeed" min="25" max="80" step="5" value="55"></div>'+
+        '<div class="row"><div class="seg" id="sdSurf"><button data-s="dry" class="on">'+X("Dry","Seco")+'</button><button data-s="wet">'+X("Wet","Mojado")+'</button></div></div>'+
+        '<div class="illus" style="aspect-ratio:16/7;background:#08140d"><canvas id="sdCv"></canvas></div>'+
+        '<div class="stat3"><div class="s"><b id="sdReact">—</b><span>'+X("reaction ft","reacción ft")+'</span></div><div class="s"><b id="sdBrake">—</b><span>'+X("braking ft","frenado ft")+'</span></div><div class="s"><b id="sdTot">—</b><span>'+X("total ft","total ft")+'</span></div></div>'+
+        '<div class="note" id="sdMsg"></div>';
+    }, i:function(){ var gen=_gen; var sp=$("sdSpeed"), o=cv("sdCv"); var dim=o?o.fit():{w:300,h:80}; var surf="dry";
+      window.addEventListener("resize",function(){ if(gen===_gen && o) dim=o.fit(); });
+      document.querySelectorAll("#sdSurf button").forEach(function(b){ b.onclick=function(){ document.querySelectorAll("#sdSurf button").forEach(function(z){z.classList.remove("on");}); b.classList.add("on"); surf=b.dataset.s; calc(); }; });
+      function calc(){ var v=+sp.value; $("sdV").textContent=v+" mph"; var fps=v*1.467; var react=fps*1.5; var mu=surf==="dry"?0.7:0.4; var brake=(fps*fps)/(2*mu*32.2); var tot=react+brake;
+        $("sdReact").textContent=Math.round(react); $("sdBrake").textContent=Math.round(brake); $("sdTot").textContent=Math.round(tot);
+        var m=$("sdMsg"); var fields=(tot/300); m.className="note"; m.innerHTML=X("That’s about ","Eso es cerca de ")+"<b>"+Math.round(tot/13)+"</b>"+X(" car lengths"," largos de auto")+" · ≈ "+fields.toFixed(1)+X(" football fields."," campos de fútbol.")+(surf==="wet"?(" "+X("Wet roads nearly double the braking distance.","El pavimento mojado casi duplica la distancia de frenado.")):"");
+        draw(react,brake);
+      }
+      function draw(react,brake){ if(!o)return; var w=dim.w,h=dim.h,x=o.x; x.fillStyle="#08140d"; x.fillRect(0,0,w,h);
+        var maxFt=520; var pad=12; var bw=w-pad*2; var y=h*0.5, bh=Math.min(30,h*0.34);
+        function px(ft){ return (ft/maxFt)*bw; }
+        x.fillStyle="#16261d"; roundRect(x,pad,y-bh/2,bw,bh,7); x.fill();
+        var rpx=px(react), bpx=px(brake);
+        x.fillStyle="#facc15"; roundRect(x,pad,y-bh/2,Math.max(2,rpx),bh,7); x.fill();
+        x.fillStyle="#f87171"; x.fillRect(pad+rpx,y-bh/2,Math.max(2,bpx),bh);
+        /* football field ref at 300 ft */
+        var fx=pad+px(300); x.strokeStyle="#4ade80"; x.setLineDash([4,4]); x.lineWidth=1.4; x.beginPath(); x.moveTo(fx,y-bh/2-8); x.lineTo(fx,y+bh/2+8); x.stroke(); x.setLineDash([]);
+        x.fillStyle="#8fd6ac"; x.font="10px system-ui"; x.textAlign="center"; x.fillText(X("football field","campo (300 ft)"),fx,y+bh/2+20);
+        /* car */
+        var carX=pad+rpx+bpx; x.fillStyle="#e9f6ee"; roundRect(x,Math.min(w-24,carX),y-7,20,14,3); x.fill();
+        x.textAlign="left"; x.fillStyle="#facc15"; x.font="11px system-ui"; x.fillText(X("reaction","reacción"),pad,y-bh/2-6);
+        x.fillStyle="#f87171"; x.fillText(X("braking","frenado"),pad+rpx+4,y-bh/2-6);
+      }
+      function roundRect(c,x1,y1,w1,h1,r){ c.beginPath(); c.moveTo(x1+r,y1); c.arcTo(x1+w1,y1,x1+w1,y1+h1,r); c.arcTo(x1+w1,y1+h1,x1,y1+h1,r); c.arcTo(x1,y1+h1,x1,y1,r); c.arcTo(x1,y1,x1+w1,y1,r); c.closePath(); }
+      sp.oninput=calc; calc();
+    }
+  },
+  /* 20 — Blind spots / No-Zone canvas */
+  { ico:ICO.truck, t:["Blind spots","Puntos ciegos"], b:function(){
+      return tit("Blind spots & the truck “No-Zone”","Puntos ciegos y la “zona ciega” del camión")+
+        '<p class="lead">'+X("Every vehicle has blind spots; big trucks have huge ones — front, rear, and especially the right side. If you can’t see the driver’s mirrors, they can’t see you. Watch the car disappear as it moves through each zone.","Todo vehículo tiene puntos ciegos; los camiones grandes los tienen enormes — al frente, atrás y sobre todo del lado derecho. Si no ves los espejos del conductor, él no te ve. Observa cómo el auto desaparece al pasar por cada zona.")+'</p>'+
+        '<div class="illus" style="aspect-ratio:16/9"><canvas id="bsCv"></canvas></div>'+
+        '<div class="mcap">'+ICO.warn+'<span id="bsCap"></span></div>'+
+        '<p class="note warn">'+X("Passing rule: get through a blind spot quickly, never linger beside a truck, and pass on the left where the blind spot is smaller. Give trucks room to turn — they swing wide.","Regla al rebasar: cruza el punto ciego rápido, nunca te quedes al lado del camión, y rebasa por la izquierda donde el punto ciego es menor. Da espacio a los camiones para girar — se abren mucho.")+'</p>';
+    }, i:function(){ var gen=_gen; var o=cv("bsCv"); if(!o)return; var dim=o.fit(); var x=o.x; var t0=performance.now();
+      window.addEventListener("resize",function(){ if(gen===_gen) dim=o.fit(); });
+      raf(gen,function(){ var w=dim.w,h=dim.h; var now=performance.now(); var t=(now-t0)/1000;
+        x.fillStyle="#08140d"; x.fillRect(0,0,w,h);
+        /* road lanes */
+        x.fillStyle="#10231a"; x.fillRect(0,0,w,h);
+        x.strokeStyle="#20402f"; x.lineWidth=1; for(var i=1;i<3;i++){ x.beginPath(); x.moveTo(0,h*i/3); x.lineTo(w,h*i/3); x.stroke(); }
+        /* truck (top-down) center lane */
+        var tx=w*0.42, ty=h*0.5, tw=w*0.16, tl=h*0.5;
+        /* blind zones (shaded) */
+        var zones=[
+          {x:tx-tw*0.2,y:ty-tl*0.5-h*0.16,w:tw*1.4,h:h*0.16,name:["Front","Frente"]},
+          {x:tx-tw*0.2,y:ty+tl*0.5,w:tw*1.4,h:h*0.22,name:["Rear","Atrás"]},
+          {x:tx-w*0.24,y:ty-tl*0.3,w:w*0.24,h:tl*0.8,name:["Left","Izquierda"]},
+          {x:tx+tw*1.2,y:ty-tl*0.3,w:w*0.30,h:tl*0.95,name:["Right (big)","Derecha (grande)"]}
+        ];
+        x.fillStyle="rgba(220,38,38,.16)"; zones.forEach(function(z){ x.fillRect(z.x,z.y,z.w,z.h); });
+        /* truck body */
+        x.fillStyle="#1f3a2b"; roundRect(x,tx,ty-tl*0.5,tw,tl,6); x.fill();
+        x.fillStyle="#2f5a42"; x.fillRect(tx,ty-tl*0.5,tw,tl*0.18); /* cab */
+        x.strokeStyle="#4ade80"; x.lineWidth=1.4; x.strokeRect(tx,ty-tl*0.5,tw,tl);
+        /* car moving along right side then forward (through zones) */
+        var path=(t%12)/12; var carX, carY;
+        if(path<0.4){ carX=tx+tw+w*0.10; carY=ty+tl*0.5 - (path/0.4)*(tl*1.0); }
+        else if(path<0.7){ carX=tx+tw+w*0.10 - ((path-0.4)/0.3)*(w*0.10); carY=ty-tl*0.5-h*0.08; }
+        else { carX=tx-w*0.14; carY=ty-tl*0.5-h*0.08 + ((path-0.7)/0.3)*(tl*1.1); }
+        var inBlind=zones.some(function(z){ return carX>z.x-6 && carX<z.x+z.w+6 && carY>z.y-6 && carY<z.y+z.h+6; });
+        var cw=Math.max(12,w*0.04);
+        x.fillStyle=inBlind?"#dc2626":"#22c55e"; roundRect(x,carX-cw,carY-cw*1.4,cw*2,cw*2.8,4); x.fill();
+        x.fillStyle="#cfe0ff"; roundRect(x,carX-cw*0.7,carY-cw*1.0,cw*1.4,cw*0.9,2); x.fill();
+        if(inBlind){ x.fillStyle="rgba(120,10,10,.85)"; roundRect(x,carX-34,carY-cw*1.4-26,68,20,6); x.fill(); x.fillStyle="#fff"; x.font="700 11px system-ui"; x.textAlign="center"; x.fillText(X("BLIND SPOT","PUNTO CIEGO"),carX,carY-cw*1.4-12); }
+        var cap=$("bsCap"); if(cap) cap.textContent= inBlind? X("The truck driver cannot see this car right now.","El conductor del camión no ve este auto ahora."): X("Visible to the truck driver.","Visible para el conductor del camión.");
+      });
+      function roundRect(c,x1,y1,w1,h1,r){ c.beginPath(); c.moveTo(x1+r,y1); c.arcTo(x1+w1,y1,x1+w1,y1+h1,r); c.arcTo(x1+w1,y1+h1,x1,y1+h1,r); c.arcTo(x1,y1+h1,x1,y1,r); c.arcTo(x1,y1,x1+w1,y1,r); c.closePath(); }
+    }
+  },
+  /* 21 — Special conditions */
+  { ico:ICO.road, t:["Conditions","Condiciones"], b:function(){
+      return tit("Weather, night & work zones","Clima, noche y zonas de obra")+
+        '<div class="grid2">'+
+          bx(ICO.warn,"Rain / ice","Lluvia / hielo","Slow down, double the following gap, brake gently. First rain after dry spells is slickest.","Baja la velocidad, duplica la brecha, frena suave. La primera lluvia tras días secos es la más resbalosa.")+
+          bx(ICO.moon,"Night","Noche","Reduced vision + fatigue. Slow to keep stopping distance within your headlights.","Menos visión + fatiga. Baja para que la distancia de frenado quepa en tus faros.")+
+          bx(ICO.people,"Work zones","Zonas de obra","Both fatal cases involved slowed/stopped traffic. Expect sudden stops; obey flaggers.","Ambos casos fatales fueron con tráfico frenado/detenido. Espera paradas súbitas; obedece al abanderador.")+
+          bx(ICO.road,"Rural roads","Caminos rurales","Most of our sites are remote: gravel, wildlife, no shoulders, long distances. Fatigue peaks here.","Muchos sitios son remotos: grava, fauna, sin acotamiento, largas distancias. La fatiga se dispara aquí.")+
+        '</div>'+
+        '<p class="note bad">'+X("Rule of thumb: whenever conditions are worse, everything gets bigger — more following distance, less speed, earlier braking.","Regla práctica: cuando las condiciones empeoran, todo crece — más distancia de seguimiento, menos velocidad, frenado más temprano.")+'</p>';
+  }},
+  /* 22 — Pre-trip checklist */
+  { ico:ICO.check, t:["Pre-trip","Antes de salir"], b:function(){
+      var items=[
+        ["I slept enough (or napped) — I’m fit to drive","Dormí suficiente (o hice siesta) — estoy apto para manejar"],
+        ["Everyone is belted; head restraints adjusted","Todos con cinturón; apoyacabezas ajustados"],
+        ["Phone on Do Not Disturb; nav set before moving","Teléfono en No molestar; navegación lista antes de arrancar"],
+        ["Mirrors, lights, tires, fuel checked","Espejos, luces, llantas, combustible revisados"],
+        ["Route & weather reviewed; breaks planned","Ruta y clima revisados; descansos planeados"],
+        ["I will keep 3+ seconds following distance","Mantendré 3+ segundos de distancia de seguimiento"]
+      ];
+      return tit("Before you turn the key","Antes de encender")+'<p class="lead">'+X("Tap each item you can honestly confirm.","Toca cada punto que puedas confirmar con honestidad.")+'</p>'+
+        items.map(function(it){return '<div class="chk"><span class="bx">'+ICO.check+'</span><span class="txt"><b>'+X(it[0],it[1])+'</b></span></div>';}).join("")+
+        '<p class="note good" id="ptMsg"></p>';
+    }, i:function(){ var t=document.querySelectorAll(".chk").length; function u(){var d=document.querySelectorAll(".chk.done").length;$("ptMsg").textContent=X("Confirmed: ","Confirmado: ")+d+"/"+t+(d===t?X(" — good to drive ✓"," — listo para manejar ✓"):"");} document.querySelectorAll(".chk").forEach(function(c){c.onclick=function(){c.classList.toggle("done");u();};}); u(); }
+  },
+  /* 23 — Quiz */
+  { ico:ICO.quiz, t:["Quiz","Evaluación"], b:function(){
+      var QUIZ=[
+        {en:"About how many hours awake makes you as impaired as the 0.08% legal alcohol limit?",es:"¿Cuántas horas despierto te dejan tan afectado como el límite legal de 0.08% de alcohol?",
+         o_en:["About 12 hours","About 19 hours","About 30 hours"],o_es:["Unas 12 horas","Unas 19 horas","Unas 30 horas"],a:1},
+        {en:"At 55 mph, sending a text (eyes off ~5 s) means driving blind for about…",es:"A 55 mph, enviar un texto (ojos fuera ~5 s) significa manejar a ciegas cerca de…",
+         o_en:["A car length","A football field","A city block only"],o_es:["Un largo de auto","Un campo de fútbol","Solo una cuadra"],a:1},
+        {en:"The only real cure for driver sleepiness is…",es:"La única cura real del sueño al volante es…",
+         o_en:["Coffee and loud music","Cold air from the window","Actual sleep (or a nap)"],o_es:["Café y música fuerte","Aire frío de la ventana","Dormir de verdad (o una siesta)"],a:2},
+        {en:"Braking distance grows with speed how?",es:"¿Cómo crece la distancia de frenado con la velocidad?",
+         o_en:["In a straight line","With the square of speed","It stays the same"],o_es:["De forma lineal","Con el cuadrado de la velocidad","Se mantiene igual"],a:1},
+        {en:"Safe following distance in good conditions is at least…",es:"La distancia de seguimiento segura en buenas condiciones es al menos…",
+         o_en:["3 seconds","Half a second","One car length"],o_es:["3 segundos","Medio segundo","Un largo de auto"],a:0},
+        {en:"You had 4 hours of sleep and start a night drive. Best choice?",es:"Dormiste 4 horas y empiezas un viaje nocturno. ¿Mejor opción?",
+         o_en:["Push through with energy drinks","Nap and/or swap drivers before going","Just drive faster to arrive sooner"],o_es:["Aguantar con bebidas energéticas","Siesta y/o cambiar de conductor antes de ir","Manejar más rápido para llegar antes"],a:1}
+      ];
+      window._QZ=QUIZ;
+      var qs=QUIZ.map(function(q,i){var o=(LANG==="es"?q.o_es:q.o_en).map(function(x,j){return '<button class="opt" data-q="'+i+'" data-o="'+j+'">'+x+'</button>';}).join("");return '<div class="q"><h3>'+(i+1)+'. '+X(q.en,q.es)+'</h3>'+o+'</div>';}).join("");
+      return tit("Quick check","Evaluación rápida")+qs+'<div class="score" id="score"></div>';
+    }, i:function(){ var QUIZ=window._QZ,ans={},ok=0; document.querySelectorAll(".opt").forEach(function(b){b.onclick=function(){var qi=+b.dataset.q;if(ans[qi])return;ans[qi]=1;var a=QUIZ[qi].a;document.querySelectorAll('.opt[data-q="'+qi+'"]').forEach(function(z){z.disabled=true;if(+z.dataset.o===a)z.classList.add("correct");});if(+b.dataset.o===a)ok++;else b.classList.add("wrong");if(Object.keys(ans).length===QUIZ.length){var sc=$("score");sc.textContent=X("Score: ","Puntaje: ")+ok+"/"+QUIZ.length+(ok>=5?X(" — well done ✓"," — bien hecho ✓"):X(" — review and retry"," — repasa y repite"));}};}); }
+  },
+  /* 24 — Takeaways & references */
+  { ico:ICO.book, t:["Sources","Fuentes"], b:function(){
+      return tit("Key takeaways & references","Ideas clave y referencias")+
+        '<ul>'+
+          '<li>'+X("Tired driving is impaired driving — 17 h awake ≈ 0.05% BAC, 24 h ≈ 0.10%. Sleep before you drive; nap if you must.","Manejar cansado es manejar afectado — 17 h despierto ≈ 0.05% BAC, 24 h ≈ 0.10%. Duerme antes de manejar; haz siesta si hace falta.")+'</li>'+
+          '<li>'+X("Phone down, every trip. A text is never worth a life.","Teléfono abajo, cada viaje. Un texto nunca vale una vida.")+'</li>'+
+          '<li>'+X("Run SIPDE and the Smith System; keep 3+ seconds; respect speed and stopping distance.","Aplica SIPDE y el Sistema Smith; mantén 3+ segundos; respeta la velocidad y la distancia de frenado.")+'</li>'+
+        '</ul>'+
+        '<h2>'+X("References","Referencias")+'</h2>'+
+        '<div class="ref"><b>FMCSA</b> — Hours of Service of Drivers, 49 CFR Part 395 (11h/14h/30-min/60-70h/34h restart).</div>'+
+        '<div class="ref"><b>NIOSH / CDC</b> — Long work hours training: sleep-deprivation vs alcohol impairment (17 h ≈ 0.05%, 24 h ≈ 0.10% BAC).</div>'+
+        '<div class="ref"><b>NHTSA</b> — Drowsy driving & distracted driving data; the 5-second glance ≈ a football field at 55 mph.</div>'+
+        '<div class="ref"><b>NTSB HAR-15/01</b> — Cranbury, NJ tractor-trailer / limo crash (Jun 7, 2014): driver awake &gt;28 hours.</div>'+
+        '<div class="ref"><b>NTSB HAR-11/03</b> — Gray Summit, MO texting pileup (Aug 5, 2010): 2 killed, 38 injured.</div>'+
+        '<div class="ref"><b>Smith System</b> (5 keys) · <b>SIPDE</b> — defensive-driving frameworks.</div>'+
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px"><span class="verdict ok">'+ICO.check+' '+X("Module complete","Módulo completo")+'</span><a class="btn ghost" href="../index.html" target="_top">'+X("Back to portal","Volver al portal")+'</a></div>'+
+        '<p class="note">'+X("Training overview only. Always follow your employer’s driving policy, local traffic laws, and — for CDL drivers — the applicable FMCSA regulations.","Solo es un resumen de entrenamiento. Sigue siempre la política de manejo de tu empleador, las leyes de tránsito locales y — para conductores CDL — las regulaciones FMCSA aplicables.")+'</p>';
+  }}
+];
+var cur=0;
+var _gen=0;
+
+/* ===================== engine ===================== */
+function pintarChrome(){
+  document.documentElement.lang=LANG;
+  $("brand").textContent=X(CONFIG.brand[0],CONFIG.brand[1]);
+  $("brandsub").textContent=X(CONFIG.subtitle[0],CONFIG.subtitle[1]);
+  $("homeTxt").textContent=X("Home","Inicio");
+  document.querySelectorAll("#lang button").forEach(function(b){ b.classList.toggle("on", b.dataset.l===LANG); });
+  var dark=document.documentElement.getAttribute("data-theme")==="dark";
+  $("temaIco").innerHTML=dark?ICO.sun:ICO.moonm; $("temaTxt").textContent=dark?X("Light","Claro"):X("Dark","Oscuro");
+  $("prev").innerHTML="‹ "+X("Back","Anterior");
+  $("next").innerHTML=(cur>=STEPS.length-1?X("Restart","Reiniciar"):X("Next","Siguiente")+" ›");
+}
+function render(){
+  _gen++;
+  pintarChrome();
+  var s=STEPS[cur];
+  $("card").innerHTML=s.b();
+  if(s.i) s.i();
+  $("progbar").style.width=((cur+1)/STEPS.length*100)+"%";
+  $("mStep").textContent=X("Step ","Paso ")+(cur+1)+" / "+STEPS.length+" · "+X(s.t[0],s.t[1]);
+  $("mDur").textContent=CONFIG.duration;
+  $("prev").disabled=(cur===0);
+  $("dots").innerHTML=STEPS.map(function(_,i){return '<button class="dot'+(i===cur?' on':'')+'" data-i="'+i+'" aria-label="'+(i+1)+'"></button>';}).join("");
+  document.querySelectorAll(".dot").forEach(function(d){ d.onclick=function(){ cur=+d.dataset.i; render(); }; });
+  window.scrollTo(0,0);
+}
+$("prev").onclick=function(){ if(cur>0){cur--;render();} };
+$("next").onclick=function(){ cur=(cur>=STEPS.length-1)?0:cur+1; render(); };
+document.querySelectorAll("#lang button").forEach(function(b){ b.onclick=function(){ LANG=b.dataset.l; render(); }; });
+$("tema").onclick=function(){ var d=document.documentElement.getAttribute("data-theme")==="dark"; document.documentElement.setAttribute("data-theme", d?"light":"dark"); pintarChrome(); };
+document.addEventListener("keydown",function(e){ if(e.key==="ArrowRight")$("next").click(); if(e.key==="ArrowLeft")$("prev").click(); });
+render();
+</script>
+</body>
+</html>
