@@ -2,51 +2,42 @@
    Buzón de Sugerencias del Portal — Backend Google Apps Script
    Training Portal Suggestions — Google Apps Script backend
    ----------------------------------------------------------------------------
-   Recibe sugerencias (y un archivo opcional) enviadas por el sitio estático
-   (GitHub Pages), guarda el archivo en una carpeta de tu Drive y agrega una
-   fila a una Hoja de Google. Opcionalmente te avisa por correo.
+   Recibe sugerencias (y hasta 3 archivos opcionales) del sitio estático
+   (GitHub Pages), guarda los archivos en tu Drive y agrega una fila a una
+   Hoja de Google con un enlace clicable "Abrir" al archivo o a la carpeta.
 
-   Receives suggestions (and an optional file) POSTed by the static site,
-   saves the file to a Drive folder, appends a row to a Google Sheet, and can
-   email you a notification.
+   Receives suggestions (and up to 3 optional files), saves them to Drive, and
+   appends a row to a Google Sheet with a clickable "Open" link to the file or
+   folder. Optional email notification.
 
-   El front-end envía un POST con:
-     - Content-Type: "text/plain;charset=utf-8"
-     - mode: "no-cors"  (no lee la respuesta)
-   El cuerpo es un JSON con estas claves:
+   El front-end envía POST con Content-Type "text/plain;charset=utf-8",
+   mode "no-cors", cuerpo JSON:
      { ts, name, area, suggestion, link, lang, page,
-       fileName, fileType, fileB64 }
+       files: [ { name, type, b64 }, ... ] }        // 0..3 archivos
+   (También acepta el formato antiguo de 1 archivo: fileName/fileType/fileB64.)
    ==========================================================================*/
 
 /* ------------------------------ CONFIG ---------------------------------- */
 
-// (Opcional) ID de la Hoja de Google donde se agregan las filas. Si lo dejas
-// vacío y este script está ligado a una Hoja (Extensiones > Apps Script desde
-// la Hoja), usa la Hoja activa.
-// (Optional) Google Sheet ID. If empty and the script is bound to a Sheet,
-// it uses the active spreadsheet.
+// (Opcional) ID de la Hoja de Google. Vacío + script ligado a una Hoja = Hoja activa.
 const SHEET_ID = "";
-
-// Nombre de la pestaña donde se guardan las sugerencias (se crea sola).
 const SHEET_NAME = "Sugerencias";
 
-// (Opcional) ID de la carpeta de Drive donde guardar los archivos. Si lo dejas
-// vacío, el script crea/usa una carpeta llamada FOLDER_NAME en "Mi unidad".
-// (Optional) Drive folder ID for uploaded files. If empty, a folder named
-// FOLDER_NAME is created/used in My Drive.
+// (Opcional) ID de la carpeta raíz en Drive. Vacío = se crea/usa FOLDER_NAME.
 const FOLDER_ID = "";
 const FOLDER_NAME = "Sugerencias del Portal";
 
-// (Opcional) Tu correo para recibir un aviso por cada sugerencia. Vacío = sin
-// aviso. (Optional) Your email to get notified on each suggestion. Empty = off.
+// (Opcional) tu correo para recibir aviso por cada sugerencia. Vacío = sin aviso.
 const NOTIFY_EMAIL = "";
 
-// Límite de tamaño del archivo (MB) que el backend aceptará.
-const MAX_MB = 12;
+// Límites (deben coincidir con el formulario): hasta MAX_FILES archivos y
+// MAX_TOTAL_MB combinados.
+const MAX_FILES = 3;
+const MAX_TOTAL_MB = 12;
 
 const HEADERS = [
   "Fecha/Timestamp", "Nombre/Name", "Área/Area", "Sugerencia/Suggestion",
-  "Link", "Archivo/File", "URL del archivo/File URL", "Idioma/Lang", "Página/Page"
+  "Link", "Archivos/Files", "Abrir/Open", "Idioma/Lang", "Página/Page"
 ];
 
 /* ------------------------------ HELPERS --------------------------------- */
@@ -72,13 +63,26 @@ function getFolder_() {
 }
 
 function s_(v){ return (v === null || v === undefined) ? "" : String(v); }
+function safe_(v){ return s_(v).replace(/[\\/:*?"<>|]/g, "_").slice(0, 60).trim(); }
+function stamp_(){ return Utilities.formatDate(new Date(), Session.getScriptTimeZone() || "America/New_York", "yyyyMMdd-HHmmss"); }
+
+/* Normaliza el/los archivo(s) a un arreglo [{name,type,b64}]. */
+function readFiles_(p) {
+  var out = [];
+  if (p && Array.isArray(p.files)) {
+    p.files.forEach(function(f){ if (f && f.b64 && f.name) out.push({ name:s_(f.name), type:s_(f.type)||"application/octet-stream", b64:f.b64 }); });
+  } else if (p && p.fileB64 && p.fileName) { // compatibilidad con formato antiguo
+    out.push({ name:s_(p.fileName), type:s_(p.fileType)||"application/octet-stream", b64:p.fileB64 });
+  }
+  return out.slice(0, MAX_FILES);
+}
 
 /* ------------------------------ ROUTES ---------------------------------- */
 
 function doPost(e) {
   var lock = LockService.getScriptLock();
   try {
-    lock.waitLock(15000);
+    lock.waitLock(20000);
 
     var p = {};
     if (e && e.postData && e.postData.contents) {
@@ -88,20 +92,43 @@ function doPost(e) {
       return jsonOut_({ ok:false, error:"Empty body" });
     }
 
-    // Guardar el archivo (si viene) en Drive.
-    var fileUrl = "";
-    if (p.fileB64 && p.fileName) {
-      try {
-        var bytes = Utilities.base64Decode(p.fileB64);
-        if (bytes.length <= MAX_MB * 1024 * 1024) {
-          var blob = Utilities.newBlob(bytes, p.fileType || "application/octet-stream", cleanName_(p.fileName));
-          var file = getFolder_().createFile(blob);
-          fileUrl = file.getUrl();
+    var files = readFiles_(p);
+    var savedNames = [];   // nombres originales guardados
+    var openUrl = "";      // URL cruda (archivo o carpeta) para email
+    var openCell = "";     // lo que va en la columna "Abrir" (fórmula HYPERLINK o nota)
+
+    if (files.length) {
+      // Decodificar y medir tamaño combinado.
+      var blobs = [], total = 0, ok = true;
+      for (var i = 0; i < files.length; i++) {
+        try {
+          var bytes = Utilities.base64Decode(files[i].b64);
+          total += bytes.length;
+          blobs.push(Utilities.newBlob(bytes, files[i].type, files[i].name));
+        } catch (de) { ok = false; }
+      }
+      if (!ok) {
+        openCell = "(error al decodificar un archivo)";
+      } else if (total > MAX_TOTAL_MB * 1024 * 1024) {
+        openCell = "(archivos omitidos: exceden " + MAX_TOTAL_MB + " MB combinados)";
+      } else {
+        var parent = getFolder_();
+        if (files.length === 1) {
+          // Un solo archivo: va directo a la carpeta raíz.
+          var one = parent.createFile(blobs[0].setName(stamp_() + "__" + safe_(files[0].name)));
+          savedNames.push(files[0].name);
+          openUrl = one.getUrl();
+          openCell = '=HYPERLINK("' + openUrl + '","Abrir archivo")';
         } else {
-          fileUrl = "(archivo omitido: excede " + MAX_MB + " MB)";
+          // Varios archivos: subcarpeta propia por envío.
+          var who = safe_(p.name); var sub = parent.createFolder(stamp_() + (who ? ("__" + who) : "__sugerencia"));
+          for (var j = 0; j < blobs.length; j++) {
+            sub.createFile(blobs[j].setName(safe_(files[j].name)));
+            savedNames.push(files[j].name);
+          }
+          openUrl = sub.getUrl();
+          openCell = '=HYPERLINK("' + openUrl + '","Abrir carpeta (' + files.length + ')")';
         }
-      } catch (fe) {
-        fileUrl = "(error al guardar archivo: " + String(fe) + ")";
       }
     }
 
@@ -109,7 +136,7 @@ function doPost(e) {
     sh.appendRow([
       s_(p.ts) || new Date().toISOString(),
       s_(p.name), s_(p.area), s_(p.suggestion), s_(p.link),
-      s_(p.fileName), fileUrl, s_(p.lang), s_(p.page)
+      savedNames.join(", "), openCell, s_(p.lang), s_(p.page)
     ]);
 
     if (NOTIFY_EMAIL && String(NOTIFY_EMAIL).trim() !== "") {
@@ -119,7 +146,8 @@ function doPost(e) {
           "Área/Area: " + s_(p.area) + "\n" +
           "Sugerencia/Suggestion:\n" + s_(p.suggestion) + "\n\n" +
           (s_(p.link) ? ("Link: " + s_(p.link) + "\n") : "") +
-          (fileUrl ? ("Archivo/File: " + fileUrl + "\n") : "") +
+          (savedNames.length ? ("Archivos/Files: " + savedNames.join(", ") + "\n") : "") +
+          (openUrl ? ("Abrir/Open: " + openUrl + "\n") : "") +
           "\nIdioma/Lang: " + s_(p.lang);
         MailApp.sendEmail(NOTIFY_EMAIL, "Nueva sugerencia del portal de entrenamiento", body);
       } catch (me) { /* no romper si falla el correo */ }
@@ -135,12 +163,6 @@ function doPost(e) {
 
 function doGet(e) {
   return jsonOut_({ ok:true, service:"Portal suggestions", time:new Date().toISOString() });
-}
-
-function cleanName_(name) {
-  var n = String(name || "archivo").replace(/[\\/:*?"<>|]/g, "_").slice(0, 120);
-  var stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || "America/New_York", "yyyyMMdd-HHmmss");
-  return stamp + "__" + n;
 }
 
 function jsonOut_(obj) {

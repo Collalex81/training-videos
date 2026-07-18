@@ -66,16 +66,24 @@ files), private to you. Workers don't need to sign in.
 - **Texto, links y quién:** abre tu **Hoja de Google** (pestaña *Sugerencias*). Cada fila
   es un envío, con fecha, nombre (si lo dejaron), área, la sugerencia, el link y la URL del
   archivo.
-- **Archivos:** en la columna *URL del archivo* haz clic para abrirlo, o entra a la carpeta
-  **"Sugerencias del Portal"** en tu Drive.
+- **Archivos:** en la columna **"Abrir"** haz clic — te lleva **directo al archivo** (si fue
+  uno) o **a la subcarpeta** con todos (si mandaron varios). También puedes entrar a la
+  carpeta **"Sugerencias del Portal"** en tu Drive. La columna *Archivos* muestra los nombres
+  originales, y cada envío de varios archivos queda en su **propia subcarpeta** (con fecha/hora
+  y el nombre de quien lo envió).
 - **Aviso por correo (si lo activaste):** recibes un email por cada sugerencia.
 
 ---
 
 ## Notas / Notes
 - **Sin login:** con "Cualquier usuario", nadie necesita cuenta Google para enviar.
-- **Tamaño de archivo:** el formulario limita a ~10 MB y el backend a 12 MB. Para archivos
-  grandes o varios a la vez, que peguen un **link de Drive/Dropbox** en el campo *Link*.
+- **Archivos:** hasta **3 archivos por envío** y **12 MB combinados** (el formulario y el
+  backend lo validan). Si mandan **más de 1**, se guardan juntos en una **subcarpeta propia**.
+  Para archivos más grandes o más de 3, que peguen un **link de Drive/Dropbox** en el campo
+  *Link* (sin límite).
+- **Límites:** puedes cambiar `MAX_FILES` y `MAX_TOTAL_MB` arriba en el `.gs` (y en
+  `suggestions/index.html`); mantenlos iguales en ambos. Subir mucho el tamaño puede volver el
+  envío menos confiable (Apps Script procesa todo en memoria).
 - **Privacidad:** la carpeta y la hoja son **tuyas y privadas**; los archivos no se hacen
   públicos. El nombre es opcional para el trabajador.
 - **Cambiar algo del backend:** edita el código en Apps Script y usa **Implementar →

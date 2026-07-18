@@ -12,12 +12,14 @@
     --line:#e6ebf5; --bar:#0b2e59; --barink:#ffffff; --brand:#1f6feb;
     --tint:rgba(31,111,235,.10); --shadow:0 1px 2px rgba(16,37,68,.05),0 10px 26px rgba(16,37,68,.07);
     --radius:14px; --ok:#15803D; --okt:rgba(21,128,61,.10); --bad:#dc2626; --badt:rgba(220,38,38,.10);
+    --amber:#b45309; --ambt:rgba(180,83,9,.12);
   }
   html[data-theme="dark"]{
     --pg:#0b1220; --card:#151d30; --ink:#eaf0ff; --sub:#9fb0cc;
     --line:#243149; --bar:#0a1526; --barink:#ffffff; --brand:#4d8bff;
     --tint:rgba(77,139,255,.14); --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px rgba(0,0,0,.35);
     --ok:#4ade80; --okt:rgba(74,222,128,.14); --bad:#f87171; --badt:rgba(248,113,113,.14);
+    --amber:#fbbf24; --ambt:rgba(251,191,36,.14);
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--pg);color:var(--ink);min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
@@ -51,7 +53,12 @@
   .file{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
   .filebtn{display:inline-flex;align-items:center;gap:8px;border:1px dashed var(--line);background:var(--pg);color:var(--ink);border-radius:10px;padding:11px 14px;cursor:pointer;font-size:14px;font-weight:600}
   .filebtn:hover{border-color:var(--brand);color:var(--brand)}
-  .fname{font-size:13px;color:var(--sub);word-break:break-all}
+  .flist{margin-top:8px;display:flex;flex-direction:column;gap:5px}
+  .fitem{display:flex;align-items:center;gap:8px;font-size:13px;background:var(--pg);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+  .fitem .x{margin-left:auto;cursor:pointer;color:var(--sub);border:0;background:transparent;font-size:16px;line-height:1;font-family:inherit}
+  .fitem .x:hover{color:var(--bad)}
+  .ftot{font-size:12.5px;color:var(--sub);margin-top:6px}
+  .ftot.over{color:var(--bad);font-weight:600}
   .btn{border:0;background:var(--brand);color:#fff;cursor:pointer;padding:13px 20px;border-radius:11px;font-size:15px;font-weight:700;font-family:inherit;width:100%;min-height:50px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
   .btn:disabled{opacity:.6;cursor:default}
   .msg{margin-top:14px;padding:12px 14px;border-radius:10px;font-size:14px;display:none}
@@ -100,9 +107,10 @@
       <div class="field">
         <label id="lFile"></label>
         <div class="file">
-          <label class="filebtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg><span id="fileBtnTxt"></span><input type="file" id="fFile" style="display:none"></label>
-          <span class="fname" id="fNameShow"></span>
+          <label class="filebtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg><span id="fileBtnTxt"></span><input type="file" id="fFile" multiple style="display:none"></label>
         </div>
+        <div class="flist" id="flist"></div>
+        <div class="ftot" id="ftot"></div>
         <div class="hint" id="hFile"></div>
       </div>
       <button type="submit" class="btn" id="send"><span id="sendTxt"></span></button>
@@ -117,43 +125,47 @@
 /* ============================================================================
    OWNER / DUEÑO:  pega aquí la URL /exec de tu Web App de Apps Script.
    Paste your Apps Script Web App /exec URL here (see suggestions/README.md).
-   Mientras esté vacío, el formulario avisa que el buzón no está activo.
    ==========================================================================*/
 var SUGGEST_URL = "";
-var MAX_MB = 10;
+var MAX_FILES = 3;
+var MAX_TOTAL_MB = 12;
 
 var T = {
   es:{ brand:"Sugerencias", sub:"CENTRO DE CAPACITACIÓN", back:"Volver", badge:"Buzón del equipo",
-       title:"Comparte una sugerencia", lead:"¿Una idea para mejorar el entrenamiento? ¿Un archivo o link útil? Cuéntanos. Va directo a Luis.",
+       title:"Comparte una sugerencia", lead:"¿Una idea para mejorar el entrenamiento? ¿Archivos o un link útil? Cuéntanos. Va directo a Luis.",
        name:"Nombre", nameOpt:"(opcional)", area:"Área / Módulo", areaOpt:"(opcional)",
        sug:"Tu sugerencia", link:"Link (video, artículo, etc.)", linkOpt:"(opcional)",
        hLink:"Pega un enlace a algo útil: un video, un documento de Drive, un artículo…",
-       file:"Adjuntar archivo", fileOpt:"(opcional)", fileBtn:"Elegir archivo",
-       hFile:"Hasta "+MAX_MB+" MB. Para archivos grandes o varios, mejor comparte un link de Drive.",
+       file:"Adjuntar archivos", fileOpt:"(opcional)", fileBtn:"Elegir archivos",
+       hFile:"Hasta "+MAX_FILES+" archivos, "+MAX_TOTAL_MB+" MB en total. Para más o más grandes, comparte un link de Drive.",
        send:"Enviar sugerencia", sending:"Enviando…",
+       total:"Total: ", of:" de ", mb:" MB",
        okMsg:"¡Gracias! Tu sugerencia se envió correctamente.",
        errReq:"Escribe tu sugerencia antes de enviar.",
-       errBig:"El archivo supera "+MAX_MB+" MB. Comparte un link en su lugar.",
+       errCount:"Máximo "+MAX_FILES+" archivos. Quita alguno.",
+       errBig:"El tamaño combinado supera "+MAX_TOTAL_MB+" MB. Quita algún archivo o comparte un link.",
        errNet:"No se pudo enviar. Revisa tu conexión e intenta de nuevo.",
        errCfg:"El buzón de sugerencias aún no está activo. (Configuración pendiente del administrador.)",
        privacy:"Tus datos van directo a Luis (privado). Identificarte es opcional; si dejas tu nombre, es solo para dar seguimiento.",
-       areaGeneral:"General / Todo el portal", tema:"Oscuro", claro:"Claro",
+       tema:"Oscuro", claro:"Claro",
        foot:"Centro de Capacitación · Construido y diseñado por Luis Estevez" },
   en:{ brand:"Suggestions", sub:"TRAINING CENTER", back:"Back", badge:"Team inbox",
-       title:"Share a suggestion", lead:"Have an idea to improve the training? A useful file or link? Tell us. It goes straight to Luis.",
+       title:"Share a suggestion", lead:"Have an idea to improve the training? Useful files or a link? Tell us. It goes straight to Luis.",
        name:"Name", nameOpt:"(optional)", area:"Area / Module", areaOpt:"(optional)",
        sug:"Your suggestion", link:"Link (video, article, etc.)", linkOpt:"(optional)",
        hLink:"Paste a link to something useful: a video, a Drive document, an article…",
-       file:"Attach a file", fileOpt:"(optional)", fileBtn:"Choose file",
-       hFile:"Up to "+MAX_MB+" MB. For large files or several, share a Drive link instead.",
+       file:"Attach files", fileOpt:"(optional)", fileBtn:"Choose files",
+       hFile:"Up to "+MAX_FILES+" files, "+MAX_TOTAL_MB+" MB total. For more or larger, share a Drive link.",
        send:"Send suggestion", sending:"Sending…",
+       total:"Total: ", of:" of ", mb:" MB",
        okMsg:"Thank you! Your suggestion was sent successfully.",
        errReq:"Please write your suggestion before sending.",
-       errBig:"The file is over "+MAX_MB+" MB. Share a link instead.",
+       errCount:"Max "+MAX_FILES+" files. Please remove one.",
+       errBig:"Combined size is over "+MAX_TOTAL_MB+" MB. Remove a file or share a link.",
        errNet:"Could not send. Check your connection and try again.",
        errCfg:"The suggestion inbox is not active yet. (Pending administrator setup.)",
        privacy:"Your entry goes straight to Luis (private). Identifying yourself is optional; a name just helps with follow-up.",
-       areaGeneral:"General / Whole portal", tema:"Dark", claro:"Light",
+       tema:"Dark", claro:"Light",
        foot:"Training Center · Built and designed by Luis Estevez" }
 };
 var AREAS = [
@@ -167,7 +179,25 @@ var AREAS = [
 function $(id){ return document.getElementById(id); }
 var LANG="es"; try{ var l=localStorage.getItem("lang"); if(l==="en"||l==="es") LANG=l; }catch(e){}
 if(!localStorage.getItem("lang")){ LANG=(navigator.language||"es").toLowerCase().startsWith("en")?"en":"es"; }
-var picked=null; // File
+var files=[]; // array of File
+
+function mb(bytes){ return (bytes/1048576); }
+function totalBytes(){ return files.reduce(function(s,f){return s+f.size;},0); }
+
+function renderFiles(){
+  var t=T[LANG], wrap=$("flist"); wrap.innerHTML="";
+  files.forEach(function(f,idx){
+    var row=document.createElement("div"); row.className="fitem";
+    row.innerHTML='<span>📎</span><span>'+f.name+'</span><span style="color:var(--sub)">'+mb(f.size).toFixed(1)+' MB</span><button type="button" class="x" data-i="'+idx+'" aria-label="quitar">×</button>';
+    wrap.appendChild(row);
+  });
+  wrap.querySelectorAll(".x").forEach(function(b){ b.onclick=function(){ files.splice(+b.dataset.i,1); renderFiles(); }; });
+  var tot=$("ftot");
+  if(files.length){ var over=totalBytes()>MAX_TOTAL_MB*1048576 || files.length>MAX_FILES;
+    tot.textContent=t.total+mb(totalBytes()).toFixed(1)+t.of+MAX_TOTAL_MB+t.mb+" · "+files.length+"/"+MAX_FILES;
+    tot.className="ftot"+(over?" over":""); }
+  else { tot.textContent=""; tot.className="ftot"; }
+}
 
 function paint(){
   var t=T[LANG]; document.documentElement.lang=LANG;
@@ -191,12 +221,24 @@ function paint(){
   $("temaTxt").textContent=dark?t.claro:t.tema;
   document.querySelectorAll("#lang button").forEach(function(b){ b.classList.toggle("on", b.dataset.l===LANG); });
   document.title=t.brand+" / Suggestions";
+  renderFiles();
 }
 document.querySelectorAll("#lang button").forEach(function(b){ b.onclick=function(){ LANG=b.dataset.l; try{localStorage.setItem("lang",LANG);}catch(e){} paint(); }; });
 $("tema").onclick=function(){ var d=document.documentElement.getAttribute("data-theme")==="dark"; document.documentElement.setAttribute("data-theme", d?"light":"dark"); try{localStorage.setItem("tema", d?"light":"dark");}catch(e){} paint(); };
-$("fFile").addEventListener("change", function(){ picked=this.files&&this.files[0]?this.files[0]:null; $("fNameShow").textContent=picked?(picked.name+" ("+Math.round(picked.size/1024)+" KB)"):""; });
 
-function showMsg(kind,text){ var m=$("msg"); m.className="msg "+kind; m.textContent=text; }
+$("fFile").addEventListener("change", function(){
+  var t=T[LANG];
+  var picked=Array.prototype.slice.call(this.files||[]);
+  // merge, avoiding duplicates by name+size
+  picked.forEach(function(f){ if(!files.some(function(x){return x.name===f.name&&x.size===f.size;})) files.push(f); });
+  this.value=""; // allow re-picking same file / adding more
+  if(files.length>MAX_FILES){ files=files.slice(0,MAX_FILES); showMsg("bad",t.errCount); }
+  else if(totalBytes()>MAX_TOTAL_MB*1048576){ showMsg("bad",t.errBig); }
+  else { showMsg("",""); }
+  renderFiles();
+});
+
+function showMsg(kind,text){ var m=$("msg"); m.className="msg "+(kind||""); m.textContent=text; if(!kind) m.style.display="none"; }
 
 function fileToB64(file){ return new Promise(function(res,rej){ var r=new FileReader(); r.onload=function(){ var s=String(r.result||""); var i=s.indexOf(","); res(i>=0?s.slice(i+1):s); }; r.onerror=rej; r.readAsDataURL(file); }); }
 
@@ -205,17 +247,18 @@ $("form").addEventListener("submit", async function(e){
   var t=T[LANG];
   var sug=$("fSug").value.trim();
   if(!sug){ showMsg("bad", t.errReq); $("fSug").focus(); return; }
-  if(picked && picked.size > MAX_MB*1024*1024){ showMsg("bad", t.errBig); return; }
+  if(files.length>MAX_FILES){ showMsg("bad", t.errCount); return; }
+  if(totalBytes()>MAX_TOTAL_MB*1048576){ showMsg("bad", t.errBig); return; }
   if(!SUGGEST_URL){ showMsg("bad", t.errCfg); return; }
   var btn=$("send"); btn.disabled=true; $("sendTxt").textContent=t.sending; showMsg("","");
   try{
+    var payloadFiles=[];
+    for(var i=0;i<files.length;i++){ payloadFiles.push({ name:files[i].name, type:files[i].type||"application/octet-stream", b64:await fileToB64(files[i]) }); }
     var payload={ ts:new Date().toISOString(), name:$("fName").value.trim(), area:$("fArea").value,
-      suggestion:sug, link:$("fLink").value.trim(), lang:LANG, page:location.href,
-      fileName:"", fileType:"", fileB64:"" };
-    if(picked){ payload.fileName=picked.name; payload.fileType=picked.type||"application/octet-stream"; payload.fileB64=await fileToB64(picked); }
+      suggestion:sug, link:$("fLink").value.trim(), lang:LANG, page:location.href, files:payloadFiles };
     await fetch(SUGGEST_URL, { method:"POST", mode:"no-cors", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body:JSON.stringify(payload) });
     showMsg("ok", t.okMsg);
-    $("form").reset(); picked=null; $("fNameShow").textContent="";
+    $("form").reset(); files=[]; renderFiles();
   }catch(err){
     showMsg("bad", t.errNet);
   }finally{
