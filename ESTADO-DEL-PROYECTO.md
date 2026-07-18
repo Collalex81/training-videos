@@ -3,7 +3,7 @@
 > **Para el asistente (Claude): lee este archivo Y `REGLAS-DE-TRABAJO.md` al inicio de cada sesión de este proyecto.**
 > **For the assistant: read this file AND `REGLAS-DE-TRABAJO.md` at the start of every session in this project.**
 
-Última actualización / Last updated: 2026-07-16
+Última actualización / Last updated: 2026-07-18
 
 ---
 
@@ -90,6 +90,9 @@ Project/
 ### Pendientes / To do
 - (Opcional) Fotos reales para los otros módulos (Coax/Anritsu, Torres). / Real photos for the other modules.
 - (Opcional) Publicar en GitHub Pages; actualizar README al esquema nuevo de videos.json. / Publish to GitHub Pages; update README.
+
+### Hecho recientemente / Recently done (2026-07-18)
+- **Buzón de Sugerencias — ACTIVADO y con botón en cada módulo:** Luis desplegó el Web App y su URL `/exec` quedó pegada en `SUGGEST_URL` dentro de `suggestions/index.html`, así que el buzón ya recibe envíos en vivo (Hoja «Sugerencias» + carpeta «Sugerencias del Portal» en Drive). Además, `assets/narration.js` ahora inyecta un botón **«💬 Sugerencias / Suggestions»** en la barra de herramientas (`.tools`) de **todos** los módulos: la ruta a `/suggestions/` se calcula sola desde el `src` del propio script, por lo que funciona igual desde `animations/*.html` como desde `telecom/fiber-optic-training/module-*/index.html`. El botón cambia de idioma (ES/EN) junto con el módulo y aparece como primer elemento de `.tools`. Respaldos: `Versiones/narration-v1-2026-07-18.js`, `Versiones/suggestions-index-v1-2026-07-18.html`, `Versiones/estado-del-proyecto-v12-2026-07-18.md`. Verificado headless en un módulo de `animations/` y uno de fibra (botón inyectado, `href` correcto a `…/suggestions/`, etiqueta ES/EN correcta al alternar idioma, 0 errores) y MD5 del archivo desplegado idéntico al verificado localmente. / **Suggestions inbox — LIVE and now a button inside every module:** Luis deployed the Web App and its `/exec` URL is set in `SUGGEST_URL`, so the inbox now receives live submissions (Sheet + Drive folder). `assets/narration.js` now injects a bilingual “💬 Suggestions” button into every module's toolbar; the path to `/suggestions/` is computed from the script's own src, so it works from any folder depth, and it follows the module's ES/EN language. Verified headless on an animations module and a fiber module (button injected, correct href, ES/EN label, 0 errors); deployed MD5 identical to the locally verified file.
 
 ### Hecho recientemente / Recently done (2026-07-16)
 - **Buzón de Sugerencias — mejora de archivos:** ahora acepta **hasta 3 archivos por envío** con **tope combinado de 12 MB** (validado en el formulario y en el backend, con avisos). Si mandan **más de 1 archivo**, se guardan en una **subcarpeta propia** por envío (nombrada con fecha/hora + quién). La Hoja de Google gana una columna **«Abrir»** con un enlace clicable (`=HYPERLINK`) que lleva **directo al archivo** (si es uno) o **a la subcarpeta** (si son varios); la columna **«Archivos»** lista los nombres. El formulario ahora tiene selector múltiple con lista de archivos y opción de quitar. Actualizados `suggestions/index.html`, `suggestions/apps-script.gs` y la guía `README.md`. Verificado headless (selección múltiple, límites 3/12 MB, quitar archivo, 0 errores). / **Suggestions inbox — files upgrade:** up to 3 files per submission, 12 MB combined; multiple files go into their own subfolder; the Sheet gets a clickable “Open” HYPERLINK to the file or folder. Verified.
