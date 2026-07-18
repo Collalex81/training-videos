@@ -187,6 +187,7 @@
   </div>
   <div class="tb-actions">
     <a class="btn-ico" id="portal" href="https://collalex81.github.io/JCE-Field/" aria-label="JCE"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg><span id="portalTxt"></span></a>
+    <a class="btn-ico" id="suggest" href="suggestions/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span id="suggestTxt"></span></a>
     <button class="btn-ico" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
     <div class="lang" id="lang">
       <button data-l="es">ES</button>
@@ -245,7 +246,7 @@ const UI = {
       stArea:"Áreas", stVid:"Módulos", stIdi:"Idiomas",
       vacio:"Aún no hay módulos en esta área.",
       error:"No se pudo cargar videos.json. Abre el sitio con un servidor local o en GitHub Pages.",
-      portal:"Portal", credit:"Construido y diseñado por Luis Estevez", footer:''},
+      portal:"Portal", suggest:"Sugerencias", credit:"Construido y diseñado por Luis Estevez", footer:''},
   en:{brand:"Training Center", brandsub:"CORPORATE TRAINING",
       badge:"Training Portal", titulo:"Training by work area",
       intro:"Select your area to see the training modules, or search across all of them. Content available in Spanish and English.",
@@ -255,7 +256,7 @@ const UI = {
       stArea:"Areas", stVid:"Modules", stIdi:"Languages",
       vacio:"No modules in this area yet.",
       error:"Could not load videos.json. Open the site with a local server or on GitHub Pages.",
-      portal:"Portal", credit:"Built and designed by Luis Estevez", footer:''}
+      portal:"Portal", suggest:"Suggestions", credit:"Built and designed by Luis Estevez", footer:''}
 };
 
 /* ---------- Estado ---------- */
@@ -298,6 +299,8 @@ function pintarChrome(){
   var _c=$("credit"); if(_c) _c.textContent = u.credit || "";
   var _p=$("portalTxt"); if(_p) _p.textContent = u.portal || "";
   var _pa=$("portal"); if(_pa){ var _tt=(LANG==="es"?"Ir al portal principal de JCE":"Go to the main JCE portal"); _pa.setAttribute("title",_tt); _pa.setAttribute("aria-label",_tt); }
+  var _s=$("suggestTxt"); if(_s) _s.textContent = u.suggest || "";
+  var _sa=$("suggest"); if(_sa){ var _st=(LANG==="es"?"Enviar una sugerencia":"Send a suggestion"); _sa.setAttribute("title",_st); _sa.setAttribute("aria-label",_st); }
   $("footer").innerHTML = u.footer || "";
   $("footer").style.display = u.footer ? "" : "none";
   document.querySelectorAll("#lang button").forEach(b=>b.classList.toggle("on", b.dataset.l===LANG));
