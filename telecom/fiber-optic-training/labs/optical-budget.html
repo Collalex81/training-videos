@@ -150,6 +150,7 @@
       </div>
       <div class="tools">
         <a class="tbtn" id="home" href="index.html" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span id="homeTxt"></span></a>
+        <a class="tbtn" id="suggestBtn" href="../../../suggestions/" target="_top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span id="suggestTxt"></span></a>
         <button class="tbtn" id="tema"><span id="temaIco"></span><span id="temaTxt"></span></button>
         <div class="lang" id="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
       </div>
@@ -320,7 +321,7 @@
     applyTheme(); document.documentElement.lang=LANG;
     $("brand").textContent=X("Optical Budget","Presupuesto óptico");
     $("brandsub").textContent=X("Lab · Module 2","Lab · Módulo 2");
-    $("homeTxt").textContent=X("Labs","Labs");
+    $("homeTxt").textContent=X("Labs","Labs"); $("suggestTxt").textContent=X("Suggestions","Sugerencias"); $("suggestBtn").title=X("Send a suggestion","Enviar una sugerencia");
     $("lang").querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-l")===LANG); });
     $("title").textContent=X("Optical link designer & fault diagnosis","Diseñador de enlace y diagnóstico de fallas");
     $("lead").textContent=X("A link only works when the received power lands inside the receiver window — above sensitivity but below overload — with loss and margin under budget. Design a link in Sandbox, then troubleshoot real faults in Scenarios.",
